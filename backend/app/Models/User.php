@@ -18,11 +18,13 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'nombre',
+        'apellido1',
+        'apellido2',
         'telefono',
-        'documento_identidad',
         'empresa_id',
-        'role_id',
-        'tipo_documento_identidad_id',
+        'rol_id',
+        'activo'
     ];
 
     protected $hidden = [
@@ -45,12 +47,7 @@ class User extends Authenticatable
 
     public function role(): BelongsTo
     {
-        return $this->belongsTo(Role::class, 'role_id');
-    }
-
-    public function tipoDocumentoIdentidad(): BelongsTo
-    {
-        return $this->belongsTo(TipoDocumentoIdentidad::class, 'tipo_documento_identidad_id');
+        return $this->belongsTo(Role::class, 'rol_id');
     }
 
     public function verificaciones(): HasMany

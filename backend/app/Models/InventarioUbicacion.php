@@ -11,7 +11,7 @@ class InventarioUbicacion extends Model
     protected $table = 'inventario_ubicaciones';
 
     protected $fillable = [
-        'tenant_id',
+        'empresa_id',
         'nombre',
         'descripcion',
         'tipo',

@@ -26,7 +26,6 @@ class InventarioItem extends Model
         'stock_minimo',
         'coste_unitario',
         'activo',
-        'empresa_id'
     ];
 
     protected $casts = [

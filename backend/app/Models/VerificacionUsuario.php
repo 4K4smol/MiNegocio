@@ -12,8 +12,14 @@ class VerificacionUsuario extends Model
     protected $fillable = [
         'user_id',
         'estado_verificacion_id',
-        'observaciones',
+        'tipo_documento_identidad_id',
+        'numero_documento',
+        'ruta_documento_anverso',
+        'ruta_documento_reverso',
+        'ruta_selfie',
         'fecha_verificacion',
+        'notas_revision',
+        'revisado_por',
     ];
 
     protected $casts = [
@@ -28,5 +34,15 @@ class VerificacionUsuario extends Model
     public function estadoVerificacion(): BelongsTo
     {
         return $this->belongsTo(EstadoVerificacion::class, 'estado_verificacion_id');
+    }
+
+    public function tipoDocumentoIdentidad(): BelongsTo
+    {
+        return $this->belongsTo(TipoDocumentoIdentidad::class, 'tipo_documento_identidad_id');
+    }
+
+    public function revisadoPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'revisado_por');
     }
 }

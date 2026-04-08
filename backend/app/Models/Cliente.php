@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -36,15 +37,15 @@ class Cliente extends Model
         return $this->hasMany(LocalizacionCliente::class, 'cliente_id');
     }
 
-    public function localizacionPrincipal(): HasMany
+    public function localizacionPrincipal(): HasOne
     {
-        return $this->hasMany(LocalizacionCliente::class, 'cliente_id')
+        return $this->hasOne(LocalizacionCliente::class, 'cliente_id')
             ->where('es_principal', true);
     }
 
-    public function empresa(): HasOne
+    public function empresa(): BelongsTo
     {
-        return $this->hasOne(Empresa::class, 'empresa_id');
+        return $this->belongsTo(Empresa::class, 'empresa_id');
     }
 
     public function getNombreCompletoAttribute(): string

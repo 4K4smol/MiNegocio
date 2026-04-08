@@ -11,24 +11,23 @@ class Empresa extends Model
     protected $table = 'empresas';
 
     protected $fillable = [
-        'nombre',
-        'razon_social',
+        'nombre_fiscal',
+        'nombre_comercial',
         'nif',
-        'email',
+        'correo',
         'telefono',
-        'direccion',
+        'direccion_fiscal',
+        'codigo_postal',
+        'municipio',
+        'provincia',
+        'pais',
+        'activa',
         'tipo_empresa_id',
-        'estado_verificacion_id',
     ];
 
     public function tipoEmpresa(): BelongsTo
     {
         return $this->belongsTo(TipoEmpresa::class, 'tipo_empresa_id');
-    }
-
-    public function estadoVerificacion(): BelongsTo
-    {
-        return $this->belongsTo(EstadoVerificacion::class, 'estado_verificacion_id');
     }
 
     public function usuarios(): HasMany

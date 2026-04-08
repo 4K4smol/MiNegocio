@@ -12,8 +12,14 @@ class VerificacionEmpresa extends Model
     protected $fillable = [
         'empresa_id',
         'estado_verificacion_id',
-        'observaciones',
+        'ruta_documento_fiscal',
+        'ruta_registro_mercantil',
+        'ruta_documento_representacion',
+        'ruta_poder_apoderamiento',
+        'referencia_certificado_digital',
         'fecha_verificacion',
+        'notas_revision',
+        'revisado_por',
     ];
 
     protected $casts = [
@@ -28,5 +34,10 @@ class VerificacionEmpresa extends Model
     public function estadoVerificacion(): BelongsTo
     {
         return $this->belongsTo(EstadoVerificacion::class, 'estado_verificacion_id');
+    }
+
+    public function revisadoPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'revisado_por');
     }
 }
