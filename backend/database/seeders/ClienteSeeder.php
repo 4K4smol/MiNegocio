@@ -23,57 +23,7 @@ class ClienteSeeder extends Seeder
             'persona_contacto' => 'María Gómez',
             'notas' => 'Cliente con varios centros de trabajo.',
             'activo' => true,
-        ]);
-
-        LocalizacionCliente::create([
-            'cliente_id' => $cliente1->id,
-            'nombre_localizacion' => 'Oficina central',
-            'tipo_localizacion' => 'principal',
-            'direccion' => 'Calle Mayor 10',
-            'ciudad' => 'Torrelavega',
-            'provincia' => 'Cantabria',
-            'codigo_postal' => '39300',
-            'pais' => 'España',
-            'es_principal' => true,
-            'activo' => true,
-        ]);
-
-        LocalizacionCliente::create([
-            'cliente_id' => $cliente1->id,
-            'nombre_localizacion' => 'Local Santander',
-            'tipo_localizacion' => 'local',
-            'direccion' => 'Avenida Reina Victoria 25',
-            'ciudad' => 'Santander',
-            'provincia' => 'Cantabria',
-            'codigo_postal' => '39004',
-            'pais' => 'España',
-            'es_principal' => false,
-            'activo' => true,
-        ]);
-
-        $cliente2 = Cliente::create([
-            'tipo_cliente' => 'particular',
-            'nombre' => 'Juan',
-            'apellidos' => 'Pérez López',
-            'dni_cif' => '12345678Z',
-            'telefono' => '600123456',
-            'email' => 'juanperez@email.com',
-            'persona_contacto' => null,
-            'notas' => 'Cliente particular.',
-            'activo' => true,
-        ]);
-
-        LocalizacionCliente::create([
-            'cliente_id' => $cliente2->id,
-            'nombre_localizacion' => 'Vivienda habitual',
-            'tipo_localizacion' => 'principal',
-            'direccion' => 'Barrio Ejemplo 14',
-            'ciudad' => 'Reocín',
-            'provincia' => 'Cantabria',
-            'codigo_postal' => '39538',
-            'pais' => 'España',
-            'es_principal' => true,
-            'activo' => true,
+            'empresa_id' => 1
         ]);
     }
 }

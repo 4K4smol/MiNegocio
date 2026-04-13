@@ -48,6 +48,11 @@ class Cliente extends Model
         return $this->belongsTo(Empresa::class, 'empresa_id');
     }
 
+    public function facturas(): HasMany
+    {
+        return $this->hasMany(Factura::class, 'cliente_id');
+    }
+
     public function getNombreCompletoAttribute(): string
     {
         if ($this->tipo_cliente === 'empresa') {

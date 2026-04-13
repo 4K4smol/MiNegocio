@@ -39,4 +39,9 @@ class Empresa extends Model
     {
         return $this->hasMany(VerificacionEmpresa::class, 'empresa_id');
     }
+
+    public function facturas(): HasMany
+    {
+        return $this->hasMany(Factura::class, 'empresa_id');
+    }
 }
