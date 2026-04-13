@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             TiposDocumentoIdentidadSeeder::class,
             TiposEmpresaSeeder::class,
             EmpresaSeeder::class,
+            ModulosSeeder::class,
 
             EstadosFacturaSeeder::class,
             EstadosVerificacionSeeder::class,

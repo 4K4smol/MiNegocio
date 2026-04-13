@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Empresa extends Model
@@ -43,5 +44,18 @@ class Empresa extends Model
     public function facturas(): HasMany
     {
         return $this->hasMany(Factura::class, 'empresa_id');
+    }
+
+    public function modulos(): BelongsToMany
+    {
+        return $this->belongsToMany(Modulo::class, 'empresa_modulos', 'empresa_id', 'modulo_id')
+            ->using(EmpresaModulo::class)
+            ->withPivot(['id', 'activo', 'fecha_activacion', 'fecha_desactivacion'])
+            ->withTimestamps();
+    }
+
+    public function empresaModulos(): HasMany
+    {
+        return $this->hasMany(EmpresaModulo::class, 'empresa_id');
     }
 }
