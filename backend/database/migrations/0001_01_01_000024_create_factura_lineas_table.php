@@ -13,7 +13,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('factura_id')->constrained('facturas')->restrictOnDelete()->cascadeOnUpdate();
             $table->foreignId('orden_trabajo_linea_id')->nullable()->constrained('ordenes_trabajo_lineas')->restrictOnDelete()->cascadeOnUpdate();
-            $table->foreignId('unidad_servicio_id')->constrained('unidades_servicio')->restrictOnDelete()->cascadeOnUpdate();
+            $table->foreignId('servicio_id')->nullable()->constrained('servicios')->restrictOnDelete()->cascadeOnUpdate();
             $table->string('unidad_servicio_codigo', 30)->nullable();
             $table->string('unidad_servicio_nombre_snapshot', 100)->nullable();
             $table->string('servicio_nombre_snapshot', 120)->nullable();
@@ -31,7 +31,7 @@ return new class extends Migration
 
             $table->index('factura_id');
             $table->index('orden_trabajo_linea_id');
-            $table->index('unidad_servicio_id');
+            $table->index('servicio_id');
         });
     }
 
