@@ -54,4 +54,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(VerificacionUsuario::class, 'user_id');
     }
+
+        public function ordenesTrabajoResponsable(): HasMany
+    {
+        return $this->hasMany(OrdenTrabajo::class, 'tecnico_responsable_id');
+    }
+
+    public function partesTrabajo(): HasMany
+    {
+        return $this->hasMany(OrdenTrabajoParte::class, 'user_id');
+    }
 }

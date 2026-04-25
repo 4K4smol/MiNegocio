@@ -12,7 +12,7 @@ return new class extends Migration
         Schema::create('factura_lineas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('factura_id')->constrained('facturas')->restrictOnDelete()->cascadeOnUpdate();
-            $table->foreignId('orden_trabajo_linea_id')->nullable()->constrained('orden_trabajo_lineas')->restrictOnDelete()->cascadeOnUpdate();
+            $table->foreignId('orden_trabajo_linea_id')->nullable()->constrained('ordenes_trabajo_lineas')->restrictOnDelete()->cascadeOnUpdate();
             $table->foreignId('unidad_servicio_id')->constrained('unidades_servicio')->restrictOnDelete()->cascadeOnUpdate();
             $table->string('unidad_servicio_codigo', 30)->nullable();
             $table->string('unidad_servicio_nombre_snapshot', 100)->nullable();

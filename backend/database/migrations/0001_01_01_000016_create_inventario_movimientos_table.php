@@ -16,7 +16,9 @@ return new class extends Migration {
             $table->foreignId('ubicacion_origen_id')->nullable()->constrained('inventario_ubicaciones')->nullOnDelete();
             $table->foreignId('ubicacion_destino_id')->nullable()->constrained('inventario_ubicaciones')->nullOnDelete();
 
-            $table->enum('tipo_movimiento', ['entrada', 'salida', 'ajuste', 'traslado']);
+            $table->foreignId('tipo_movimiento_id')
+                ->constrained('tipos_inventario_movimiento')
+                ->cascadeOnUpdate();
             $table->decimal('cantidad', 12, 2);
             $table->decimal('stock_anterior', 12, 2);
             $table->decimal('stock_posterior', 12, 2);
@@ -26,7 +28,7 @@ return new class extends Migration {
 
             $table->timestamps();
 
-            $table->index(['empresa_id', 'tipo_movimiento']);
+            $table->index(['empresa_id', 'tipo_movimiento_id']);
             $table->index(['inventario_item_id', 'fecha_movimiento']);
         });
     }

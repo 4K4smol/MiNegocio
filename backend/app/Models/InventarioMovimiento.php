@@ -14,7 +14,7 @@ class InventarioMovimiento extends Model
         'inventario_item_id',
         'ubicacion_origen_id',
         'ubicacion_destino_id',
-        'tipo_movimiento',
+        'tipo_movimiento_id',
         'cantidad',
         'stock_anterior',
         'stock_posterior',
@@ -53,5 +53,10 @@ class InventarioMovimiento extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function tipoMovieminto(): BelongsTo
+    {
+        return $this->belongsTo(TipoInventarioMovimiento::class, 'tipo_movimiento_id');
     }
 }

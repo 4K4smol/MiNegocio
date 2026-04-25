@@ -53,6 +53,11 @@ class Cliente extends Model
         return $this->hasMany(Factura::class, 'cliente_id');
     }
 
+    public function ordenesTrabajo(): HasMany
+    {
+        return $this->hasMany(OrdenTrabajo::class, 'cliente_id');
+    }
+
     public function getNombreCompletoAttribute(): string
     {
         if ($this->tipo_cliente === 'empresa') {

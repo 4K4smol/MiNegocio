@@ -19,7 +19,9 @@ return new class extends Migration
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
 
-            $table->enum('tipo_cliente', ['particular', 'empresa'])->default('particular');
+            $table->foreignId('tipo_cliente_id')
+                ->constrained('tipos_cliente')
+                ->cascadeOnUpdate();
             $table->string('nombre');
             $table->string('apellidos')->nullable();
             $table->string('razon_social')->nullable();
