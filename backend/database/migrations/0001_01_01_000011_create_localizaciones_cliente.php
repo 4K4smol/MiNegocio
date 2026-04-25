@@ -16,14 +16,9 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->string('nombre_localizacion');
-            $table->enum('tipo_localizacion', [
-                'principal',
-                'oficina',
-                'local',
-                'almacen',
-                'centro_trabajo',
-                'otro'
-            ])->default('otro');
+            $table->foreignId('tipo_localizacion_id')
+                ->constrained('tipos_localizacion_cliente')
+                ->cascadeOnUpdate();
 
             $table->string('direccion');
             $table->string('direccion_linea_2')->nullable();

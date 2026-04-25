@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Cliente;
-use App\Models\LocalizacionCliente;
+use App\Models\TipoCliente;
 use Illuminate\Database\Seeder;
 
 class ClienteSeeder extends Seeder
@@ -13,8 +13,10 @@ class ClienteSeeder extends Seeder
      */
     public function run(): void
     {
-        $cliente1 = Cliente::create([
-            'tipo_cliente' => 'empresa',
+        $tipoEmpresa = TipoCliente::query()->where('codigo', 'empresa')->firstOrFail();
+
+        Cliente::create([
+            'tipo_cliente_id' => $tipoEmpresa->id,
             'nombre' => 'Limpiezas Norte',
             'razon_social' => 'Limpiezas Norte S.L.',
             'dni_cif' => 'B12345678',

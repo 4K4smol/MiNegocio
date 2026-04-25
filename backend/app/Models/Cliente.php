@@ -15,7 +15,7 @@ class Cliente extends Model
     protected $table = 'clientes';
 
     protected $fillable = [
-        'tipo_cliente',
+        'tipo_cliente_id',
         'nombre',
         'apellidos',
         'razon_social',
@@ -48,6 +48,11 @@ class Cliente extends Model
         return $this->belongsTo(Empresa::class, 'empresa_id');
     }
 
+    public function tipoCliente(): BelongsTo
+    {
+        return $this->belongsTo(TipoCliente::class, 'tipo_cliente_id');
+    }
+
     public function facturas(): HasMany
     {
         return $this->hasMany(Factura::class, 'cliente_id');
@@ -55,7 +60,7 @@ class Cliente extends Model
 
     public function getNombreCompletoAttribute(): string
     {
-        if ($this->tipo_cliente === 'empresa') {
+        if ($this->tipoCliente?->codigo === 'empresa') {
             return $this->razon_social ?: $this->nombre;
         }
 

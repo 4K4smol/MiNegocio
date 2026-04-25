@@ -15,7 +15,7 @@ class LocalizacionCliente extends Model
     protected $fillable = [
         'cliente_id',
         'nombre_localizacion',
-        'tipo_localizacion',
+        'tipo_localizacion_id',
         'direccion',
         'direccion_linea_2',
         'ciudad',
@@ -35,6 +35,11 @@ class LocalizacionCliente extends Model
     public function cliente(): BelongsTo
     {
         return $this->belongsTo(Cliente::class, 'cliente_id');
+    }
+
+    public function tipoLocalizacion(): BelongsTo
+    {
+        return $this->belongsTo(TipoLocalizacionCliente::class, 'tipo_localizacion_id');
     }
 
     public function getDireccionCompletaAttribute(): string

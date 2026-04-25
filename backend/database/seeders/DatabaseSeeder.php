@@ -25,6 +25,9 @@ class DatabaseSeeder extends Seeder
             TiposFacturaSeeder::class,
             TiposRectificacionSeeder::class,
             TiposRegistroFacturacionSeeder::class,
+            TiposClienteSeeder::class,
+            TiposLocalizacionClienteSeeder::class,
+            TiposInventarioMovimientoSeeder::class,
 
             ClienteSeeder::class,
             LocalizacionClienteSeeder::class,

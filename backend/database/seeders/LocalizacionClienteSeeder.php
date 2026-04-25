@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Cliente;
 use App\Models\LocalizacionCliente;
+use App\Models\TipoLocalizacionCliente;
 use Illuminate\Database\Seeder;
 
 class LocalizacionClienteSeeder extends Seeder
@@ -11,6 +12,8 @@ class LocalizacionClienteSeeder extends Seeder
     public function run(): void
     {
         $faker = fake('es_ES');
+        $tipoPrincipal = TipoLocalizacionCliente::query()->where('codigo', 'principal')->firstOrFail();
+        $tipoCentroTrabajo = TipoLocalizacionCliente::query()->where('codigo', 'centro_trabajo')->firstOrFail();
 
         $clientes = Cliente::all();
 
@@ -26,7 +29,7 @@ class LocalizacionClienteSeeder extends Seeder
                     'nombre_localizacion' => 'Principal',
                 ],
                 [
-                    'tipo_localizacion' => 'principal',
+                    'tipo_localizacion_id' => $tipoPrincipal->id,
                     'direccion' => $faker->streetAddress(),
                     'direccion_linea_2' => $faker->optional()->secondaryAddress(),
                     'ciudad' => $faker->city(),
@@ -46,7 +49,7 @@ class LocalizacionClienteSeeder extends Seeder
                         'nombre_localizacion' => 'Centro de trabajo',
                     ],
                     [
-                        'tipo_localizacion' => 'centro_trabajo',
+                        'tipo_localizacion_id' => $tipoCentroTrabajo->id,
                         'direccion' => $faker->streetAddress(),
                         'direccion_linea_2' => $faker->optional()->secondaryAddress(),
                         'ciudad' => $faker->city(),
