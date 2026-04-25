@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Tipo;
 use App\Models\TipoInventarioMovimiento;
 use Illuminate\Database\Seeder;
 
