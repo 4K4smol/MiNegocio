@@ -65,10 +65,10 @@ class Cliente extends Model
 
     public function getNombreCompletoAttribute(): string
     {
-        if ($this->tipoCliente?->codigo === 'empresa') {
+        if (($this->tipoCliente?->codigo ?? null) === 'EMPRESA') {
             return $this->razon_social ?: $this->nombre;
         }
 
-        return trim($this->nombre . ' ' . ($this->apellidos ?? ''));
+        return trim($this->nombre.' '.($this->apellidos ?? ''));
     }
 }

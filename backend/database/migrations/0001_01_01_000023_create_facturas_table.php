@@ -41,6 +41,9 @@ return new class extends Migration
             $table->decimal('cuota_iva', 12, 2)->default(0.00);
             $table->decimal('total', 12, 2)->default(0.00);
             $table->text('observaciones')->nullable();
+            $table->boolean('pagada')->default(false);
+            $table->date('fecha_pago')->nullable();
+            $table->text('observaciones_pago')->nullable();
             $table->timestamps();
 
             $table->unique(['empresa_id', 'serie', 'numero']);
@@ -48,6 +51,7 @@ return new class extends Migration
             $table->index(['cliente_id', 'fecha_emision']);
             $table->index('estado_factura_id');
             $table->index('tipo_factura_id');
+            $table->index('pagada');
         });
     }
 

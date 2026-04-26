@@ -39,7 +39,7 @@ class LocalizacionCliente extends Model
 
     public function tipoLocalizacion(): BelongsTo
     {
-        return $this->belongsTo(tipoLocalizacionCliente::class, 'tipo_localizacion_id');
+        return $this->belongsTo(TipoLocalizacionCliente::class, 'tipo_localizacion_id');
     }
 
     public function getDireccionCompletaAttribute(): string

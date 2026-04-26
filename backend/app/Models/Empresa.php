@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Empresa extends Model
 {
@@ -36,9 +37,9 @@ class Empresa extends Model
         return $this->hasMany(User::class, 'empresa_id');
     }
 
-    public function verificaciones(): HasMany
+    public function verificacion(): HasOne
     {
-        return $this->hasMany(VerificacionEmpresa::class, 'empresa_id');
+        return $this->hasOne(VerificacionEmpresa::class, 'empresa_id');
     }
 
     public function facturas(): HasMany
@@ -46,7 +47,7 @@ class Empresa extends Model
         return $this->hasMany(Factura::class, 'empresa_id');
     }
 
-        public function servicios(): HasMany
+    public function servicios(): HasMany
     {
         return $this->hasMany(Servicio::class, 'empresa_id');
     }

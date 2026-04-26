@@ -14,11 +14,6 @@ class EstadoVerificacion extends Model
         'descripcion',
     ];
 
-    public function empresas(): HasMany
-    {
-        return $this->hasMany(Empresa::class, 'estado_verificacion_id');
-    }
-
     public function verificacionesEmpresa(): HasMany
     {
         return $this->hasMany(VerificacionEmpresa::class, 'estado_verificacion_id');

@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
@@ -19,12 +20,11 @@ class User extends Authenticatable
         'email',
         'password',
         'nombre',
-        'apellido1',
-        'apellido2',
+        'apellidos',
         'telefono',
         'empresa_id',
-        'rol_id',
-        'activo'
+        'role_id',
+        'activo',
     ];
 
     protected $hidden = [
@@ -37,6 +37,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'activo' => 'boolean',
         ];
     }
 
@@ -47,15 +48,15 @@ class User extends Authenticatable
 
     public function role(): BelongsTo
     {
-        return $this->belongsTo(Role::class, 'rol_id');
+        return $this->belongsTo(Role::class, 'role_id');
     }
 
-    public function verificaciones(): HasMany
+    public function verificacion(): HasOne
     {
-        return $this->hasMany(VerificacionUsuario::class, 'user_id');
+        return $this->hasOne(VerificacionUsuario::class, 'user_id');
     }
 
-        public function ordenesTrabajoResponsable(): HasMany
+    public function ordenesTrabajoResponsable(): HasMany
     {
         return $this->hasMany(OrdenTrabajo::class, 'tecnico_responsable_id');
     }
@@ -63,5 +64,10 @@ class User extends Authenticatable
     public function partesTrabajo(): HasMany
     {
         return $this->hasMany(OrdenTrabajoParte::class, 'user_id');
+    }
+
+    public function tareasResponsable(): HasMany
+    {
+        return $this->hasMany(Tarea::class, 'responsable_id');
     }
 }

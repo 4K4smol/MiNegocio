@@ -15,11 +15,14 @@ class Factura extends Model
         'serie','numero','fecha_emision','fecha_operacion','moneda','emisor_nif','emisor_nombre_razon_social','emisor_domicilio_fiscal',
         'receptor_nif','receptor_nombre_razon_social','receptor_domicilio_fiscal','receptor_cp','receptor_municipio','receptor_provincia','receptor_pais',
         'subtotal','cuota_iva','total','observaciones',
+        'pagada','fecha_pago','observaciones_pago',
     ];
 
     protected $casts = [
         'fecha_emision' => 'date',
         'fecha_operacion' => 'date',
+        'pagada' => 'boolean',
+        'fecha_pago' => 'date',
         'subtotal' => 'decimal:2',
         'cuota_iva' => 'decimal:2',
         'total' => 'decimal:2',

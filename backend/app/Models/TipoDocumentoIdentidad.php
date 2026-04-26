@@ -14,8 +14,8 @@ class TipoDocumentoIdentidad extends Model
         'descripcion',
     ];
 
-    public function users(): HasMany
+    public function verificacionesUsuario(): HasMany
     {
-        return $this->hasMany(User::class, 'tipo_documento_identidad_id');
+        return $this->hasMany(VerificacionUsuario::class, 'tipo_documento_identidad_id');
     }
 }

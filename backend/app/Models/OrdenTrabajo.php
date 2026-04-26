@@ -14,8 +14,9 @@ class OrdenTrabajo extends Model
         'empresa_id',
         'cliente_id',
         'numero',
-        'estado_codigo',
+        'estado_id',
         'canal_origen',
+        'prioridad_id',
         'prioridad_codigo',
         'fecha_apertura',
         'fecha_programada_inicio',
@@ -51,6 +52,16 @@ class OrdenTrabajo extends Model
         return $this->belongsTo(Cliente::class, 'cliente_id');
     }
 
+    public function estado(): BelongsTo
+    {
+        return $this->belongsTo(OrdenTrabajoEstado::class, 'estado_id');
+    }
+
+    public function prioridad(): BelongsTo
+    {
+        return $this->belongsTo(OrdenTrabajoPrioridad::class, 'prioridad_id');
+    }
+
     public function tecnicoResponsable(): BelongsTo
     {
         return $this->belongsTo(User::class, 'tecnico_responsable_id');
@@ -64,5 +75,10 @@ class OrdenTrabajo extends Model
     public function partes(): HasMany
     {
         return $this->hasMany(OrdenTrabajoParte::class, 'orden_trabajo_id');
+    }
+
+    public function tareas(): HasMany
+    {
+        return $this->hasMany(Tarea::class, 'orden_trabajo_id');
     }
 }
