@@ -31,6 +31,11 @@ class DatabaseSeeder extends Seeder
 
             ClienteSeeder::class,
             LocalizacionClienteSeeder::class,
+
+            PaginasWebSeeder::class,
+            PaginasWebContactosSeeder::class,
+            InformesSeeder::class,
+            CalendarioEventosSeeder::class,
         ]);
     }
 }

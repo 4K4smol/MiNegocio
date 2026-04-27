@@ -81,4 +81,9 @@ class OrdenTrabajo extends Model
     {
         return $this->hasMany(Tarea::class, 'orden_trabajo_id');
     }
+
+    public function eventosCalendario(): HasMany
+    {
+        return $this->hasMany(CalendarioEvento::class, 'orden_trabajo_id');
+    }
 }

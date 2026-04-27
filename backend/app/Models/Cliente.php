@@ -63,6 +63,11 @@ class Cliente extends Model
         return $this->hasMany(OrdenTrabajo::class, 'cliente_id');
     }
 
+        public function calendarioEventos(): HasMany
+    {
+        return $this->hasMany(CalendarioEvento::class, 'cliente_id');
+    }
+
     public function getNombreCompletoAttribute(): string
     {
         if (($this->tipoCliente?->codigo ?? null) === 'EMPRESA') {
