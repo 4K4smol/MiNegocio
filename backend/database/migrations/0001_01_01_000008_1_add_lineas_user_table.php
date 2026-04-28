@@ -16,18 +16,21 @@ return new class extends Migration
                 ->nullOnDelete()
                 ->cascadeOnUpdate();
 
-            $table->foreignId('rol_id')
+            $table->foreignId('role_id')
                 ->nullable()
                 ->after('empresa_id')
                 ->constrained('roles')
                 ->restrictOnDelete()
                 ->cascadeOnUpdate();
 
-            $table->string('nombre', 100)->nullable()->after('rol_id');
+            $table->string('nombre', 100)->nullable()->after('role_id');
             $table->string('apellido1', 100)->nullable()->after('nombre');
             $table->string('apellido2', 100)->nullable()->after('apellido1');
             $table->string('telefono', 30)->nullable()->after('email');
             $table->boolean('activo')->default(true)->after('telefono');
+
+            $table->index(['empresa_id', 'activo']);
+            $table->index(['role_id', 'activo']);
         });
     }
 
@@ -35,7 +38,9 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->dropConstrainedForeignId('empresa_id');
-            $table->dropConstrainedForeignId('rol_id');
+            $table->dropConstrainedForeignId('role_id');
+            $table->dropIndex('users_empresa_id_activo_index');
+            $table->dropIndex('users_role_id_activo_index');
             $table->dropColumn([
                 'nombre',
                 'apellido1',
