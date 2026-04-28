@@ -32,6 +32,20 @@ return new class extends Migration
             $table->index(['activo', 'orden']);
         });
 
+        Schema::table('ordenes_trabajo', function (Blueprint $table): void {
+            $table->foreign('estado_id')
+                ->references('id')
+                ->on('orden_trabajo_estados')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
+
+            $table->foreign('prioridad_id')
+                ->references('id')
+                ->on('orden_trabajo_prioridades')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
+        });
+
         Schema::create('tareas', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('orden_trabajo_id')
@@ -68,6 +82,13 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (Schema::hasTable('ordenes_trabajo')) {
+            Schema::table('ordenes_trabajo', function (Blueprint $table): void {
+                $table->dropForeign(['estado_id']);
+                $table->dropForeign(['prioridad_id']);
+            });
+        }
+
         Schema::dropIfExists('tareas');
         Schema::dropIfExists('orden_trabajo_prioridades');
         Schema::dropIfExists('orden_trabajo_estados');
