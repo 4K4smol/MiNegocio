@@ -28,6 +28,8 @@ class DatabaseSeeder extends Seeder
             TiposClienteSeeder::class,
             TiposLocalizacionClienteSeeder::class,
             TiposInventarioMovimientoSeeder::class,
+            InventarioUnidadesMedidaSeeder::class,
+            OrdenTrabajoEstadosSeeder::class,
 
             ClienteSeeder::class,
             LocalizacionClienteSeeder::class,
