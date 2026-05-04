@@ -13,10 +13,10 @@ return new class extends Migration
             $table->foreignId('empresa_id')->constrained('empresas')->restrictOnDelete()->cascadeOnUpdate();
             $table->foreignId('cliente_id')->constrained('clientes')->restrictOnDelete()->cascadeOnUpdate();
             $table->string('numero', 50);
-            $table->foreignId('estado_id')->nullable()->constrained('orden_trabajo_estados')->restrictOnDelete()->cascadeOnUpdate();
+            $table->foreignId('estado_id');
             $table->string('estado_codigo', 30)->default('BORRADOR');
             $table->string('canal_origen', 30)->nullable();
-            $table->foreignId('prioridad_id')->nullable()->constrained('orden_trabajo_prioridades')->restrictOnDelete()->cascadeOnUpdate();
+            $table->foreignId('prioridad_id');
             $table->string('prioridad_codigo', 30)->nullable();
             $table->date('fecha_apertura');
             $table->dateTime('fecha_programada_inicio')->nullable();
