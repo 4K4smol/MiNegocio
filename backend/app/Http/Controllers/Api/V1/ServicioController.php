@@ -14,10 +14,10 @@ class ServicioController extends AbstractCrudController
 {
     public function index(Request $request): JsonResponse
     {
-        $perPage = (int) $request->integer('per_page', 15);
+        $per_page = (int) $request->integer('per_page', 15);
         $servicios = Servicio::query()
             ->with(['empresa'])
-            ->paginate($perPage);
+            ->paginate($per_page);
 
         return $this->success($servicios->toArray());
     }

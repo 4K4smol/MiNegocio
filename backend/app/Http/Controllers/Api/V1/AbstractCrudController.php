@@ -12,23 +12,51 @@ abstract class AbstractCrudController extends ApiController
 {
     abstract protected function modelClass(): string;
 
-    public function index(Request $request): JsonResponse
+    protected function resourceClass(): ?string
     {
-        /** @var Model $model */
-        $model = new ($this->modelClass())();
-        $perPage = (int) $request->integer('per_page', 15);
-
-        return $this->success($model->newQuery()->paginate($perPage)->toArray());
+        return null;
     }
 
-    public function show(int $id): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        /** @var Model $model */
-        $model = new ($this->modelClass())();
-        $record = $model->newQuery()->find($id);
+        $perPage = (int) $request->integer('per_page', 15);
+        $perPage = min(max($perPage, 1), 100);
+
+        $modelClass = $this->modelClass();
+
+        $records = $modelClass::query()
+            ->paginate($perPage);
+
+        $resourceClass = $this->resourceClass();
+
+        if ($resourceClass !== null) {
+            return $this->success(
+                $resourceClass::collection($records)
+                    ->response()
+                    ->getData(true)
+            );
+        }
+
+        return $this->success($records->toArray());
+    }
+
+    public function show(Request $request, int $id): JsonResponse
+    {
+        $modelClass = $this->modelClass();
+
+        /** @var Model|null $record */
+        $record = $modelClass::query()->find($id);
 
         if ($record === null) {
             return $this->notFound();
+        }
+
+        $resourceClass = $this->resourceClass();
+
+        if ($resourceClass !== null) {
+            return $this->success(
+                (new $resourceClass($record))->toArray($request)
+            );
         }
 
         return $this->success($record->toArray());
@@ -36,9 +64,10 @@ abstract class AbstractCrudController extends ApiController
 
     public function destroy(int $id): JsonResponse
     {
-        /** @var Model $model */
-        $model = new ($this->modelClass())();
-        $record = $model->newQuery()->find($id);
+        $modelClass = $this->modelClass();
+
+        /** @var Model|null $record */
+        $record = $modelClass::query()->find($id);
 
         if ($record === null) {
             return $this->notFound();
