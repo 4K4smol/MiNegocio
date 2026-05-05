@@ -20,7 +20,9 @@ class TipoRegistroFacturacionController extends AbstractCrudController
     {
         $tipo_registro_facturacion = TipoRegistroFacturacion::query()->create($request->validated());
 
-        return $this->created((new TipoRegistroFacturacionResource($tipo_registro_facturacion))->toArray($request));
+        return $this->created(
+            TipoRegistroFacturacionResource::make($tipo_registro_facturacion)->resolve()
+        );
     }
 
     public function update(UpdateTipoRegistroFacturacionRequest $request, int $id)
@@ -34,6 +36,8 @@ class TipoRegistroFacturacionController extends AbstractCrudController
         $tipo_registro_facturacion->fill($request->validated());
         $tipo_registro_facturacion->save();
 
-        return $this->updated((new TipoRegistroFacturacionResource($tipo_registro_facturacion))->toArray($request));
+        return $this->updated(
+            TipoRegistroFacturacionResource::make($tipo_registro_facturacion)->resolve()
+        );
     }
 }

@@ -28,7 +28,7 @@ class TipoDocumentoIdentidadController extends AbstractCrudController
             ->create($request->validated());
 
         return $this->created(
-            (new TipoDocumentoIdentidadResource($tipo_documento_identidad))->toArray($request)
+            TipoDocumentoIdentidadResource::make($tipo_documento_identidad)->resolve()
         );
     }
 
@@ -44,7 +44,7 @@ class TipoDocumentoIdentidadController extends AbstractCrudController
         $tipo_documento_identidad->save();
 
         return $this->updated(
-            (new TipoDocumentoIdentidadResource($tipo_documento_identidad))->toArray($request)
+            TipoDocumentoIdentidadResource::make($tipo_documento_identidad)->resolve()
         );
     }
 }

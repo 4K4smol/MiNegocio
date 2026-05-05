@@ -8,6 +8,7 @@ use App\Http\Requests\Api\V1\StoreTipoEventoFacturacionRequest;
 use App\Http\Requests\Api\V1\UpdateTipoEventoFacturacionRequest;
 use App\Http\Resources\Api\V1\TipoEventoFacturacionResource;
 use App\Models\TipoEventoFacturacion;
+use Illuminate\Http\JsonResponse;
 
 class TipoEventoFacturacionController extends AbstractCrudController
 {
@@ -16,24 +17,34 @@ class TipoEventoFacturacionController extends AbstractCrudController
         return TipoEventoFacturacion::class;
     }
 
-    public function store(StoreTipoEventoFacturacionRequest $request)
+    protected function resourceClass(): ?string
     {
-        $tipo_evento_facturacion = TipoEventoFacturacion::query()->create($request->validated());
-
-        return $this->created((new TipoEventoFacturacionResource($tipo_evento_facturacion))->toArray($request));
+        return TipoEventoFacturacionResource::class;
     }
 
-    public function update(UpdateTipoEventoFacturacionRequest $request, int $id)
+    public function store(StoreTipoEventoFacturacionRequest $request): JsonResponse
     {
-        $tipo_evento_facturacion = TipoEventoFacturacion::query()->find($id);
+        $tipoEventoFacturacion = TipoEventoFacturacion::query()
+            ->create($request->validated());
 
-        if ($tipo_evento_facturacion === null) {
+        return $this->created(
+            TipoEventoFacturacionResource::make($tipoEventoFacturacion)->resolve($request)
+        );
+    }
+
+    public function update(UpdateTipoEventoFacturacionRequest $request, int $id): JsonResponse
+    {
+        $tipoEventoFacturacion = TipoEventoFacturacion::query()->find($id);
+
+        if ($tipoEventoFacturacion === null) {
             return $this->notFound();
         }
 
-        $tipo_evento_facturacion->fill($request->validated());
-        $tipo_evento_facturacion->save();
+        $tipoEventoFacturacion->fill($request->validated());
+        $tipoEventoFacturacion->save();
 
-        return $this->updated((new TipoEventoFacturacionResource($tipo_evento_facturacion))->toArray($request));
+        return $this->updated(
+            TipoEventoFacturacionResource::make($tipoEventoFacturacion)->resolve($request)
+        );
     }
 }

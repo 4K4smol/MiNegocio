@@ -16,11 +16,18 @@ class TipoInventarioMovimientoController extends AbstractCrudController
         return TipoInventarioMovimiento::class;
     }
 
+    protected function resourceClass(): ?string
+    {
+        return TipoInventarioMovimientoResource::class;
+    }
+
     public function store(StoreTipoInventarioMovimientoRequest $request)
     {
         $tipo_inventario_movimiento = TipoInventarioMovimiento::query()->create($request->validated());
 
-        return $this->created((new TipoInventarioMovimientoResource($tipo_inventario_movimiento))->toArray($request));
+        return $this->created(
+            TipoInventarioMovimientoResource::make($tipo_inventario_movimiento)->resolve()
+        );
     }
 
     public function update(UpdateTipoInventarioMovimientoRequest $request, int $id)
@@ -34,6 +41,8 @@ class TipoInventarioMovimientoController extends AbstractCrudController
         $tipo_inventario_movimiento->fill($request->validated());
         $tipo_inventario_movimiento->save();
 
-        return $this->updated((new TipoInventarioMovimientoResource($tipo_inventario_movimiento))->toArray($request));
+        return $this->updated(
+            TipoInventarioMovimientoResource::make($tipo_inventario_movimiento)->resolve()
+        );
     }
 }

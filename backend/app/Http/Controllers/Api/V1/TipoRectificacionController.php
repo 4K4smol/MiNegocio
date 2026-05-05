@@ -16,11 +16,18 @@ class TipoRectificacionController extends AbstractCrudController
         return TipoRectificacion::class;
     }
 
+    protected function resourceClass(): ?string
+    {
+        return TipoRectificacionResource::class;
+    }
+
     public function store(StoreTipoRectificacionRequest $request)
     {
         $tipo_rectificacion = TipoRectificacion::query()->create($request->validated());
 
-        return $this->created((new TipoRectificacionResource($tipo_rectificacion))->toArray($request));
+        return $this->created(
+            TipoRectificacionResource::make($tipo_rectificacion)->resolve()
+        );
     }
 
     public function update(UpdateTipoRectificacionRequest $request, int $id)
@@ -34,6 +41,8 @@ class TipoRectificacionController extends AbstractCrudController
         $tipo_rectificacion->fill($request->validated());
         $tipo_rectificacion->save();
 
-        return $this->updated((new TipoRectificacionResource($tipo_rectificacion))->toArray($request));
+        return $this->updated(
+            TipoRectificacionResource::make($tipo_rectificacion)->resolve()
+        );
     }
 }

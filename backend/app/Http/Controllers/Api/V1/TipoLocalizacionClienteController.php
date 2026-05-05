@@ -16,11 +16,18 @@ class TipoLocalizacionClienteController extends AbstractCrudController
         return TipoLocalizacionCliente::class;
     }
 
+    protected function resourceClass(): ?string
+    {
+        return TipoLocalizacionClienteResource::class;
+    }
+
     public function store(StoreTipoLocalizacionClienteRequest $request)
     {
         $tipo_localizacion_cliente = TipoLocalizacionCliente::query()->create($request->validated());
 
-        return $this->created((new TipoLocalizacionClienteResource($tipo_localizacion_cliente))->toArray($request));
+        return $this->created(
+            TipoLocalizacionClienteResource::make($tipo_localizacion_cliente)->resolve()
+        );
     }
 
     public function update(UpdateTipoLocalizacionClienteRequest $request, int $id)
@@ -34,6 +41,8 @@ class TipoLocalizacionClienteController extends AbstractCrudController
         $tipo_localizacion_cliente->fill($request->validated());
         $tipo_localizacion_cliente->save();
 
-        return $this->updated((new TipoLocalizacionClienteResource($tipo_localizacion_cliente))->toArray($request));
+        return $this->updated(
+            TipoLocalizacionClienteResource::make($tipo_localizacion_cliente)->resolve()
+        );
     }
 }

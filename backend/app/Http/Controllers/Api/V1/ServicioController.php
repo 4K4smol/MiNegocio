@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Requests\Api\V1\StoreServicioRequest;
 use App\Http\Requests\Api\V1\UpdateServicioRequest;
+use App\Http\Resources\Api\V1\ServicioResource;
 use App\Models\Servicio;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ class ServicioController extends AbstractCrudController
             ->with(['empresa'])
             ->paginate($per_page);
 
-        return $this->success($servicios->toArray());
+        return $this->success(ServicioResource::collection($servicios)->response()->getData(true));
     }
 
     protected function modelClass(): string
@@ -27,11 +28,18 @@ class ServicioController extends AbstractCrudController
         return Servicio::class;
     }
 
+    protected function resourceClass(): ?string
+    {
+        return ServicioResource::class;
+    }
+
     public function store(StoreServicioRequest $request)
     {
         $servicio = Servicio::query()->create($request->validated());
 
-        return $this->created($servicio->toArray());
+        return $this->created(
+            ServicioResource::make($servicio)->resolve()
+        );
     }
 
     public function update(UpdateServicioRequest $request, int $id)
@@ -45,6 +53,8 @@ class ServicioController extends AbstractCrudController
         $servicio->fill($request->validated());
         $servicio->save();
 
-        return $this->updated($servicio->toArray());
+        return $this->updated(
+            ServicioResource::make($servicio)->resolve()
+        );
     }
 }

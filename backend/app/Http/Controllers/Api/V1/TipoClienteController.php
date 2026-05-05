@@ -16,11 +16,18 @@ class TipoClienteController extends AbstractCrudController
         return TipoCliente::class;
     }
 
+    protected function resourceClass(): ?string
+    {
+        return TipoClienteResource::class;
+    }
+
     public function store(StoreTipoClienteRequest $request)
     {
         $tipo_cliente = TipoCliente::query()->create($request->validated());
 
-        return $this->created((new TipoClienteResource($tipo_cliente))->toArray($request));
+        return $this->created(
+            TipoClienteResource::make($tipo_cliente)->resolve()
+        );
     }
 
     public function update(UpdateTipoClienteRequest $request, int $id)
@@ -34,6 +41,8 @@ class TipoClienteController extends AbstractCrudController
         $tipo_cliente->fill($request->validated());
         $tipo_cliente->save();
 
-        return $this->updated((new TipoClienteResource($tipo_cliente))->toArray($request));
+        return $this->updated(
+            TipoClienteResource::make($tipo_cliente)->resolve()
+        );
     }
 }

@@ -16,11 +16,18 @@ class TipoFacturaController extends AbstractCrudController
         return TipoFactura::class;
     }
 
+    protected function resourceClass(): ?string
+    {
+        return TipoFacturaResource::class;
+    }
+
     public function store(StoreTipoFacturaRequest $request)
     {
         $tipo_factura = TipoFactura::query()->create($request->validated());
 
-        return $this->created((new TipoFacturaResource($tipo_factura))->toArray($request));
+        return $this->created(
+            TipoFacturaResource::make($tipo_factura)->resolve()
+        );
     }
 
     public function update(UpdateTipoFacturaRequest $request, int $id)
@@ -34,6 +41,8 @@ class TipoFacturaController extends AbstractCrudController
         $tipo_factura->fill($request->validated());
         $tipo_factura->save();
 
-        return $this->updated((new TipoFacturaResource($tipo_factura))->toArray($request));
+        return $this->updated(
+            TipoFacturaResource::make($tipo_factura)->resolve()
+        );
     }
 }

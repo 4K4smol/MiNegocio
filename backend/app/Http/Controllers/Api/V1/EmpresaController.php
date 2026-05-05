@@ -9,7 +9,6 @@ use App\Http\Requests\Api\V1\UpdateEmpresaRequest;
 use App\Http\Resources\Api\V1\EmpresaResource;
 use App\Models\Empresa;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class EmpresaController extends AbstractCrudController
 {
@@ -18,11 +17,18 @@ class EmpresaController extends AbstractCrudController
         return Empresa::class;
     }
 
+    protected function resourceClass(): ?string
+    {
+        return EmpresaResource::class;
+    }
+
     public function store(StoreEmpresaRequest $request): JsonResponse
     {
         $empresa = Empresa::query()->create($request->validated());
 
-        return $this->created(EmpresaResource::make($empresa)->resolve());
+        return $this->created(
+            EmpresaResource::make($empresa)->resolve()
+        );
     }
 
     public function update(UpdateEmpresaRequest $request, int $id): JsonResponse
@@ -36,6 +42,8 @@ class EmpresaController extends AbstractCrudController
         $empresa->fill($request->validated());
         $empresa->save();
 
-        return $this->updated(EmpresaResource::make($empresa)->resolve());
+        return $this->updated(
+            EmpresaResource::make($empresa)->resolve()
+        );
     }
 }

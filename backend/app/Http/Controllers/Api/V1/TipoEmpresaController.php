@@ -16,11 +16,18 @@ class TipoEmpresaController extends AbstractCrudController
         return TipoEmpresa::class;
     }
 
+    protected function resourceClass(): ?string
+    {
+        return TipoEmpresaResource::class;
+    }
+
     public function store(StoreTipoEmpresaRequest $request)
     {
         $tipo_empresa = TipoEmpresa::query()->create($request->validated());
 
-        return $this->created((new TipoEmpresaResource($tipo_empresa))->toArray($request));
+        return $this->created(
+            TipoEmpresaResource::make($tipo_empresa)->resolve()
+        );
     }
 
     public function update(UpdateTipoEmpresaRequest $request, int $id)
@@ -34,6 +41,8 @@ class TipoEmpresaController extends AbstractCrudController
         $tipo_empresa->fill($request->validated());
         $tipo_empresa->save();
 
-        return $this->updated((new TipoEmpresaResource($tipo_empresa))->toArray($request));
+        return $this->updated(
+            TipoEmpresaResource::make($tipo_empresa)->resolve()
+        );
     }
 }

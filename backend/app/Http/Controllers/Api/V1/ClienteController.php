@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Requests\Api\V1\StoreClienteRequest;
 use App\Http\Requests\Api\V1\UpdateClienteRequest;
+use App\Http\Resources\Api\V1\ClienteResource;
 use App\Models\Cliente;
 
 class ClienteController extends AbstractCrudController
@@ -15,11 +16,18 @@ class ClienteController extends AbstractCrudController
         return Cliente::class;
     }
 
+    protected function resourceClass(): ?string
+    {
+        return ClienteResource::class;
+    }
+
     public function store(StoreClienteRequest $request)
     {
         $cliente = Cliente::query()->create($request->validated());
 
-        return $this->created($cliente->toArray());
+        return $this->created(
+            ClienteResource::make($cliente)->resolve()
+        );
     }
 
     public function update(UpdateClienteRequest $request, int $id)
@@ -33,6 +41,8 @@ class ClienteController extends AbstractCrudController
         $cliente->fill($request->validated());
         $cliente->save();
 
-        return $this->updated($cliente->toArray());
+        return $this->updated(
+            ClienteResource::make($cliente)->resolve()
+        );
     }
 }
