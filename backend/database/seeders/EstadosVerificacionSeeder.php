@@ -19,13 +19,20 @@ class EstadosVerificacionSeeder extends Seeder
             ],
             [
                 'id' => 2,
+                'nombre' => 'en_revision',
+                'descripcion' => 'Verificación en proceso de revisión',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 3,
                 'nombre' => 'aprobada',
                 'descripcion' => 'Verificación aprobada',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'id' => 3,
+                'id' => 4,
                 'nombre' => 'rechazada',
                 'descripcion' => 'Verificación rechazada',
                 'created_at' => now(),
