@@ -24,7 +24,7 @@ class InventarioMovimientoController extends AbstractCrudController
 
     public function store(StoreInventarioMovimientoRequest $request): JsonResponse
     {
-        $record = InventarioMovimiento::query()->create($request->validated());
+        $record = InventarioMovimiento::query()->create($this->fillEmpresaIdFromUser($request->validated(), $request));
 
         return $this->created(
             InventarioMovimientoResource::make($record)->resolve()
@@ -33,13 +33,13 @@ class InventarioMovimientoController extends AbstractCrudController
 
     public function update(UpdateInventarioMovimientoRequest $request, int $id): JsonResponse
     {
-        $record = InventarioMovimiento::query()->find($id);
+        $record = $this->findRecord($request, $id);
 
         if ($record === null) {
             return $this->notFound();
         }
 
-        $record->fill($request->validated());
+        $record->fill($this->fillEmpresaIdFromUser($request->validated(), $request));
         $record->save();
 
         return $this->updated(

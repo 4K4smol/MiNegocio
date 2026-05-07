@@ -24,7 +24,7 @@ class InventarioCategoriaController extends AbstractCrudController
 
     public function store(StoreInventarioCategoriaRequest $request): JsonResponse
     {
-        $record = InventarioCategoria::query()->create($request->validated());
+        $record = InventarioCategoria::query()->create($this->fillEmpresaIdFromUser($request->validated(), $request));
 
         return $this->created(
             InventarioCategoriaResource::make($record)->resolve()
@@ -33,13 +33,13 @@ class InventarioCategoriaController extends AbstractCrudController
 
     public function update(UpdateInventarioCategoriaRequest $request, int $id): JsonResponse
     {
-        $record = InventarioCategoria::query()->find($id);
+        $record = $this->findRecord($request, $id);
 
         if ($record === null) {
             return $this->notFound();
         }
 
-        $record->fill($request->validated());
+        $record->fill($this->fillEmpresaIdFromUser($request->validated(), $request));
         $record->save();
 
         return $this->updated(

@@ -24,7 +24,7 @@ class InformeController extends AbstractCrudController
 
     public function store(StoreInformeRequest $request): JsonResponse
     {
-        $record = Informe::query()->create($request->validated());
+        $record = Informe::query()->create($this->fillEmpresaIdFromUser($request->validated(), $request));
 
         return $this->created(
             InformeResource::make($record)->resolve()
@@ -33,13 +33,13 @@ class InformeController extends AbstractCrudController
 
     public function update(UpdateInformeRequest $request, int $id): JsonResponse
     {
-        $record = Informe::query()->find($id);
+        $record = $this->findRecord($request, $id);
 
         if ($record === null) {
             return $this->notFound();
         }
 
-        $record->fill($request->validated());
+        $record->fill($this->fillEmpresaIdFromUser($request->validated(), $request));
         $record->save();
 
         return $this->updated(

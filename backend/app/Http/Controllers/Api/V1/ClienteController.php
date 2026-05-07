@@ -23,7 +23,7 @@ class ClienteController extends AbstractCrudController
 
     public function store(StoreClienteRequest $request)
     {
-        $cliente = Cliente::query()->create($request->validated());
+        $cliente = Cliente::query()->create($this->fillEmpresaIdFromUser($request->validated(), $request));
 
         return $this->created(
             ClienteResource::make($cliente)->resolve()
@@ -32,13 +32,13 @@ class ClienteController extends AbstractCrudController
 
     public function update(UpdateClienteRequest $request, int $id)
     {
-        $cliente = Cliente::query()->find($id);
+        $cliente = $this->findRecord($request, $id);
 
         if ($cliente === null) {
             return $this->notFound();
         }
 
-        $cliente->fill($request->validated());
+        $cliente->fill($this->fillEmpresaIdFromUser($request->validated(), $request));
         $cliente->save();
 
         return $this->updated(

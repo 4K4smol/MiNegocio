@@ -33,10 +33,11 @@ class RegistroEntidadService
 
             $rolEmpresa = Role::query()
                 ->where('nombre', 'empresa_admin')
+                ->where('nombre', 'titular')
                 ->first();
 
             if ($rolEmpresa === null) {
-                throw new RuntimeException('No existe el rol empresa_admin.');
+                throw new RuntimeException('No existe el rol titular.');
             }
 
             $empresa = Empresa::query()->create([

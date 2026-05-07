@@ -24,7 +24,7 @@ class InventarioUbicacionController extends AbstractCrudController
 
     public function store(StoreInventarioUbicacionRequest $request): JsonResponse
     {
-        $record = InventarioUbicacion::query()->create($request->validated());
+        $record = InventarioUbicacion::query()->create($this->fillEmpresaIdFromUser($request->validated(), $request));
 
         return $this->created(
             InventarioUbicacionResource::make($record)->resolve()
@@ -33,13 +33,13 @@ class InventarioUbicacionController extends AbstractCrudController
 
     public function update(UpdateInventarioUbicacionRequest $request, int $id): JsonResponse
     {
-        $record = InventarioUbicacion::query()->find($id);
+        $record = $this->findRecord($request, $id);
 
         if ($record === null) {
             return $this->notFound();
         }
 
-        $record->fill($request->validated());
+        $record->fill($this->fillEmpresaIdFromUser($request->validated(), $request));
         $record->save();
 
         return $this->updated(

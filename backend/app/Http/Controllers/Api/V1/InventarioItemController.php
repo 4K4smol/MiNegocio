@@ -24,7 +24,7 @@ class InventarioItemController extends AbstractCrudController
 
     public function store(StoreInventarioItemRequest $request): JsonResponse
     {
-        $record = InventarioItem::query()->create($request->validated());
+        $record = InventarioItem::query()->create($this->fillEmpresaIdFromUser($request->validated(), $request));
 
         return $this->created(
             InventarioItemResource::make($record)->resolve()
@@ -33,13 +33,13 @@ class InventarioItemController extends AbstractCrudController
 
     public function update(UpdateInventarioItemRequest $request, int $id): JsonResponse
     {
-        $record = InventarioItem::query()->find($id);
+        $record = $this->findRecord($request, $id);
 
         if ($record === null) {
             return $this->notFound();
         }
 
-        $record->fill($request->validated());
+        $record->fill($this->fillEmpresaIdFromUser($request->validated(), $request));
         $record->save();
 
         return $this->updated(

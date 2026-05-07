@@ -35,7 +35,7 @@ class ServicioController extends AbstractCrudController
 
     public function store(StoreServicioRequest $request)
     {
-        $servicio = Servicio::query()->create($request->validated());
+        $servicio = Servicio::query()->create($this->fillEmpresaIdFromUser($request->validated(), $request));
 
         return $this->created(
             ServicioResource::make($servicio)->resolve()
@@ -44,13 +44,13 @@ class ServicioController extends AbstractCrudController
 
     public function update(UpdateServicioRequest $request, int $id)
     {
-        $servicio = Servicio::query()->find($id);
+        $servicio = $this->findRecord($request, $id);
 
         if ($servicio === null) {
             return $this->notFound();
         }
 
-        $servicio->fill($request->validated());
+        $servicio->fill($this->fillEmpresaIdFromUser($request->validated(), $request));
         $servicio->save();
 
         return $this->updated(

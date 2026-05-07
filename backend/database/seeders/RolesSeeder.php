@@ -24,13 +24,6 @@ class RolesSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            [
-                'id' => 3,
-                'nombre' => 'gestor',
-                'descripcion' => 'Usuario gestor de la empresa',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
         ]);
     }
 }
