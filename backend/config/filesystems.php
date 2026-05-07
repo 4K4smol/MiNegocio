@@ -38,6 +38,12 @@ return [
             'report' => false,
         ],
 
+        'verificaciones' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/verificaciones'),
+            'throw' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

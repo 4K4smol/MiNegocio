@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\V1\AdminSolicitudRegistroController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ClienteController;
 use App\Http\Controllers\Api\V1\ServicioController;
@@ -31,6 +32,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
     Route::post('auth/register', [AuthController::class, 'register']);
+    Route::post('register', [AuthController::class, 'register']);
     Route::post('auth/login', [AuthController::class, 'login']);
 
     Route::middleware('auth:sanctum')->group(function (): void {
@@ -52,6 +54,14 @@ Route::prefix('v1')->group(function (): void {
         Route::apiResource('servicio-tarifas', ServicioTarifaController::class);
         Route::apiResource('tareas', TareaController::class);
         Route::apiResource('verificaciones-usuario', VerificacionUsuarioController::class);
+
+        Route::get('admin/solicitudes-registro', [AdminSolicitudRegistroController::class, 'index']);
+        Route::get('admin/solicitudes-registro/{empresa}', [AdminSolicitudRegistroController::class, 'show']);
+        Route::post('admin/solicitudes-registro/{empresa}/aprobar', [AdminSolicitudRegistroController::class, 'aprobar']);
+        Route::post('admin/solicitudes-registro/{empresa}/rechazar', [AdminSolicitudRegistroController::class, 'rechazar']);
+        Route::post('admin/solicitudes-registro/{empresa}/subsanar', [AdminSolicitudRegistroController::class, 'subsanar']);
+        Route::get('admin/documentos-verificacion/{documento}/ver', [AdminSolicitudRegistroController::class, 'verDocumento']);
+
 
         Route::apiResource('clientes', ClienteController::class);
         Route::apiResource('servicios', ServicioController::class);

@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api\V1;
 
+use App\Models\TipoEmpresa;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Validator;
 
 class RegisterUserRequest extends FormRequest
 {
@@ -14,7 +17,7 @@ class RegisterUserRequest extends FormRequest
     }
 
     /**
-     * @return array<string, array<int, string>>
+     * @return array<string, mixed>
      */
     public function rules(): array
     {
@@ -26,8 +29,16 @@ class RegisterUserRequest extends FormRequest
             'usuario.apellido2' => ['nullable', 'string', 'max:255'],
             'usuario.telefono' => ['nullable', 'string', 'max:30'],
             'usuario.email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'usuario.password' => ['required', 'string', 'min:8', 'confirmed'],
-            'usuario.tipo_documento_identidad_id' => ['required', 'integer', 'exists:tipos_documento_identidad,id'],
+            'usuario.password' => [
+                'required',
+                'confirmed',
+                Password::min(8)->letters()->numbers(),
+            ],
+            'usuario.tipo_documento_identidad_id' => [
+                'required',
+                'integer',
+                'exists:tipos_documento_identidad,id',
+            ],
             'usuario.numero_documento' => ['required', 'string', 'max:50'],
 
             // Empresa o autónomo
@@ -46,15 +57,89 @@ class RegisterUserRequest extends FormRequest
 
             // Documentación de verificación
             'documentacion' => ['required', 'array'],
-            'documentacion.ruta_documento_anverso' => ['required', 'string', 'max:255'],
-            'documentacion.ruta_documento_reverso' => ['nullable', 'string', 'max:255'],
-            'documentacion.ruta_selfie' => ['nullable', 'string', 'max:255'],
 
-            'documentacion.ruta_documento_fiscal' => ['nullable', 'string', 'max:255'],
-            'documentacion.ruta_registro_mercantil' => ['nullable', 'string', 'max:255'],
-            'documentacion.ruta_documento_representacion' => ['nullable', 'string', 'max:255'],
-            'documentacion.ruta_poder_apoderamiento' => ['nullable', 'string', 'max:255'],
-            'documentacion.referencia_certificado_digital' => ['nullable', 'string', 'max:255'],
+            'documentacion.dni_frontal' => [
+                'required',
+                'file',
+                'mimes:jpg,jpeg,png,webp,pdf',
+                'max:10240',
+            ],
+            'documentacion.dni_reverso' => [
+                'nullable',
+                'file',
+                'mimes:jpg,jpeg,png,webp,pdf',
+                'max:10240',
+            ],
+            'documentacion.selfie' => [
+                'nullable',
+                'file',
+                'mimes:jpg,jpeg,png,webp',
+                'max:10240',
+            ],
+
+            'documentacion.documento_fiscal' => [
+                'nullable',
+                'file',
+                'mimes:jpg,jpeg,png,webp,pdf',
+                'max:10240',
+            ],
+            'documentacion.registro_mercantil' => [
+                'nullable',
+                'file',
+                'mimes:jpg,jpeg,png,webp,pdf',
+                'max:10240',
+            ],
+            'documentacion.documento_representacion' => [
+                'nullable',
+                'file',
+                'mimes:jpg,jpeg,png,webp,pdf',
+                'max:10240',
+            ],
+            'documentacion.poder_apoderamiento' => [
+                'nullable',
+                'file',
+                'mimes:jpg,jpeg,png,webp,pdf',
+                'max:10240',
+            ],
+            'documentacion.referencia_certificado_digital' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            $tipoEmpresaId = $this->input('empresa.tipo_empresa_id');
+
+            if ($tipoEmpresaId === null) {
+                return;
+            }
+
+            $tipoEmpresa = TipoEmpresa::query()->find((int) $tipoEmpresaId);
+
+            if ($tipoEmpresa === null) {
+                return;
+            }
+
+            $nombre = mb_strtolower((string) $tipoEmpresa->nombre);
+
+            $requiereRepresentacion =
+                str_contains($nombre, 'sociedad') ||
+                str_contains($nombre, 'pyme') ||
+                str_contains($nombre, 'empresa');
+
+            if (
+                $requiereRepresentacion &&
+                ! $this->hasFile('documentacion.documento_representacion')
+            ) {
+                $validator->errors()->add(
+                    'documentacion.documento_representacion',
+                    'El documento de representación es obligatorio para sociedades, empresas o PYMES.'
+                );
+            }
+        });
     }
 }

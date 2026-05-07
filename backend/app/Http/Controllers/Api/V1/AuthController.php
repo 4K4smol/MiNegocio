@@ -66,8 +66,8 @@ class AuthController extends ApiController
             return $this->error('Tu cuenta no tiene un rol asignado.', 403);
         }
 
-        if (! $user->activo) {
-            return $this->error('Tu cuenta está pendiente de validación.', 403);
+        if (!$user->activo) {
+            return $this->error('La cuenta todavía está pendiente de validación por un administrador.', 403);
         }
 
         if ($this->esAdministrador($user)) {
@@ -79,8 +79,8 @@ class AuthController extends ApiController
             ], 'Inicio de sesión exitoso.');
         }
 
-        if (! $this->puedeAccederCrm($user)) {
-            return $this->error('Tu cuenta o empresa todavía no tiene acceso completo al CRM.', 403, [
+        if (!$this->puedeAccederCrm($user)) {
+            return $this->error('La cuenta todavía está pendiente de validación por un administrador.', 403, [
                 'validaciones' => $this->obtenerEstadosValidacion($user),
             ]);
         }
