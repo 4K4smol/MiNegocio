@@ -11,6 +11,16 @@ class SolicitudRegistroResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        return ['empresa_id'=>$this->id,'nombre_fiscal'=>$this->nombre_fiscal,'nif'=>$this->nif,'activa'=>$this->activa,'estado_verificacion'=>$this->verificacion?->estadoVerificacion?->nombre];
+        return [
+            'id' => $this->id,
+            'user_id' => $this->user_id,
+            'empresa_id' => $this->empresa_id,
+            'nombre_fiscal' => $this->empresa?->nombre_fiscal,
+            'nif' => $this->empresa?->nif,
+            'estado_verificacion' => $this->estadoVerificacion?->nombre,
+            'observaciones' => $this->observaciones,
+            'fecha_revision' => $this->fecha_revision,
+            'documentos' => DocumentoVerificacionResource::collection($this->whenLoaded('documentos')),
+        ];
     }
 }

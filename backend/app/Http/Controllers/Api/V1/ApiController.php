@@ -21,12 +21,10 @@ abstract class ApiController extends Controller
      *
      * Genera una respuesta JSON exitosa con una estructura estandarizada.
      *
-     * @param array<string, mixed>|list<mixed>|null $data
-     * @param string $message
-     * @param int $statusCode
+     * @param mixed $data
      */
     protected function success(
-        array|null $data = [],
+        mixed $data = null,
         string $message = 'Operación exitosa.',
         int $statusCode = 200,
     ): JsonResponse {
@@ -48,8 +46,6 @@ abstract class ApiController extends Controller
      *
      * Genera una respuesta JSON de error con una estructura estandarizada.
      *
-     * @param string $message
-     * @param int $statusCode
      * @param array<string, mixed>|list<mixed>|null $errors
      */
     protected function error(
@@ -70,13 +66,12 @@ abstract class ApiController extends Controller
      *     description="Recurso creado exitosamente"
      * )
      *
-     * Devuelve una respuesta para creación de recursos (HTTP 201).
+     * Devuelve una respuesta para creación de recursos.
      *
-     * @param array<string, mixed>|list<mixed>|null $data
-     * @param string $message
+     * @param mixed $data
      */
     protected function created(
-        array|null $data = [],
+        mixed $data = null,
         string $message = 'Recurso creado correctamente.',
     ): JsonResponse {
         return $this->success($data, $message, 201);
@@ -88,13 +83,12 @@ abstract class ApiController extends Controller
      *     description="Recurso actualizado exitosamente"
      * )
      *
-     * Devuelve una respuesta para actualización de recursos (HTTP 200).
+     * Devuelve una respuesta para actualización de recursos.
      *
-     * @param array<string, mixed>|list<mixed>|null $data
-     * @param string $message
+     * @param mixed $data
      */
     protected function updated(
-        array|null $data = [],
+        mixed $data = null,
         string $message = 'Recurso actualizado correctamente.',
     ): JsonResponse {
         return $this->success($data, $message, 200);
@@ -106,7 +100,7 @@ abstract class ApiController extends Controller
      *     description="Recurso eliminado exitosamente"
      * )
      *
-     * Devuelve una respuesta para eliminación lógica o física (HTTP 200).
+     * Devuelve una respuesta para eliminación lógica o física.
      */
     protected function deleted(
         string $message = 'Recurso eliminado correctamente.'
@@ -120,7 +114,9 @@ abstract class ApiController extends Controller
      *     description="Recurso no encontrado"
      * )
      *
-     * Devuelve una respuesta cuando un recurso no existe (HTTP 404).
+     * Devuelve una respuesta cuando un recurso no existe.
+     *
+     * @param array<string, mixed>|list<mixed>|null $errors
      */
     protected function notFound(
         string $message = 'Recurso no encontrado.',
@@ -135,7 +131,9 @@ abstract class ApiController extends Controller
      *     description="Acceso prohibido"
      * )
      *
-     * Devuelve una respuesta cuando no hay permisos suficientes (HTTP 403).
+     * Devuelve una respuesta cuando no hay permisos suficientes.
+     *
+     * @param array<string, mixed>|list<mixed>|null $errors
      */
     protected function forbidden(
         string $message = 'No tienes permisos para realizar esta acción.',
@@ -150,7 +148,7 @@ abstract class ApiController extends Controller
      *     description="Error de validación"
      * )
      *
-     * Devuelve una respuesta para errores de validación (HTTP 422).
+     * Devuelve una respuesta para errores de validación.
      *
      * @param array<string, mixed>|list<mixed> $errors
      */

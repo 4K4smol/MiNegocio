@@ -23,4 +23,9 @@ class EstadoVerificacion extends Model
     {
         return $this->hasMany(VerificacionUsuario::class, 'estado_verificacion_id');
     }
+
+    public function solicitudesVerificacion(): HasMany
+    {
+        return $this->hasMany(SolicitudVerificacion::class, 'estado_verificacion_id');
+    }
 }

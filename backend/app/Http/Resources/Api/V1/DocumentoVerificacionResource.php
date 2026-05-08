@@ -11,6 +11,11 @@ class DocumentoVerificacionResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        return ['id'=>$this->id,'tipo_documento'=>$this->tipo_documento,'nombre_original'=>$this->nombre_original,'mime_type'=>$this->mime_type,'tamano'=>$this->tamano,'estado'=>$this->estadoVerificacion?->nombre];
+        return [
+            'id' => $this->id,
+            'tipo_documento' => $this->tipo_documento,
+            'archivo' => $this->archivo,
+            'nombre_original' => $this->nombre_original
+        ];
     }
 }
