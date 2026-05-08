@@ -20,33 +20,46 @@ class RegistroEntidadService
 {
     public function registrar(array $data): array
     {
-        return DB::transaction(function () use ($data): array {
-            $pendiente = EstadoVerificacion::query()->where('nombre', 'pendiente')->firstOrFail();
-            $rol = Role::query()->where('nombre', 'titular')->firstOrFail();
+        $usuario_data = $data['usuario'] ?? [];
+        $empresa_data = $data['empresa'] ?? [];
+        $documentacion_data = $data['documentacion'] ?? [];
+
+        return DB::transaction(function () use ($usuario_data, $empresa_data, $documentacion_data): array {
+            $pendiente = EstadoVerificacion::query()
+                ->where(
+                    'nombre',
+                    'pendiente'
+                )->firstOrFail();
+
+            $rol = Role::query()
+                ->where(
+                    'nombre',
+                    'titular'
+                )->firstOrFail();
 
             $empresa = Empresa::query()->create([
-                'tipo_empresa_id' => $data['tipo_empresa_id'],
-                'nombre_fiscal' => $data['nombre_fiscal'],
-                'nombre_comercial' => $data['nombre_comercial'] ?? null,
-                'nif' => $data['nif'],
-                'correo' => $data['correo_empresa'] ?? null,
-                'telefono' => $data['telefono_empresa'] ?? null,
-                'direccion_fiscal' => $data['direccion_fiscal'] ?? null,
-                'codigo_postal' => $data['codigo_postal'] ?? null,
-                'municipio' => $data['municipio'] ?? null,
-                'provincia' => $data['provincia'] ?? null,
-                'pais' => $data['pais'] ?? 'España',
+                'tipo_empresa_id' => $empresa_data['tipo_empresa_id'],
+                'nombre_fiscal' => $empresa_data['nombre_fiscal'],
+                'nombre_comercial' => $empresa_data['nombre_comercial'] ?? null,
+                'nif' => $empresa_data['nif'],
+                'correo' => $empresa_data['correo'] ?? null,
+                'telefono' => $empresa_data['telefono'] ?? null,
+                'direccion_fiscal' => $empresa_data['direccion_fiscal'] ?? null,
+                'codigo_postal' => $empresa_data['codigo_postal'] ?? null,
+                'municipio' => $empresa_data['municipio'] ?? null,
+                'provincia' => $empresa_data['provincia'] ?? null,
+                'pais' => $empresa_data['pais'] ?? 'España',
                 'activa' => false,
             ]);
 
             $user = User::query()->create([
-                'name' => trim($data['nombre'] . ' ' . $data['apellido1']),
-                'nombre' => $data['nombre'],
-                'apellido1' => $data['apellido1'],
-                'apellido2' => $data['apellido2'] ?? null,
-                'telefono' => $data['telefono'] ?? null,
-                'email' => $data['email'],
-                'password' => Hash::make($data['password']),
+                'name' => trim($usuario_data['nombre'] . ' ' . $usuario_data['apellido1']),
+                'nombre' => $usuario_data['nombre'],
+                'apellido1' => $usuario_data['apellido1'],
+                'apellido2' => $usuario_data['apellido2'] ?? null,
+                'telefono' => $usuario_data['telefono'] ?? null,
+                'email' => $usuario_data['email'],
+                'password' => Hash::make($usuario_data['password']),
                 'empresa_id' => $empresa->id,
                 'role_id' => $rol->id,
                 'activo' => false,
@@ -58,12 +71,11 @@ class RegistroEntidadService
                 'estado_verificacion_id' => $pendiente->id,
             ]);
 
-            foreach (['dni_frontal', 'dni_reverso', 'documento_empresa', 'documento_representacion'] as $campo) {
-                if (!empty($data[$campo]) && $data[$campo] instanceof UploadedFile) {
-                    $this->guardarDocumento($data[$campo], $campo, $solicitud->id);
+            foreach (['dni_frontal', 'dni_reverso', 'selfie', 'documento_fiscal', 'registro_mercantil', 'documento_representacion', 'poder_apoderamiento'] as $campo) {
+                if (!empty($documentacion_data[$campo]) && $documentacion_data[$campo] instanceof UploadedFile) {
+                    $this->guardarDocumento($documentacion_data[$campo], $campo, $solicitud->id);
                 }
             }
-
 
             return [
                 'user' => $user->fresh(),

@@ -57,9 +57,9 @@ class AuthController extends ApiController
         }
 
         $user->load([
-            'empresa.verificacion.estadoVerificacion',
-            'verificacion.estadoVerificacion',
+            'empresa',
             'role',
+            'solicitudesVerificacion.estadoVerificacion',
         ]);
 
         if ($user->role === null) {
@@ -99,9 +99,9 @@ class AuthController extends ApiController
         $user = $request->user();
 
         $user->load([
-            'empresa.verificacion.estadoVerificacion',
-            'verificacion.estadoVerificacion',
+            'empresa',
             'role',
+            'solicitudesVerificacion.estadoVerificacion',
         ]);
 
         return $this->success($this->crearPayloadSesion($user));
@@ -127,8 +127,8 @@ class AuthController extends ApiController
             return (bool) $user->activo;
         }
 
-        $estadoUsuario = $user->verificacion?->estadoVerificacion?->nombre;
-        $estadoEmpresa = $user->empresa?->verificacion?->estadoVerificacion?->nombre;
+        $estadoUsuario = $this->obtenerEstadoSolicitudUsuario($user);
+        $estadoEmpresa = $this->obtenerEstadoSolicitudEmpresa($user);
 
         return (bool) $user->activo
             && $user->role !== null
@@ -136,6 +136,20 @@ class AuthController extends ApiController
             && (bool) $user->empresa->activa
             && $estadoUsuario === self::ESTADO_APROBADA
             && $estadoEmpresa === self::ESTADO_APROBADA;
+    }
+
+    private function obtenerEstadoSolicitudUsuario(User $user): ?string
+    {
+        return $user->solicitudesVerificacion
+            ->sortByDesc('id')
+            ->first()?->estadoVerificacion?->nombre;
+    }
+
+    private function obtenerEstadoSolicitudEmpresa(User $user): ?string
+    {
+        return $user->empresa?->solicitudesVerificacion
+            ?->sortByDesc('id')
+            ->first()?->estadoVerificacion?->nombre;
     }
 
     private function esAdministrador(User $user): bool
@@ -184,14 +198,11 @@ class AuthController extends ApiController
         ];
     }
 
-    /**
-     * @return array<string, string|null>
-     */
     private function obtenerEstadosValidacion(User $user): array
     {
         return [
-            'usuario' => $user->verificacion?->estadoVerificacion?->nombre,
-            'empresa' => $user->empresa?->verificacion?->estadoVerificacion?->nombre,
+            'usuario' => $this->obtenerEstadoSolicitudUsuario($user),
+            'empresa' => $this->obtenerEstadoSolicitudEmpresa($user),
         ];
     }
 }
