@@ -55,12 +55,13 @@ Route::prefix('v1')->group(function (): void {
         Route::apiResource('tareas', TareaController::class);
         Route::apiResource('verificaciones-usuario', VerificacionUsuarioController::class);
 
-        Route::get('admin/solicitudes-registro', [AdminSolicitudRegistroController::class, 'index']);
-        Route::get('admin/solicitudes-registro/{solicitud}', [AdminSolicitudRegistroController::class, 'show']);
-        Route::get('admin/documentos-verificacion/{documento}/ver', [AdminSolicitudRegistroController::class, 'verDocumento']);
-        Route::post('admin/solicitudes-registro/{solicitud}/aprobar', [AdminSolicitudRegistroController::class, 'aprobar']);
-        Route::post('admin/solicitudes-registro/{solicitud}/rechazar', [AdminSolicitudRegistroController::class, 'rechazar']);
-
+        Route::middleware('admin')->group(function (): void {
+            Route::get('admin/solicitudes-registro', [AdminSolicitudRegistroController::class, 'index']);
+            Route::get('admin/solicitudes-registro/{solicitud}', [AdminSolicitudRegistroController::class, 'show']);
+            Route::get('admin/documentos-verificacion/{documento}/ver', [AdminSolicitudRegistroController::class, 'verDocumento']);
+            Route::post('admin/solicitudes-registro/{solicitud}/aprobar', [AdminSolicitudRegistroController::class, 'aprobar']);
+            Route::post('admin/solicitudes-registro/{solicitud}/rechazar', [AdminSolicitudRegistroController::class, 'rechazar']);
+        });
 
         Route::apiResource('clientes', ClienteController::class);
         Route::apiResource('servicios', ServicioController::class);

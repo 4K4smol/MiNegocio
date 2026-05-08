@@ -15,7 +15,9 @@ class DocumentoVerificacion extends Model
         'solicitud_verificacion_id',
         'tipo_documento',
         'archivo',
-        'nombre_original'
+        'nombre_original',
+        'mime_type',
+        'tamano',
     ];
 
     public function solicitudVerificacion(): BelongsTo

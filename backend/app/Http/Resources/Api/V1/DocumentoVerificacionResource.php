@@ -14,8 +14,10 @@ class DocumentoVerificacionResource extends JsonResource
         return [
             'id' => $this->id,
             'tipo_documento' => $this->tipo_documento,
-            'archivo' => $this->archivo,
-            'nombre_original' => $this->nombre_original
+            'url_ver' => url("/api/v1/admin/documentos-verificacion/{$this->id}/ver"),
+            'nombre_original' => $this->nombre_original,
+            'mime_type' => $this->mime_type,
+            'tamano' => $this->tamano,
         ];
     }
 }

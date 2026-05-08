@@ -96,6 +96,8 @@ class RegistroEntidadService
             'tipo_documento' => $tipo,
             'archivo' => $path,
             'nombre_original' => $file->getClientOriginalName(),
+            'mime_type' => $file->getClientMimeType(),
+            'tamano' => $file->getSize(),
         ]);
     }
 }

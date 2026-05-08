@@ -13,7 +13,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AdminSolicitudRegistroController extends ApiController
 {
@@ -81,18 +80,15 @@ class AdminSolicitudRegistroController extends ApiController
         );
     }
 
-    public function verDocumento(DocumentoVerificacion $documento): BinaryFileResponse
+    public function verDocumento(DocumentoVerificacion $documento)
     {
         $disk = Storage::disk('verificaciones');
 
-        abort_unless(
-            $disk->exists($documento->archivo),
-            404
-        );
+        abort_unless($disk->exists($documento->archivo), 404);
 
         return response()->download(
             $disk->path($documento->archivo),
-            $documento->nombre_original
+            $documento->nombre_original ?? basename($documento->archivo)
         );
     }
 

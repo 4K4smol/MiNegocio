@@ -127,28 +127,19 @@ class AuthController extends ApiController
             return (bool) $user->activo;
         }
 
-        $estadoUsuario = $this->obtenerEstadoSolicitudUsuario($user);
-        $estadoEmpresa = $this->obtenerEstadoSolicitudEmpresa($user);
+        $estado_solicitud = $this->obtenerEstadoSolicitud($user);
 
         return (bool) $user->activo
             && $user->role !== null
             && $user->empresa !== null
             && (bool) $user->empresa->activa
-            && $estadoUsuario === self::ESTADO_APROBADA
-            && $estadoEmpresa === self::ESTADO_APROBADA;
+            && $estado_solicitud === self::ESTADO_APROBADA;
     }
 
-    private function obtenerEstadoSolicitudUsuario(User $user): ?string
+    private function obtenerEstadoSolicitud(User $user): ?string
     {
         return $user->solicitudesVerificacion
             ->sortByDesc('id')
-            ->first()?->estadoVerificacion?->nombre;
-    }
-
-    private function obtenerEstadoSolicitudEmpresa(User $user): ?string
-    {
-        return $user->empresa?->solicitudesVerificacion
-            ?->sortByDesc('id')
             ->first()?->estadoVerificacion?->nombre;
     }
 
@@ -200,9 +191,11 @@ class AuthController extends ApiController
 
     private function obtenerEstadosValidacion(User $user): array
     {
+        $estado = $this->obtenerEstadoSolicitud($user);
+
         return [
-            'usuario' => $this->obtenerEstadoSolicitudUsuario($user),
-            'empresa' => $this->obtenerEstadoSolicitudEmpresa($user),
+            'usuario' => $estado,
+            'empresa' => $estado,
         ];
     }
 }
