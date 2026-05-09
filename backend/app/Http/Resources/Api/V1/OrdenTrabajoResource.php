@@ -13,6 +13,9 @@ class OrdenTrabajoResource extends JsonResource
     {
         $subtotal = (float) $this->lineas->sum('base_imponible');
         $iva = (float) $this->lineas->sum('cuota_iva');
+        $lineasFacturablesPendientes = $this->lineas->filter(
+            fn ($linea) => $linea->facturable && (float) $linea->cantidad > (float) $linea->facturado_cantidad
+        );
         return [
             'id' => $this->id,
             'empresa_id' => $this->empresa_id,
@@ -32,7 +35,7 @@ class OrdenTrabajoResource extends JsonResource
             'notas' => ['cliente' => $this->notas_cliente, 'internas' => $this->notas_internas],
             'lineas' => OrdenTrabajoLineaResource::collection($this->whenLoaded('lineas')),
             'totales' => ['subtotal' => round($subtotal, 2), 'cuota_iva' => round($iva, 2), 'total' => round($subtotal + $iva, 2)],
-            'puede_facturarse' => $this->estado?->codigo === 'completada' && $this->lineas->where('facturable', true)->isNotEmpty(),
+            'puede_facturarse' => $this->estado?->codigo === 'completada' && $lineasFacturablesPendientes->isNotEmpty(),
         ];
     }
 }

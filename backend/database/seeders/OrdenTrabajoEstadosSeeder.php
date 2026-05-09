@@ -14,6 +14,7 @@ class OrdenTrabajoEstadosSeeder extends Seeder
             ['codigo' => 'en_proceso', 'nombre' => 'En proceso', 'descripcion' => 'Orden actualmente en ejecución', 'orden' => 2],
             ['codigo' => 'completada', 'nombre' => 'Completada', 'descripcion' => 'Orden finalizada correctamente', 'orden' => 4],
             ['codigo' => 'cancelada', 'nombre' => 'Cancelada', 'descripcion' => 'Orden cancelada sin finalizar', 'orden' => 5],
+            ['codigo' => 'facturada', 'nombre' => 'Facturada', 'descripcion' => 'Orden ya convertida en factura', 'orden' => 6],
         ];
 
         foreach ($items as $item) {

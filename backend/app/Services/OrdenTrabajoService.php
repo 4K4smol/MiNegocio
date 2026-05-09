@@ -6,8 +6,10 @@ namespace App\Services;
 
 use App\Models\OrdenTrabajo;
 use App\Models\OrdenTrabajoEstado;
+use App\Models\OrdenTrabajoPrioridad;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class OrdenTrabajoService
 {
@@ -15,13 +17,22 @@ class OrdenTrabajoService
     {
         return DB::transaction(function () use ($data, $user): OrdenTrabajo {
             $estado = OrdenTrabajoEstado::query()->where('codigo', 'pendiente')->first();
+            if (! $estado) {
+                throw new RuntimeException('No existe el estado inicial "pendiente". Ejecuta los seeders de estados de orden.');
+            }
+
+            $prioridadPorDefecto = OrdenTrabajoPrioridad::query()->where('codigo', 'normal')->first();
+            if (! isset($data['prioridad_id']) && ! $prioridadPorDefecto) {
+                throw new RuntimeException('No existe la prioridad por defecto "normal". Ejecuta los seeders de prioridades de órdenes.');
+            }
+
             $orden = OrdenTrabajo::query()->create([
                 'empresa_id' => $user->empresa_id,
                 'cliente_id' => $data['cliente_id'],
                 'numero' => 'OT-' . now()->format('YmdHis'),
-                'estado_id' => $estado?->id,
-                'estado_codigo' => $estado?->codigo ?? 'pendiente',
-                'prioridad_id' => $data['prioridad_id'] ?? 1,
+                'estado_id' => $estado->id,
+                'estado_codigo' => $estado->codigo,
+                'prioridad_id' => $data['prioridad_id'] ?? $prioridadPorDefecto?->id,
                 'fecha_apertura' => now()->toDateString(),
                 'fecha_programada_inicio' => $data['fecha_programada_inicio'] ?? null,
                 'fecha_programada_fin' => $data['fecha_programada_fin'] ?? null,
@@ -42,6 +53,7 @@ class OrdenTrabajoService
             return $orden->fresh(['cliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio']);
         });
     }
+
     public function actualizarOrden(OrdenTrabajo $orden, array $data, User $user): OrdenTrabajo
     {
         if ($orden->estado?->codigo === 'facturada') {
@@ -60,6 +72,7 @@ class OrdenTrabajoService
             return $orden->fresh(['cliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio']);
         });
     }
+
     public function completarOrden(OrdenTrabajo $orden, User $user): OrdenTrabajo
     {
         $estado = OrdenTrabajoEstado::query()->where('codigo', 'completada')->first();
@@ -72,6 +85,7 @@ class OrdenTrabajoService
         $orden->save();
         return $orden->fresh(['cliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio']);
     }
+
     public function cancelarOrden(OrdenTrabajo $orden, User $user): OrdenTrabajo
     {
         $estado = OrdenTrabajoEstado::query()->where('codigo', 'cancelada')->first();
@@ -83,6 +97,7 @@ class OrdenTrabajoService
         $orden->save();
         return $orden->fresh(['cliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio']);
     }
+
     public function calcularLinea(array $linea): array
     {
         $cantidad = (float)$linea['cantidad'];
@@ -95,6 +110,7 @@ class OrdenTrabajoService
         $cuota = round($bi * $iva / 100, 2);
         return ['cantidad' => $cantidad, 'precio_unitario' => $precio, 'descuento_porcentaje' => $desc, 'base_imponible' => $bi, 'iva_porcentaje' => $iva, 'cuota_iva' => $cuota, 'total' => round($bi + $cuota, 2)];
     }
+
     public function recalcularTotales(OrdenTrabajo $orden): void
     {
         foreach ($orden->lineas as $linea) {
