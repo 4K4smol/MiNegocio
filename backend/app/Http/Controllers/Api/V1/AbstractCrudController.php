@@ -25,10 +25,10 @@ abstract class AbstractCrudController extends ApiController
 
     public function index(Request $request): JsonResponse
     {
-        $perPage = (int) $request->integer('per_page', 15);
-        $perPage = min(max($perPage, 1), 100);
+        $per_page = (int) $request->integer('per_page', 15);
+        $per_page = min(max($per_page, 1), 100);
 
-        $records = $this->baseQuery($request)->paginate($perPage);
+        $records = $this->baseQuery($request)->paginate($per_page);
 
         $resourceClass = $this->resourceClass();
 

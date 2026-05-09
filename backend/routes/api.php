@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\V1\InventarioMovimientoController;
 use App\Http\Controllers\Api\V1\InventarioUbicacionController;
 use App\Http\Controllers\Api\V1\InventarioUnidadMedidaController;
 use App\Http\Controllers\Api\V1\ModuloController;
+use App\Http\Controllers\Api\V1\OrdenTrabajoController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\ServicioPrecioController;
 use App\Http\Controllers\Api\V1\ServicioTarifaController;
@@ -49,11 +50,13 @@ Route::prefix('v1')->group(function (): void {
         Route::apiResource('inventario-ubicaciones', InventarioUbicacionController::class);
         Route::apiResource('inventario-unidades-medida', InventarioUnidadMedidaController::class);
         Route::apiResource('modulos', ModuloController::class);
-        Route::apiResource('roles', RoleController::class);
-        Route::apiResource('servicio-precios', ServicioPrecioController::class);
-        Route::apiResource('servicio-tarifas', ServicioTarifaController::class);
-        Route::apiResource('tareas', TareaController::class);
-        Route::apiResource('verificaciones-usuario', VerificacionUsuarioController::class);
+        Route::get('ordenes-trabajo', [OrdenTrabajoController::class, 'index']);
+        Route::post('ordenes-trabajo', [OrdenTrabajoController::class, 'store']);
+        Route::get('ordenes-trabajo/{orden}', [OrdenTrabajoController::class, 'show']);
+        Route::put('ordenes-trabajo/{orden}', [OrdenTrabajoController::class, 'update']);
+        Route::post('ordenes-trabajo/{orden}/completar', [OrdenTrabajoController::class, 'completar']);
+        Route::post('ordenes-trabajo/{orden}/cancelar', [OrdenTrabajoController::class, 'cancelar']);
+        Route::post('ordenes-trabajo/{orden}/generar-factura', [OrdenTrabajoController::class, 'generarFactura']);
 
         Route::middleware('admin')->group(function (): void {
             Route::get('admin/solicitudes-registro', [AdminSolicitudRegistroController::class, 'index']);
