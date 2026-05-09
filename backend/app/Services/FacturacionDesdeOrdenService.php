@@ -16,7 +16,7 @@ use RuntimeException;
 
 class FacturacionDesdeOrdenService
 {
-    public function __construct(private readonly RegistroFacturacionService $registroFacturacionService) {}
+    public function __construct(private readonly RegistroFacturacionService $registroFacturacionService, private readonly RegistroEventoFacturacionService $registroEventoFacturacionService) {}
     private const ROL_ADMIN = 'admin';
 
     private const ESTADO_ORDEN_COMPLETADA = 'completada';
@@ -42,12 +42,7 @@ class FacturacionDesdeOrdenService
             $this->validarOrdenFacturable($orden, $user);
 
             $facturables = $orden->lineas
-                ->filter(function ($linea): bool {
-                    $cantidad = (float) $linea->cantidad;
-                    $facturado = (float) ($linea->facturado_cantidad ?? 0);
-
-                    return (bool) $linea->facturable && $cantidad > $facturado;
-                })
+                ->filter(fn($linea) => (bool) $linea->facturable && (float) $linea->cantidad > (float) ($linea->facturado_cantidad ?? 0))
                 ->values();
 
             if ($facturables->isEmpty()) {
@@ -56,14 +51,12 @@ class FacturacionDesdeOrdenService
 
             $tipoFactura = $this->obtenerTipoFactura();
             $estadoFactura = $this->obtenerEstadoFactura();
-
-            $fechaEmision = now()->toDateString();
             $numeroFactura = $this->generarNumeroFactura((int) $orden->empresa_id);
+            $fechaEmision = now()->toDateString();
 
             $factura = Factura::query()->create([
                 'empresa_id' => $orden->empresa_id,
                 'cliente_id' => $orden->cliente_id,
-
                 'tipo_factura_id' => $tipoFactura->id,
                 'estado_factura_id' => $estadoFactura->id,
 
@@ -90,9 +83,24 @@ class FacturacionDesdeOrdenService
 
             $this->crearImpuestosFactura($factura, $lineasFactura);
 
-            $this->registroFacturacionService->generarRegistroAlta($factura);
-            $this->registroFacturacionService->registrarEvento((int) $factura->empresa_id, 'FACTURA_GENERADA', 'Factura generada desde orden de trabajo.');
-            $this->registroFacturacionService->registrarEvento((int) $factura->empresa_id, 'REGISTRO_FACTURACION_ALTA_GENERADO', 'Registro de alta generado.');
+            $this->registroEventoFacturacionService->registrar([
+                'empresa_id' => $factura->empresa_id,
+                'user_id' => $user->id,
+                'factura_id' => $factura->id,
+                'codigo_evento' => 'FACTURA_GENERADA_DESDE_ORDEN',
+                'descripcion' => 'Factura generada desde orden de trabajo.',
+            ]);
+
+            $registroAlta = $this->registroFacturacionService->crearRegistroFacturacionAlta($factura);
+
+            $this->registroEventoFacturacionService->registrar([
+                'empresa_id' => $factura->empresa_id,
+                'user_id' => $user->id,
+                'factura_id' => $factura->id,
+                'registro_facturacion_id' => $registroAlta->id,
+                'codigo_evento' => 'REGISTRO_FACTURACION_ALTA_CREADO',
+                'descripcion' => 'Registro de facturación de alta generado.',
+            ]);
 
             $this->marcarOrdenComoFacturada($orden);
 

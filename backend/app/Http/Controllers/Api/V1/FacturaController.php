@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Resources\Api\V1\FacturaResource;
 use App\Models\EstadoFactura;
 use App\Models\Factura;
+use App\Services\RegistroEventoFacturacionService;
 use App\Services\RegistroFacturacionService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +16,7 @@ use RuntimeException;
 
 class FacturaController extends AbstractCrudController
 {
-    public function __construct(private readonly RegistroFacturacionService $registroFacturacionService) {}
+    public function __construct(private readonly RegistroFacturacionService $registroFacturacionService, private readonly RegistroEventoFacturacionService $registroEventoFacturacionService) {}
 
     protected function modelClass(): string
     {
@@ -98,14 +99,33 @@ class FacturaController extends AbstractCrudController
             throw new RuntimeException('No existe el estado de factura "anulada". Ejecuta los seeders de estados de factura.');
         }
 
+        if ($factura->estadoFactura?->codigo === 'anulada') {
+            throw new RuntimeException('La factura ya está anulada.');
+        }
+
         DB::transaction(function () use ($factura, $estadoAnulada, $request): void {
             $factura->estado_factura_id = $estadoAnulada->id;
             $factura->observaciones = trim((string) $request->input('motivo_anulacion', '')) ?: $factura->observaciones;
             $factura->save();
 
-            $this->registroFacturacionService->generarRegistroAnulacion($factura, (string) $request->input('motivo_anulacion', 'Anulación de factura'));
-            $this->registroFacturacionService->registrarEvento((int) $factura->empresa_id, 'FACTURA_ANULADA', 'Factura anulada.');
-            $this->registroFacturacionService->registrarEvento((int) $factura->empresa_id, 'REGISTRO_FACTURACION_ANULACION_GENERADO', 'Registro de anulación generado.');
+            $this->registroEventoFacturacionService->registrar([
+                'empresa_id' => $factura->empresa_id,
+                'user_id' => $request->user()?->id,
+                'factura_id' => $factura->id,
+                'codigo_evento' => 'FACTURA_ANULADA',
+                'descripcion' => 'Factura anulada.',
+            ]);
+
+            $registroAnulacion = $this->registroFacturacionService->crearRegistroFacturacionAnulacion($factura, (string) $request->input('motivo_anulacion', 'Anulación de factura'));
+
+            $this->registroEventoFacturacionService->registrar([
+                'empresa_id' => $factura->empresa_id,
+                'user_id' => $request->user()?->id,
+                'factura_id' => $factura->id,
+                'registro_facturacion_id' => $registroAnulacion->id,
+                'codigo_evento' => 'REGISTRO_FACTURACION_ANULACION_CREADO',
+                'descripcion' => 'Registro de anulación generado.',
+            ]);
         });
 
         return $this->updated(FacturaResource::make($factura->fresh(['lineas', 'impuestos', 'cliente', 'empresa', 'estadoFactura', 'tipoFactura', 'registrosFacturacion']))->resolve(), 'Factura anulada correctamente.');
