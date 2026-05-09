@@ -9,31 +9,39 @@ use App\Models\EstadoFactura;
 use App\Models\Factura;
 use App\Services\RegistroEventoFacturacionService;
 use App\Services\RegistroFacturacionService;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 class FacturaController extends AbstractCrudController
 {
     public function __construct(private readonly RegistroFacturacionService $registroFacturacionService, private readonly RegistroEventoFacturacionService $registroEventoFacturacionService) {}
 
-    protected function modelClass(): string
-    {
-        return Factura::class;
-    }
+    protected function modelClass(): string { return Factura::class; }
+    protected function resourceClass(): ?string { return FacturaResource::class; }
 
-    protected function resourceClass(): ?string
+    public function destroy(Request $request, int $id): JsonResponse
     {
-        return FacturaResource::class;
+        $factura = $this->findRecord($request, $id);
+        if (!$factura) return $this->notFound();
+        if ($factura->registrosFacturacion()->exists()) throw new RuntimeException('No se puede borrar una factura con registros de facturación.');
+        return parent::destroy($request, $id);
     }
 
     public function index(Request $request): JsonResponse
     {
         $perPage = min(max((int) $request->integer('per_page', 15), 1), 100);
         $items = $this->baseQuery($request)
-            ->with(['lineas', 'impuestos', 'cliente', 'empresa', 'estadoFactura', 'tipoFactura', 'registrosFacturacion'])
-            ->paginate($perPage);
+            ->with([
+                'lineas',
+                'impuestos',
+                'cliente',
+                'empresa',
+                'estadoFactura',
+                'tipoFactura',
+                'registrosFacturacion'
+            ])->paginate($perPage);
 
         return $this->success(FacturaResource::collection($items)->response()->getData(true));
     }
@@ -41,49 +49,45 @@ class FacturaController extends AbstractCrudController
     public function show(Request $request, int $factura): JsonResponse
     {
         $item = $this->baseQuery($request)
-            ->with(['lineas', 'impuestos', 'cliente', 'empresa', 'estadoFactura', 'tipoFactura', 'registrosFacturacion'])
-            ->whereKey($factura)
-            ->first();
+            ->with([
+                'lineas',
+                'impuestos',
+                'cliente',
+                'empresa',
+                'estadoFactura',
+                'tipoFactura',
+                'registrosFacturacion'
+            ])->whereKey($factura)->first();
+        if (!$item) return $this->notFound();
 
-        if (!$item) {
-            return $this->notFound();
-        }
-
-        return $this->success(FacturaResource::make($item)->resolve());
+        return $this->success(
+            FacturaResource::make($item)->resolve()
+        );
     }
 
     public function marcarPagada(Request $request, Factura $factura): JsonResponse
     {
-        if (!$this->findRecord($request, $factura->id)) {
-            return $this->forbidden();
-        }
+        if (!$this->findRecord($request, $factura->id)) return $this->forbidden();
 
-        $estado_pagada = EstadoFactura::query()->where('codigo', 'pagada')->first();
-        if (!$estado_pagada) {
-            throw new RuntimeException('No existe el estado de factura "pagada". Ejecuta los seeders de estados de factura.');
-        }
+        $estadoPagada = EstadoFactura::query()->where('codigo', 'pagada')->first();
+        if (!$estadoPagada) throw new RuntimeException('No existe el estado de factura "pagada". Ejecuta los seeders de estados de factura.');
 
-        if ($factura->estadoFactura?->codigo === 'anulada') {
-            throw new RuntimeException('Una factura anulada no puede marcarse como pagada.');
-        }
-
-        $factura->estado_factura_id = $estado_pagada->id;
+        if ($factura->estadoFactura?->codigo === 'anulada') throw new RuntimeException('Una factura anulada no puede marcarse como pagada.');
+        $factura->estado_factura_id = $estadoPagada->id;
         $factura->pagada = true;
         $factura->fecha_pago = now()->toDateString();
         $factura->save();
 
         return $this->updated(
-            FacturaResource::make(
-                $factura->fresh([
-                    'lineas',
-                    'impuestos',
-                    'cliente',
-                    'empresa',
-                    'estadoFactura',
-                    'tipoFactura',
-                    'registrosFacturacion'
-                ])
-            )->resolve(),
+            FacturaResource::make($factura->fresh([
+                'lineas',
+                'impuestos',
+                'cliente',
+                'empresa',
+                'estadoFactura',
+                'tipoFactura',
+                'registrosFacturacion'
+            ]))->resolve(),
             'Factura marcada como pagada.'
         );
     }
@@ -95,13 +99,9 @@ class FacturaController extends AbstractCrudController
         }
 
         $estadoAnulada = EstadoFactura::query()->where('codigo', 'anulada')->first();
-        if (! $estadoAnulada) {
-            throw new RuntimeException('No existe el estado de factura "anulada". Ejecuta los seeders de estados de factura.');
-        }
+        if (! $estadoAnulada) throw new RuntimeException('No existe el estado de factura "anulada". Ejecuta los seeders de estados de factura.');
 
-        if ($factura->estadoFactura?->codigo === 'anulada') {
-            throw new RuntimeException('La factura ya está anulada.');
-        }
+        if ($factura->estadoFactura?->codigo === 'anulada') throw new RuntimeException('La factura ya está anulada.');
 
         DB::transaction(function () use ($factura, $estadoAnulada, $request): void {
             $factura->estado_factura_id = $estadoAnulada->id;

@@ -21,19 +21,35 @@ class FacturacionLegalFlowTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(DatabaseSeeder::class);
+    }
+
     public function test_no_se_puede_generar_factura_si_orden_no_esta_completada(): void
     {
         [$user, $orden] = $this->crearContextoOrden('pendiente', 'OT-001');
 
         $this->expectException(RuntimeException::class);
-        app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden->fresh(['estado', 'lineas', 'empresa', 'cliente.localizacionPrincipal']), $user);
+        app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden->fresh([
+            'estado',
+            'lineas',
+            'empresa',
+            'cliente.localizacionPrincipal'
+        ]), $user);
     }
 
     public function test_orden_completada_genera_factura_y_registro_alta_y_eventos(): void
     {
         [$user, $orden] = $this->crearContextoOrden('completada', 'OT-002');
 
-        $factura = app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden->fresh(['estado', 'lineas', 'empresa', 'cliente.localizacionPrincipal']), $user);
+        $factura = app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden->fresh([
+            'estado',
+            'lineas',
+            'empresa',
+            'cliente.localizacionPrincipal'
+        ]), $user);
 
         $this->assertDatabaseHas('facturas', ['id' => $factura->id]);
         $this->assertDatabaseHas('registros_facturacion', ['factura_id' => $factura->id]);
@@ -45,8 +61,18 @@ class FacturacionLegalFlowTest extends TestCase
         [$user, $orden1] = $this->crearContextoOrden('completada', 'OT-003');
         [$__, $orden2] = $this->crearContextoOrden('completada', 'OT-004', $user->empresa_id);
 
-        app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden1->fresh(['estado', 'lineas', 'empresa', 'cliente.localizacionPrincipal']), $user);
-        $factura2 = app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden2->fresh(['estado', 'lineas', 'empresa', 'cliente.localizacionPrincipal']), $user);
+        app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden1->fresh([
+            'estado',
+            'lineas',
+            'empresa',
+            'cliente.localizacionPrincipal'
+        ]), $user);
+        $factura2 = app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden2->fresh([
+            'estado',
+            'lineas',
+            'empresa',
+            'cliente.localizacionPrincipal'
+        ]), $user);
 
         $registros = RegistroFacturacion::query()->where('empresa_id', $user->empresa_id)->orderBy('id')->get();
         $this->assertCount(2, $registros);
@@ -57,11 +83,16 @@ class FacturacionLegalFlowTest extends TestCase
     public function test_anular_factura_genera_registro_anulacion_y_no_permita_doble_anulacion(): void
     {
         [$user, $orden] = $this->crearContextoOrden('completada', 'OT-005');
-        $factura = app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden->fresh(['estado', 'lineas', 'empresa', 'cliente.localizacionPrincipal']), $user);
+        $factura = app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden->fresh([
+            'estado',
+            'lineas',
+            'empresa',
+            'cliente.localizacionPrincipal'
+        ]), $user);
 
         $this->actingAs($user, 'sanctum')->postJson('/api/v1/facturas/' . $factura->id . '/anular', ['motivo_anulacion' => 'Cliente solicita anulación'])->assertOk();
 
-        $this->assertDatabaseHas('registros_facturacion', ['factura_id' => $factura->id, 'registro_anterior_numero' => $factura->numero]);
+        $this->assertDatabaseHas('registros_facturacion', ['factura_id' => $factura->id, 'tipo_registro_facturacion_id' => 2]);
         $this->assertDatabaseHas('registros_evento_facturacion', ['factura_id' => $factura->id, 'codigo_evento' => 'REGISTRO_FACTURACION_ANULACION_CREADO']);
 
         $this->actingAs($user, 'sanctum')->postJson('/api/v1/facturas/' . $factura->id . '/anular')->assertStatus(500);
@@ -73,7 +104,13 @@ class FacturacionLegalFlowTest extends TestCase
         $user = User::factory()->create(['empresa_id' => $empresaId]);
 
         $estadoId = $estadoCodigo === 'completada' ? 3 : 1;
-        $orden = OrdenTrabajo::query()->create(['empresa_id' => $empresaId, 'cliente_id' => 1, 'numero' => $numeroOrden, 'estado_id' => $estadoId, 'estado_codigo' => $estadoCodigo]);
+        $orden = OrdenTrabajo::query()->create([
+            'empresa_id' => $empresaId,
+            'cliente_id' => 1,
+            'numero' => $numeroOrden,
+            'estado_id' => $estadoId,
+            'estado_codigo' => $estadoCodigo
+        ]);
 
         OrdenTrabajoLinea::query()->create([
             'orden_trabajo_id' => $orden->id,
@@ -88,5 +125,23 @@ class FacturacionLegalFlowTest extends TestCase
         ]);
 
         return [$user, $orden];
+    }
+
+    public function test_verifactu_simulado_envia_pendientes_y_registra_evento(): void
+    {
+        [$user, $orden] = $this->crearContextoOrden('completada', 'OT-010');
+        app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden->fresh(['estado', 'lineas', 'empresa', 'cliente.localizacionPrincipal']), $user);
+
+        $response = $this->actingAs($user, 'sanctum')->postJson('/api/v1/verifactu/enviar-pendientes')->assertOk();
+        $this->assertGreaterThan(0, $response->json('data.enviados'));
+        $this->assertDatabaseHas('registros_evento_facturacion', ['codigo_evento' => 'REGISTRO_FACTURACION_ENVIADO_AEAT_SIMULADO']);
+    }
+
+    public function test_validacion_cadena_devuelve_valida(): void
+    {
+        [$user, $orden] = $this->crearContextoOrden('completada', 'OT-011');
+        app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden->fresh(['estado', 'lineas', 'empresa', 'cliente.localizacionPrincipal']), $user);
+
+        $this->actingAs($user, 'sanctum')->getJson('/api/v1/registros-facturacion/validar-cadena')->assertOk()->assertJsonPath('data.valida', true);
     }
 }

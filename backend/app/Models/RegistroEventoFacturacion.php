@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use RuntimeException;
 
 class RegistroEventoFacturacion extends Model
 {
@@ -27,8 +30,24 @@ class RegistroEventoFacturacion extends Model
         'generado_at' => 'datetime',
     ];
 
-    public function empresa(): BelongsTo { return $this->belongsTo(Empresa::class, 'empresa_id'); }
-    public function user(): BelongsTo { return $this->belongsTo(User::class, 'user_id'); }
-    public function factura(): BelongsTo { return $this->belongsTo(Factura::class, 'factura_id'); }
-    public function registroFacturacion(): BelongsTo { return $this->belongsTo(RegistroFacturacion::class, 'registro_facturacion_id'); }
+    protected static function booted(): void
+    {
+        static::deleting(fn() => throw new RuntimeException('No se pueden borrar registros_evento_facturacion.'));
+    }
+    public function empresa(): BelongsTo
+    {
+        return $this->belongsTo(Empresa::class, 'empresa_id');
+    }
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+    public function factura(): BelongsTo
+    {
+        return $this->belongsTo(Factura::class, 'factura_id');
+    }
+    public function registroFacturacion(): BelongsTo
+    {
+        return $this->belongsTo(RegistroFacturacion::class, 'registro_facturacion_id');
+    }
 }
