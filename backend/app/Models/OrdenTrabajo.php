@@ -15,6 +15,7 @@ class OrdenTrabajo extends Model
         'cliente_id',
         'numero',
         'estado_id',
+        'estado_codigo',
         'canal_origen',
         'prioridad_id',
         'prioridad_codigo',

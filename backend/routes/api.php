@@ -30,6 +30,9 @@ use App\Http\Controllers\Api\V1\ServicioPrecioController;
 use App\Http\Controllers\Api\V1\ServicioTarifaController;
 use App\Http\Controllers\Api\V1\TareaController;
 use App\Http\Controllers\Api\V1\VerificacionUsuarioController;
+use App\Http\Controllers\Api\V1\RegistroFacturacionController;
+use App\Http\Controllers\Api\V1\RegistroEventoController;
+use App\Http\Controllers\Api\V1\VerifactuController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -63,6 +66,12 @@ Route::prefix('v1')->group(function (): void {
         Route::get('facturas/{factura}', [FacturaController::class, 'show']);
         Route::post('facturas/{factura}/marcar-pagada', [FacturaController::class, 'marcarPagada']);
         Route::post('facturas/{factura}/anular', [FacturaController::class, 'anular']);
+        Route::get('registros-facturacion', [RegistroFacturacionController::class, 'index']);
+        Route::get('registros-facturacion/exportar', [RegistroFacturacionController::class, 'exportar']);
+        Route::get('registros-facturacion/{id}', [RegistroFacturacionController::class, 'show']);
+        Route::get('registros-evento', [RegistroEventoController::class, 'index']);
+        Route::get('registros-evento/exportar', [RegistroEventoController::class, 'exportar']);
+        Route::post('verifactu/enviar-pendientes', [VerifactuController::class, 'enviarPendientes']);
 
         Route::middleware('admin')->group(function (): void {
             Route::get('admin/solicitudes-registro', [AdminSolicitudRegistroController::class, 'index']);

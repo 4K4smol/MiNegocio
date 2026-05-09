@@ -6,20 +6,17 @@ namespace App\Services;
 
 use App\Models\EstadoFactura;
 use App\Models\Factura;
-use App\Models\ModoRemisionFacturacion;
 use App\Models\OrdenTrabajo;
 use App\Models\OrdenTrabajoEstado;
-use App\Models\RegistroFacturacion;
 use App\Models\TipoFactura;
-use App\Models\TipoRegistroFacturacion;
 use App\Models\User;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 class FacturacionDesdeOrdenService
 {
+    public function __construct(private readonly RegistroFacturacionService $registroFacturacionService) {}
     private const ROL_ADMIN = 'admin';
 
     private const ESTADO_ORDEN_COMPLETADA = 'completada';
@@ -30,11 +27,7 @@ class FacturacionDesdeOrdenService
     private const ESTADO_FACTURA_EMITIDA = 'emitida';
     private const ESTADO_FACTURA_BORRADOR = 'borrador';
 
-    private const TIPO_REGISTRO_ALTA = 'alta';
-    private const MODO_REMISION_VERIFACTU = 'verifactu';
-
     private const SERIE_FACTURA = 'A';
-    private const CODIGO_SISTEMA = 'MINNEGOCIO-RRSIF';
 
     public function generarDesdeOrden(OrdenTrabajo $orden, User $user): Factura
     {
@@ -97,7 +90,9 @@ class FacturacionDesdeOrdenService
 
             $this->crearImpuestosFactura($factura, $lineasFactura);
 
-            $this->crearRegistroFacturacionAlta($factura);
+            $this->registroFacturacionService->generarRegistroAlta($factura);
+            $this->registroFacturacionService->registrarEvento((int) $factura->empresa_id, 'FACTURA_GENERADA', 'Factura generada desde orden de trabajo.');
+            $this->registroFacturacionService->registrarEvento((int) $factura->empresa_id, 'REGISTRO_FACTURACION_ALTA_GENERADO', 'Registro de alta generado.');
 
             $this->marcarOrdenComoFacturada($orden);
 
@@ -259,116 +254,6 @@ class FacturacionDesdeOrdenService
         $factura->save();
     }
 
-    private function crearRegistroFacturacionAlta(Factura $factura): void
-    {
-        $tipoRegistroAlta = TipoRegistroFacturacion::query()
-            ->where('codigo', self::TIPO_REGISTRO_ALTA)
-            ->first();
-
-        $modoVerifactu = ModoRemisionFacturacion::query()
-            ->where('codigo', self::MODO_REMISION_VERIFACTU)
-            ->first();
-
-        if (! $tipoRegistroAlta || ! $modoVerifactu) {
-            throw new RuntimeException('Faltan seeders de tipos/modos de registro de facturación.');
-        }
-
-        $registroAnterior = RegistroFacturacion::query()
-            ->where('empresa_id', $factura->empresa_id)
-            ->orderByDesc('id')
-            ->lockForUpdate()
-            ->first();
-
-        $generadoAt = now();
-        $fechaExpedicion = is_string($factura->fecha_emision)
-            ? $factura->fecha_emision
-            : $factura->fecha_emision->toDateString();
-
-        $nombreSistema = (string) config('app.name', 'MiNegocio');
-        $versionSistema = (string) config('app.version', '1.0.0');
-        $numeroInstalacion = 'EMP-' . $factura->empresa_id;
-
-        $hashPayload = [
-            'tipo' => self::TIPO_REGISTRO_ALTA,
-            'emisor_nif' => $factura->emisor_nif,
-            'serie' => $factura->serie,
-            'numero' => $factura->numero,
-            'fecha_expedicion' => $fechaExpedicion,
-            'tipo_factura_id' => $factura->tipo_factura_id,
-            'cuota_total' => number_format((float) $factura->cuota_iva, 2, '.', ''),
-            'importe_total' => number_format((float) $factura->total, 2, '.', ''),
-            'registro_anterior_hash_64' => $registroAnterior?->hash_actual,
-            'generado_at' => $generadoAt->toISOString(),
-            'sistema' => [
-                'codigo' => self::CODIGO_SISTEMA,
-                'nombre' => $nombreSistema,
-                'version' => $versionSistema,
-                'numero_instalacion' => $numeroInstalacion,
-            ],
-        ];
-
-        $hashActual = hash(
-            'sha256',
-            json_encode($hashPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)
-        );
-
-        RegistroFacturacion::query()->create([
-            'factura_id' => $factura->id,
-            'tipo_registro_facturacion_id' => $tipoRegistroAlta->id,
-            'modo_remision_facturacion_id' => $modoVerifactu->id,
-
-            'empresa_id' => $factura->empresa_id,
-            'emisor_nif' => $factura->emisor_nif,
-            'emisor_nombre_razon_social' => $factura->emisor_nombre_razon_social,
-
-            'serie' => $factura->serie,
-            'numero' => $factura->numero,
-            'fecha_expedicion' => $fechaExpedicion,
-            'tipo_factura_id' => $factura->tipo_factura_id,
-
-            'cuota_total' => $factura->cuota_iva,
-            'importe_total' => $factura->total,
-
-            'primer_registro_cadena' => $registroAnterior === null,
-
-            'registro_anterior_nif' => $registroAnterior?->emisor_nif,
-            'registro_anterior_serie' => $registroAnterior?->serie,
-            'registro_anterior_numero' => $registroAnterior?->numero,
-            'registro_anterior_fecha_expedicion' => $registroAnterior?->fecha_expedicion,
-            'registro_anterior_hash_64' => $registroAnterior?->hash_actual,
-
-            'tipo_huella' => 'sha256',
-            'hash_actual' => $hashActual,
-
-            'generado_at' => $generadoAt,
-
-            'xml_contenido' => $this->buildRegistroFacturacionAltaXml(
-                factura: $factura,
-                registroAnterior: $registroAnterior,
-                hashActual: $hashActual,
-                generadoAt: $generadoAt,
-                fechaExpedicion: $fechaExpedicion,
-                nombreSistema: $nombreSistema,
-                versionSistema: $versionSistema,
-                numeroInstalacion: $numeroInstalacion
-            ),
-
-            'xml_version' => '1.0',
-
-            'codigo_sistema_informatico' => self::CODIGO_SISTEMA,
-            'nombre_sistema' => $nombreSistema,
-            'version_sistema' => $versionSistema,
-            'numero_instalacion' => $numeroInstalacion,
-
-            'tipo_uso_posible_solo_verifactu' => true,
-            'tipo_uso_posible_multi_ot' => true,
-            'indicador_multiples_ot' => false,
-
-            'productor_nif' => $factura->emisor_nif,
-            'productor_nombre' => $nombreSistema,
-        ]);
-    }
-
     private function marcarOrdenComoFacturada(OrdenTrabajo $orden): void
     {
         $estadoFacturada = OrdenTrabajoEstado::query()
@@ -384,62 +269,4 @@ class FacturacionDesdeOrdenService
         $orden->save();
     }
 
-    private function buildRegistroFacturacionAltaXml(
-        Factura $factura,
-        ?RegistroFacturacion $registroAnterior,
-        string $hashActual,
-        Carbon $generadoAt,
-        string $fechaExpedicion,
-        string $nombreSistema,
-        string $versionSistema,
-        string $numeroInstalacion
-    ): string {
-        $xml = [
-            '<RegistroFacturacion tipo="alta">',
-            '<Factura>',
-            '<EmisorNif>' . $this->xml($factura->emisor_nif) . '</EmisorNif>',
-            '<EmisorNombre>' . $this->xml($factura->emisor_nombre_razon_social) . '</EmisorNombre>',
-            '<Serie>' . $this->xml($factura->serie) . '</Serie>',
-            '<Numero>' . $this->xml($factura->numero) . '</Numero>',
-            '<FechaExpedicion>' . $this->xml($fechaExpedicion) . '</FechaExpedicion>',
-            '<CuotaTotal>' . number_format((float) $factura->cuota_iva, 2, '.', '') . '</CuotaTotal>',
-            '<ImporteTotal>' . number_format((float) $factura->total, 2, '.', '') . '</ImporteTotal>',
-            '</Factura>',
-            '<Encadenamiento>',
-        ];
-
-        if ($registroAnterior) {
-            $fechaAnterior = is_string($registroAnterior->fecha_expedicion)
-                ? $registroAnterior->fecha_expedicion
-                : $registroAnterior->fecha_expedicion->toDateString();
-
-            $xml[] = '<RegistroAnterior>';
-            $xml[] = '<EmisorNif>' . $this->xml($registroAnterior->emisor_nif) . '</EmisorNif>';
-            $xml[] = '<Serie>' . $this->xml($registroAnterior->serie) . '</Serie>';
-            $xml[] = '<Numero>' . $this->xml($registroAnterior->numero) . '</Numero>';
-            $xml[] = '<FechaExpedicion>' . $this->xml($fechaAnterior) . '</FechaExpedicion>';
-            $xml[] = '<Hash>' . $this->xml($registroAnterior->hash_actual) . '</Hash>';
-            $xml[] = '</RegistroAnterior>';
-        } else {
-            $xml[] = '<PrimerRegistroCadena>true</PrimerRegistroCadena>';
-        }
-
-        $xml[] = '</Encadenamiento>';
-        $xml[] = '<Huella tipo="sha256">' . $this->xml($hashActual) . '</Huella>';
-        $xml[] = '<SistemaInformatico>';
-        $xml[] = '<Codigo>' . self::CODIGO_SISTEMA . '</Codigo>';
-        $xml[] = '<Nombre>' . $this->xml($nombreSistema) . '</Nombre>';
-        $xml[] = '<Version>' . $this->xml($versionSistema) . '</Version>';
-        $xml[] = '<NumeroInstalacion>' . $this->xml($numeroInstalacion) . '</NumeroInstalacion>';
-        $xml[] = '</SistemaInformatico>';
-        $xml[] = '<GeneradoAt>' . $this->xml($generadoAt->toISOString()) . '</GeneradoAt>';
-        $xml[] = '</RegistroFacturacion>';
-
-        return implode('', $xml);
-    }
-
-    private function xml(?string $value): string
-    {
-        return htmlspecialchars((string) $value, ENT_XML1 | ENT_QUOTES, 'UTF-8');
-    }
 }
