@@ -9,6 +9,7 @@ use App\Models\Factura;
 use App\Models\OrdenTrabajo;
 use App\Models\OrdenTrabajoLinea;
 use App\Models\RegistroFacturacion;
+use App\Models\OrdenTrabajoPrioridad;
 use App\Models\User;
 use App\Services\FacturacionDesdeOrdenService;
 use App\Services\ModuloService;
@@ -115,7 +116,7 @@ class FacturacionLegalFlowTest extends TestCase
         $factura = $this->generarFacturaDesdeOrden($orden, $user);
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/'.$factura->id.'/anular', [
+            ->postJson('/api/v1/facturas/' . $factura->id . '/anular', [
                 'motivo_anulacion' => 'Cliente solicita anulación',
             ])
             ->assertOk();
@@ -131,7 +132,7 @@ class FacturacionLegalFlowTest extends TestCase
         ]);
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/'.$factura->id.'/anular')
+            ->postJson('/api/v1/facturas/' . $factura->id . '/anular')
             ->assertStatus(500);
     }
 
@@ -212,7 +213,7 @@ class FacturacionLegalFlowTest extends TestCase
 
         $this->assertTrue(
             collect($resultado['errores'])->contains(
-                fn (array $error): bool => str_contains($error['motivo'], 'No enlaza')
+                fn(array $error): bool => str_contains($error['motivo'], 'No enlaza')
             )
         );
     }
@@ -238,7 +239,7 @@ class FacturacionLegalFlowTest extends TestCase
 
         $this->assertTrue(
             collect($resultado['errores'])->contains(
-                fn (array $error): bool => str_contains($error['motivo'], 'primer registro')
+                fn(array $error): bool => str_contains($error['motivo'], 'primer registro')
             )
         );
     }
@@ -264,7 +265,7 @@ class FacturacionLegalFlowTest extends TestCase
 
         $this->assertTrue(
             collect($resultado['errores'])->contains(
-                fn (array $error): bool => str_contains($error['motivo'], 'hash_actual')
+                fn(array $error): bool => str_contains($error['motivo'], 'hash_actual')
             )
         );
     }
@@ -308,7 +309,7 @@ class FacturacionLegalFlowTest extends TestCase
         $factura = $this->generarFacturaDesdeOrden($orden, $user);
 
         $response = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/'.$factura->id.'/rectificar', [
+            ->postJson('/api/v1/facturas/' . $factura->id . '/rectificar', [
                 'motivo_rectificacion' => 'Corrección completa',
             ])
             ->assertCreated();
@@ -346,8 +347,8 @@ class FacturacionLegalFlowTest extends TestCase
         /** @var Empresa $empresaB */
         $empresaB = Empresa::query()->create([
             'tipo_empresa_id' => 1,
-            'nombre_fiscal' => 'Empresa B SL',
-            'nif' => 'B87654321',
+            'nombre_fiscal' => 'Empresa B Test SL',
+            'nif' => 'T87654321',
         ]);
 
         /** @var User $userEmpresaB */
@@ -357,7 +358,7 @@ class FacturacionLegalFlowTest extends TestCase
         app(ModuloService::class)->activarModulo((int) $empresaB->id, 'facturacion');
 
         $this->actingAs($userEmpresaB, 'sanctum')
-            ->postJson('/api/v1/facturas/'.$factura->id.'/anular')
+            ->postJson('/api/v1/facturas/' . $factura->id . '/anular')
             ->assertForbidden();
 
         $this->actingAs($userEmpresaB, 'sanctum')
@@ -399,14 +400,17 @@ class FacturacionLegalFlowTest extends TestCase
     /**
      * @return array{0: User, 1: OrdenTrabajo}
      */
+    /**
+     * @return array{0: User, 1: OrdenTrabajo}
+     */
     private function crearContextoOrden(string $estadoCodigo, string $numeroOrden, ?int $empresaId = null): array
     {
         if ($empresaId === null) {
             /** @var Empresa $empresa */
             $empresa = Empresa::query()->create([
                 'tipo_empresa_id' => 1,
-                'nombre_fiscal' => 'ACME SL',
-                'nif' => 'B12345678',
+                'nombre_fiscal' => 'ACME SL ' . $numeroOrden,
+                'nif' => 'T' . substr(str_pad((string) abs(crc32($numeroOrden)), 8, '0', STR_PAD_LEFT), 0, 8),
             ]);
 
             $empresaId = (int) $empresa->id;
@@ -416,9 +420,18 @@ class FacturacionLegalFlowTest extends TestCase
         $user = User::factory()->create([
             'empresa_id' => $empresaId,
         ]);
+
         app(ModuloService::class)->activarModulo((int) $empresaId, 'facturacion');
 
         $estadoId = $estadoCodigo === self::ESTADO_ORDEN_COMPLETADA ? 3 : 1;
+
+        $prioridadId = OrdenTrabajoPrioridad::query()
+            ->where('codigo', 'normal')
+            ->value('id') ?? OrdenTrabajoPrioridad::query()->value('id');
+
+        if ($prioridadId === null) {
+            $this->fail('No existe prioridad de orden para el test.');
+        }
 
         /** @var OrdenTrabajo $orden */
         $orden = OrdenTrabajo::query()->create([
@@ -427,18 +440,24 @@ class FacturacionLegalFlowTest extends TestCase
             'numero' => $numeroOrden,
             'estado_id' => $estadoId,
             'estado_codigo' => $estadoCodigo,
+            'prioridad_id' => $prioridadId,
+            'fecha_apertura' => now()->toDateString(),
         ]);
 
         OrdenTrabajoLinea::query()->create([
             'orden_trabajo_id' => $orden->id,
             'descripcion' => 'Servicio',
             'cantidad' => 1,
+            'unidad_snapshot' => 'unidad',
             'precio_unitario' => 100,
+            'descuento_porcentaje' => 0,
             'base_imponible' => 100,
             'iva_porcentaje' => 21,
             'cuota_iva' => 21,
             'total' => 121,
             'facturable' => true,
+            'facturado_cantidad' => 0,
+            'orden' => 1,
         ]);
 
         return [$user, $orden];

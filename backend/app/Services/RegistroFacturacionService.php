@@ -41,9 +41,11 @@ class RegistroFacturacionService
         }
 
         $anterior = $this->obtenerRegistroAnterior((int) $factura->empresa_id);
-        $generadoAt = now();
+        $generadoAt = now()->setMicrosecond(0);
 
-        $hash = $this->calcularHash($this->construirPayloadHash($factura, $tipoCodigo, $anterior, $motivo, $generadoAt));
+        $hash = $this->calcularHash(
+            $this->construirPayloadHash($factura, $tipoCodigo, $anterior, $motivo, $generadoAt)
+        );
 
         $data = [
             'factura_id' => $factura->id,
@@ -71,7 +73,7 @@ class RegistroFacturacionService
             'codigo_sistema_informatico' => self::CODIGO_SISTEMA,
             'nombre_sistema' => (string) config('app.name', 'MiNegocio'),
             'version_sistema' => (string) config('app.version', '1.0.0'),
-            'numero_instalacion' => 'EMP-'.$factura->empresa_id,
+            'numero_instalacion' => 'EMP-' . $factura->empresa_id,
             'tipo_uso_posible_solo_verifactu' => true,
             'tipo_uso_posible_multi_ot' => true,
             'indicador_multiples_ot' => false,
@@ -199,7 +201,7 @@ class RegistroFacturacionService
                 ['calificacion', 'asc'],
             ])
             ->values()
-            ->map(fn ($impuesto): array => [
+            ->map(fn($impuesto): array => [
                 'impuesto_codigo' => $impuesto->impuesto_codigo,
                 'tipo_porcentaje' => $this->normalizarDecimal($impuesto->tipo_porcentaje),
                 'base_imponible' => $this->normalizarDecimal($impuesto->base_imponible),
