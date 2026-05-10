@@ -11,6 +11,7 @@ use App\Models\OrdenTrabajoLinea;
 use App\Models\RegistroFacturacion;
 use App\Models\User;
 use App\Services\FacturacionDesdeOrdenService;
+use App\Services\ModuloService;
 use App\Services\RegistroFacturacionCadenaService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -353,6 +354,7 @@ class FacturacionLegalFlowTest extends TestCase
         $userEmpresaB = User::factory()->create([
             'empresa_id' => $empresaB->id,
         ]);
+        app(ModuloService::class)->activarModulo((int) $empresaB->id, 'facturacion');
 
         $this->actingAs($userEmpresaB, 'sanctum')
             ->postJson('/api/v1/facturas/'.$factura->id.'/anular')
@@ -414,6 +416,7 @@ class FacturacionLegalFlowTest extends TestCase
         $user = User::factory()->create([
             'empresa_id' => $empresaId,
         ]);
+        app(ModuloService::class)->activarModulo((int) $empresaId, 'facturacion');
 
         $estadoId = $estadoCodigo === self::ESTADO_ORDEN_COMPLETADA ? 3 : 1;
 

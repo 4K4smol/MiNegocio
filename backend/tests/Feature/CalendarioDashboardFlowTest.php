@@ -11,6 +11,7 @@ use App\Models\Factura;
 use App\Models\RegistroFacturacion;
 use App\Models\Servicio;
 use App\Models\User;
+use App\Services\ModuloService;
 use App\Services\OrdenTrabajoService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -184,6 +185,8 @@ class CalendarioDashboardFlowTest extends TestCase
         ]);
 
         $user = User::factory()->create(['empresa_id' => $empresa->id]);
+        app(ModuloService::class)->activarModulo((int) $empresa->id, 'calendario');
+
         $cliente = Cliente::query()->create([
             'empresa_id' => $empresa->id,
             'tipo_cliente_id' => 1,

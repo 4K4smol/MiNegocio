@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use App\Models\Modulo;
@@ -11,44 +13,68 @@ class ModulosSeeder extends Seeder
     {
         $modulos = [
             [
-                'codigo' => 'FACTURACION',
-                'nombre' => 'Facturación',
-                'descripcion' => 'Gestión de facturas emitidas, rectificativas y estados.',
+                'codigo' => 'facturacion',
+                'nombre' => 'Facturacion',
+                'descripcion' => 'Gestion de facturas, registros de facturacion y VeriFactu simulado.',
                 'activo' => true,
                 'orden_visual' => 1,
                 'icono' => 'receipt',
             ],
             [
-                'codigo' => 'CLIENTES',
+                'codigo' => 'clientes',
                 'nombre' => 'Clientes',
-                'descripcion' => 'Gestión de clientes y localizaciones asociadas.',
+                'descripcion' => 'Gestion de clientes y localizaciones asociadas.',
                 'activo' => true,
                 'orden_visual' => 2,
                 'icono' => 'users',
             ],
             [
-                'codigo' => 'INVENTARIO',
-                'nombre' => 'Inventario',
-                'descripcion' => 'Control de productos, categorías, ubicaciones y movimientos.',
+                'codigo' => 'servicios',
+                'nombre' => 'Servicios',
+                'descripcion' => 'Catalogo de servicios, tarifas y precios.',
                 'activo' => true,
                 'orden_visual' => 3,
+                'icono' => 'briefcase',
+            ],
+            [
+                'codigo' => 'ordenes',
+                'nombre' => 'Ordenes de trabajo',
+                'descripcion' => 'Gestion operativa de ordenes de trabajo.',
+                'activo' => true,
+                'orden_visual' => 4,
+                'icono' => 'clipboard-list',
+            ],
+            [
+                'codigo' => 'calendario',
+                'nombre' => 'Calendario',
+                'descripcion' => 'Planificacion de eventos y ordenes programadas.',
+                'activo' => true,
+                'orden_visual' => 5,
+                'icono' => 'calendar',
+            ],
+            [
+                'codigo' => 'inventario',
+                'nombre' => 'Inventario',
+                'descripcion' => 'Control de productos, categorias, ubicaciones y movimientos.',
+                'activo' => true,
+                'orden_visual' => 6,
                 'icono' => 'boxes',
             ],
             [
-                'codigo' => 'REPORTES',
-                'nombre' => 'Reportes',
-                'descripcion' => 'Paneles y reportes operativos por empresa.',
+                'codigo' => 'informes',
+                'nombre' => 'Informes',
+                'descripcion' => 'Informes operativos por empresa.',
                 'activo' => true,
-                'orden_visual' => 4,
+                'orden_visual' => 7,
                 'icono' => 'bar-chart',
             ],
             [
-                'codigo' => 'USUARIOS',
-                'nombre' => 'Usuarios y roles',
-                'descripcion' => 'Administración de usuarios, roles y permisos.',
+                'codigo' => 'paginas_web',
+                'nombre' => 'Paginas web',
+                'descripcion' => 'Gestion futura de paginas web y contactos.',
                 'activo' => true,
-                'orden_visual' => 5,
-                'icono' => 'shield',
+                'orden_visual' => 8,
+                'icono' => 'globe',
             ],
         ];
 
