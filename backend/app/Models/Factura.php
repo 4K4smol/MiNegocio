@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use RuntimeException;
 
 class Factura extends Model
 {
@@ -51,6 +54,46 @@ class Factura extends Model
         'cuota_iva' => 'decimal:2',
         'total' => 'decimal:2',
     ];
+
+    protected static function booted(): void
+    {
+        static::updating(function (Factura $factura): void {
+            if (! $factura->registrosFacturacion()->exists()) {
+                return;
+            }
+
+            $camposInmutables = [
+                'empresa_id',
+                'cliente_id',
+                'tipo_factura_id',
+                'factura_rectificada_id',
+                'tipo_rectificacion_id',
+                'motivo_rectificacion',
+                'serie',
+                'numero',
+                'fecha_emision',
+                'fecha_operacion',
+                'moneda',
+                'emisor_nif',
+                'emisor_nombre_razon_social',
+                'emisor_domicilio_fiscal',
+                'receptor_nif',
+                'receptor_nombre_razon_social',
+                'receptor_domicilio_fiscal',
+                'receptor_cp',
+                'receptor_municipio',
+                'receptor_provincia',
+                'receptor_pais',
+                'subtotal',
+                'cuota_iva',
+                'total',
+            ];
+
+            if ($factura->isDirty($camposInmutables)) {
+                throw new RuntimeException('No se pueden modificar datos fiscales de una factura con registros de facturación.');
+            }
+        });
+    }
 
     public function empresa(): BelongsTo
     {

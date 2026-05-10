@@ -36,14 +36,20 @@ class RegistroFacturacionCadenaService
                 }
 
                 if ($registro->registro_anterior_hash_64 !== $anterior?->hash_actual) {
-                    $errores[] = $this->error($registro, 'No enlaza con el hash_actual del registro anterior.');
+                    $errores[] = $this->error($registro, 'No enlaza con el hash_actual del registro anterior.', [
+                        'hash_anterior_esperado' => $anterior?->hash_actual,
+                        'hash_anterior_informado' => $registro->registro_anterior_hash_64,
+                    ]);
                 }
             }
 
             $hashRecalculado = $this->recalcularHashDesdeRegistro($registro);
 
             if ($registro->hash_actual !== $hashRecalculado) {
-                $errores[] = $this->error($registro, 'El hash_actual no coincide con el hash recalculado.');
+                $errores[] = $this->error($registro, 'El hash_actual no coincide con el hash recalculado.', [
+                    'hash_actual' => $registro->hash_actual,
+                    'hash_recalculado' => $hashRecalculado,
+                ]);
             }
 
             $anterior = $registro;
@@ -63,11 +69,17 @@ class RegistroFacturacionCadenaService
         return $this->registroFacturacionService->recalcularHashDesdeRegistro($registro);
     }
 
-    private function error(RegistroFacturacion $registro, string $motivo): array
+    private function error(RegistroFacturacion $registro, string $motivo, array $detalle = []): array
     {
         return [
             'registro_id' => $registro->id,
+            'empresa_id' => $registro->empresa_id,
+            'tipo_registro' => $registro->tipoRegistroFacturacion?->codigo,
+            'serie' => $registro->serie,
+            'numero' => $registro->numero,
+            'fecha_expedicion' => $registro->fecha_expedicion?->toDateString(),
             'motivo' => $motivo,
+            'detalle' => $detalle,
         ];
     }
 }

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Resources\Api\V1\FacturaResource;
 use App\Models\EstadoFactura;
 use App\Models\Factura;
+use App\Services\FacturaRectificativaService;
 use App\Services\RegistroEventoFacturacionService;
 use App\Services\RegistroFacturacionService;
 use Illuminate\Http\JsonResponse;
@@ -16,10 +17,24 @@ use RuntimeException;
 
 class FacturaController extends AbstractCrudController
 {
-    public function __construct(private readonly RegistroFacturacionService $registroFacturacionService, private readonly RegistroEventoFacturacionService $registroEventoFacturacionService) {}
+    public function __construct(
+        private readonly RegistroFacturacionService $registroFacturacionService,
+        private readonly RegistroEventoFacturacionService $registroEventoFacturacionService,
+        private readonly FacturaRectificativaService $facturaRectificativaService
+    ) {}
 
     protected function modelClass(): string { return Factura::class; }
     protected function resourceClass(): ?string { return FacturaResource::class; }
+
+    public function store(Request $request): JsonResponse
+    {
+        return $this->forbidden('Las facturas solo se generan desde órdenes de trabajo o como rectificativas.');
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        return $this->forbidden('No se permite editar facturas manualmente.');
+    }
 
     public function destroy(Request $request, int $id): JsonResponse
     {
@@ -129,5 +144,20 @@ class FacturaController extends AbstractCrudController
         });
 
         return $this->updated(FacturaResource::make($factura->fresh(['lineas', 'impuestos', 'cliente', 'empresa', 'estadoFactura', 'tipoFactura', 'registrosFacturacion']))->resolve(), 'Factura anulada correctamente.');
+    }
+
+    public function rectificar(Request $request, Factura $factura): JsonResponse
+    {
+        if (! $this->findRecord($request, $factura->id)) {
+            return $this->forbidden();
+        }
+
+        $rectificativa = $this->facturaRectificativaService->generarDesdeFactura(
+            $factura,
+            $request->user(),
+            (string) $request->input('motivo_rectificacion', '')
+        );
+
+        return $this->created(FacturaResource::make($rectificativa)->resolve(), 'Factura rectificativa generada correctamente.');
     }
 }

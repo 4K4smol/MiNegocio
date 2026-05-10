@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use RuntimeException;
 
 class FacturaLinea extends Model
 {
@@ -39,6 +42,19 @@ class FacturaLinea extends Model
         'total' => 'decimal:2',
         'orden' => 'integer',
     ];
+
+    protected static function booted(): void
+    {
+        static::updating(fn (FacturaLinea $linea) => $linea->impedirCambiosSiFacturaRegistrada());
+        static::deleting(fn (FacturaLinea $linea) => $linea->impedirCambiosSiFacturaRegistrada());
+    }
+
+    private function impedirCambiosSiFacturaRegistrada(): void
+    {
+        if ($this->factura?->registrosFacturacion()->exists()) {
+            throw new RuntimeException('No se pueden modificar líneas de una factura con registros de facturación.');
+        }
+    }
 
     public function factura(): BelongsTo
     {

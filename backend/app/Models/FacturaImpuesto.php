@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use RuntimeException;
 
 class FacturaImpuesto extends Model
 {
@@ -24,6 +27,19 @@ class FacturaImpuesto extends Model
         'recargo_equivalencia_porcentaje' => 'decimal:2',
         'recargo_equivalencia_cuota' => 'decimal:2',
     ];
+
+    protected static function booted(): void
+    {
+        static::updating(fn (FacturaImpuesto $impuesto) => $impuesto->impedirCambiosSiFacturaRegistrada());
+        static::deleting(fn (FacturaImpuesto $impuesto) => $impuesto->impedirCambiosSiFacturaRegistrada());
+    }
+
+    private function impedirCambiosSiFacturaRegistrada(): void
+    {
+        if ($this->factura?->registrosFacturacion()->exists()) {
+            throw new RuntimeException('No se pueden modificar impuestos de una factura con registros de facturación.');
+        }
+    }
 
     public function factura(): BelongsTo
     {

@@ -68,6 +68,7 @@ Route::prefix('v1')->group(function (): void {
         Route::get('facturas/{factura}', [FacturaController::class, 'show']);
         Route::post('facturas/{factura}/marcar-pagada', [FacturaController::class, 'marcarPagada']);
         Route::post('facturas/{factura}/anular', [FacturaController::class, 'anular']);
+        Route::post('facturas/{factura}/rectificar', [FacturaController::class, 'rectificar']);
         Route::get('registros-facturacion', [RegistroFacturacionController::class, 'index']);
         Route::get('registros-facturacion/exportar', [RegistroFacturacionController::class, 'exportar']);
         Route::get('registros-facturacion/validar-cadena', [RegistroFacturacionController::class, 'validarCadena']);

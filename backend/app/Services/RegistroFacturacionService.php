@@ -104,14 +104,21 @@ class RegistroFacturacionService
         ?string $motivo,
         CarbonInterface $generadoAt
     ): array {
+        $factura->loadMissing('impuestos');
+
         return [
-            'tipo' => $tipoCodigo,
             'factura_id' => $factura->id,
+            'tipo_registro' => $tipoCodigo,
+            'emisor_nif' => $factura->emisor_nif,
+            'receptor_nif' => $factura->receptor_nif,
             'serie' => $factura->serie,
             'numero' => $factura->numero,
             'fecha_expedicion' => $factura->fecha_emision?->toDateString(),
-            'importe_total' => $factura->total,
-            'registro_anterior_hash_64' => $anterior?->hash_actual,
+            'fecha_operacion' => $factura->fecha_operacion?->toDateString(),
+            'cuota_total' => $this->normalizarDecimal($factura->cuota_iva),
+            'importe_total' => $this->normalizarDecimal($factura->total),
+            'desglose_impuestos' => $this->desgloseImpuestos($factura),
+            'hash_anterior' => $anterior?->hash_actual,
             'motivo' => $tipoCodigo === 'anulacion' ? $motivo : null,
             'generado_at' => $generadoAt->toISOString(),
         ];
@@ -119,14 +126,21 @@ class RegistroFacturacionService
 
     private function construirPayloadHashDesdeRegistro(RegistroFacturacion $registro): array
     {
+        $registro->loadMissing('factura.impuestos');
+
         return [
-            'tipo' => $registro->tipoRegistroFacturacion?->codigo,
             'factura_id' => $registro->factura_id,
+            'tipo_registro' => $registro->tipoRegistroFacturacion?->codigo,
+            'emisor_nif' => $registro->emisor_nif,
+            'receptor_nif' => $registro->factura?->receptor_nif,
             'serie' => $registro->serie,
             'numero' => $registro->numero,
             'fecha_expedicion' => $registro->fecha_expedicion?->toDateString(),
-            'importe_total' => $registro->importe_total,
-            'registro_anterior_hash_64' => $registro->registro_anterior_hash_64,
+            'fecha_operacion' => $registro->factura?->fecha_operacion?->toDateString(),
+            'cuota_total' => $this->normalizarDecimal($registro->cuota_total),
+            'importe_total' => $this->normalizarDecimal($registro->importe_total),
+            'desglose_impuestos' => $registro->factura ? $this->desgloseImpuestos($registro->factura) : [],
+            'hash_anterior' => $registro->registro_anterior_hash_64,
             'motivo' => $registro->tipoRegistroFacturacion?->codigo === 'anulacion'
                 ? $this->extraerMotivoDesdeXml($registro)
                 : null,
@@ -153,6 +167,65 @@ class RegistroFacturacionService
 
     public function calcularHash(array $payload): string
     {
+        $payload = $this->ordenarPayload($payload);
+
         return hash('sha256', json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
+    }
+
+    public function generarPayloadQrInterno(Factura $factura, ?RegistroFacturacion $registro = null): array
+    {
+        $registro ??= $factura->registrosFacturacion()->latest('id')->first();
+        $remisionReal = (bool) config('services.verifactu.remision_real', false);
+
+        return [
+            'etiqueta' => $remisionReal ? 'VERI*FACTU' : 'Remisión simulada - entorno de pruebas',
+            'modo' => $remisionReal ? 'real' : 'simulado',
+            'emisor_nif' => $factura->emisor_nif,
+            'serie' => $factura->serie,
+            'numero' => $factura->numero,
+            'fecha_expedicion' => $factura->fecha_emision?->toDateString(),
+            'importe_total' => $this->normalizarDecimal($factura->total),
+            'hash_registro' => $registro?->hash_actual,
+            'url_interna' => url('/verifactu/qr?emisor_nif=' . urlencode((string) $factura->emisor_nif) . '&serie=' . urlencode((string) $factura->serie) . '&numero=' . urlencode((string) $factura->numero)),
+        ];
+    }
+
+    private function desgloseImpuestos(Factura $factura): array
+    {
+        return $factura->impuestos
+            ->sortBy([
+                ['impuesto_codigo', 'asc'],
+                ['tipo_porcentaje', 'asc'],
+                ['calificacion', 'asc'],
+            ])
+            ->values()
+            ->map(fn ($impuesto): array => [
+                'impuesto_codigo' => $impuesto->impuesto_codigo,
+                'tipo_porcentaje' => $this->normalizarDecimal($impuesto->tipo_porcentaje),
+                'base_imponible' => $this->normalizarDecimal($impuesto->base_imponible),
+                'cuota' => $this->normalizarDecimal($impuesto->cuota),
+                'es_exento' => (bool) $impuesto->es_exento,
+                'es_no_sujeto' => (bool) $impuesto->es_no_sujeto,
+                'calificacion' => $impuesto->calificacion,
+            ])
+            ->all();
+    }
+
+    private function normalizarDecimal(mixed $valor): string
+    {
+        return number_format((float) $valor, 2, '.', '');
+    }
+
+    private function ordenarPayload(array $payload): array
+    {
+        ksort($payload);
+
+        foreach ($payload as $clave => $valor) {
+            if (is_array($valor)) {
+                $payload[$clave] = $this->ordenarPayload($valor);
+            }
+        }
+
+        return $payload;
     }
 }

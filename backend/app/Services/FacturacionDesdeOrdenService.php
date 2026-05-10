@@ -72,7 +72,7 @@ class FacturacionDesdeOrdenService
 
                 'emisor_nif' => $orden->empresa->nif,
                 'emisor_nombre_razon_social' => $orden->empresa->nombre_fiscal,
-                'emisor_domicilio_fiscal' => $orden->empresa->direccion_fiscal,
+                'emisor_domicilio_fiscal' => $orden->empresa->direccion_fiscal ?: 'N/D',
 
                 'receptor_nif' => $orden->cliente->dni_cif,
                 'receptor_nombre_razon_social' => $orden->cliente->razon_social ?: $orden->cliente->nombre_completo,

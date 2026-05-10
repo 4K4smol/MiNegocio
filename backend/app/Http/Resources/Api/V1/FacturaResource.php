@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Services\RegistroFacturacionService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -33,9 +34,7 @@ class FacturaResource extends JsonResource
             'ultimo_registro_facturacion_hash' => $this->registrosFacturacion->sortByDesc('id')->first()?->hash_actual,
             'estado_remision_aeat' => $this->registrosFacturacion->sortByDesc('id')->first()?->enviado_aeat_at ? 'enviado' : 'pendiente',
             'enviado_aeat_at' => $this->registrosFacturacion->sortByDesc('id')->first()?->enviado_aeat_at,
-            'datos_qr' => [
-                'url' => url('/verifactu/qr?emisor_nif=' . urlencode((string) $this->emisor_nif) . '&serie=' . urlencode((string) $this->serie) . '&numero=' . urlencode((string) $this->numero)),
-            ],
+            'datos_qr' => app(RegistroFacturacionService::class)->generarPayloadQrInterno($this->resource, $this->registrosFacturacion->sortByDesc('id')->first()),
             'lineas' => FacturaLineaResource::collection($this->whenLoaded('lineas')),
             'impuestos' => FacturaImpuestoResource::collection($this->whenLoaded('impuestos')),
         ];
