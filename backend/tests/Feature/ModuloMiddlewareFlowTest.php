@@ -101,6 +101,24 @@ class ModuloMiddlewareFlowTest extends TestCase
             );
     }
 
+    public function test_usuario_no_admin_no_puede_acceder_a_modulos(): void
+    {
+        [$user] = $this->crearUsuarioEmpresa('B20000005');
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/v1/modulos')
+            ->assertForbidden();
+    }
+
+    public function test_usuario_no_admin_no_puede_acceder_a_roles(): void
+    {
+        [$user] = $this->crearUsuarioEmpresa('B20000006');
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/v1/roles')
+            ->assertForbidden();
+    }
+
     /**
      * @return array{0: User, 1: Empresa}
      */

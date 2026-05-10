@@ -64,9 +64,6 @@ Route::prefix('v1')->group(function (): void {
             Route::apiResource('inventario-unidades-medida', InventarioUnidadMedidaController::class);
         });
 
-        Route::apiResource('modulos', ModuloController::class);
-        Route::apiResource('roles', RoleController::class);
-
         Route::middleware('modulo:calendario')->group(function (): void {
             Route::apiResource('calendario-eventos', CalendarioEventoController::class);
             Route::get('dashboard/calendario', [DashboardController::class, 'calendario']);
@@ -107,6 +104,8 @@ Route::prefix('v1')->group(function (): void {
         Route::get('declaraciones-responsables-software/{id}', [DeclaracionResponsableSoftwareController::class, 'show']);
 
         Route::middleware('admin')->group(function (): void {
+            Route::apiResource('modulos', ModuloController::class);
+            Route::apiResource('roles', RoleController::class);
             Route::get('admin/solicitudes-registro', [AdminSolicitudRegistroController::class, 'index']);
             Route::get('admin/solicitudes-registro/{solicitud}', [AdminSolicitudRegistroController::class, 'show']);
             Route::get('admin/documentos-verificacion/{documento}/ver', [AdminSolicitudRegistroController::class, 'verDocumento']);

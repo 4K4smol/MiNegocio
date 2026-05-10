@@ -46,13 +46,17 @@ class AdminEmpresaModuloController extends ApiController
             'empresa_id' => $empresa->id,
             'modulo_id' => $empresaModulo->modulo_id,
             'activo' => (bool) $empresaModulo->activo,
-        ], 'Módulo activado correctamente.');
+        ], 'Modulo activado correctamente.');
     }
 
     public function desactivar(Empresa $empresa, string $modulo): JsonResponse
     {
         $this->moduloService->desactivarModulo($empresa->id, $modulo);
 
-        return $this->updated(null, 'Módulo desactivado correctamente.');
+        return $this->updated([
+            'empresa_id' => $empresa->id,
+            'modulo' => $modulo,
+            'activo' => false,
+        ], 'Modulo desactivado correctamente.');
     }
 }

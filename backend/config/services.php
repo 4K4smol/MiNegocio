@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    'verifactu' => [
+        'modo' => env('VERIFACTU_MODO', 'simulado'),
+        'remision_real' => env('VERIFACTU_REMISION_REAL', false),
+        'endpoint' => env('VERIFACTU_ENDPOINT'),
+        'cert_path' => env('VERIFACTU_CERT_PATH'),
+        'cert_password' => env('VERIFACTU_CERT_PASSWORD'),
+        'timeout' => env('VERIFACTU_TIMEOUT', 30),
+    ],
+
 ];
