@@ -13,6 +13,8 @@ use RuntimeException;
 
 class OrdenTrabajoService
 {
+    public function __construct(private readonly CalendarioEventoService $calendarioEventoService) {}
+
     public function crearOrden(array $data, User $user): OrdenTrabajo
     {
         return DB::transaction(function () use ($data, $user): OrdenTrabajo {
@@ -50,6 +52,8 @@ class OrdenTrabajoService
                     'orden' => $i + 1,
                 ]));
             }
+            $this->calendarioEventoService->crearOActualizarDesdeOrden($orden, $user);
+
             return $orden->fresh(['cliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio']);
         });
     }
@@ -59,7 +63,7 @@ class OrdenTrabajoService
         if ($orden->estado?->codigo === 'facturada') {
             return $orden;
         }
-        return DB::transaction(function () use ($orden, $data): OrdenTrabajo {
+        return DB::transaction(function () use ($orden, $data, $user): OrdenTrabajo {
             $orden->fill(collect($data)->except('lineas')->toArray());
             $orden->save();
             if (isset($data['lineas']) && ! in_array($orden->estado?->codigo, ['completada', 'facturada'], true)) {
@@ -69,6 +73,8 @@ class OrdenTrabajoService
                     $orden->lineas()->create(array_merge($calc, ['servicio_id' => $linea['servicio_id'], 'descripcion' => $linea['descripcion'] ?? '', 'unidad_snapshot' => 'unidad', 'facturable' => (bool)($linea['facturable'] ?? true), 'orden' => $i + 1]));
                 }
             }
+            $this->calendarioEventoService->crearOActualizarDesdeOrden($orden, $user);
+
             return $orden->fresh(['cliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio']);
         });
     }
@@ -83,6 +89,8 @@ class OrdenTrabajoService
         $orden->fecha_fin_real = now();
         $orden->fecha_cierre = now();
         $orden->save();
+        $this->calendarioEventoService->marcarDesdeOrden($orden, 'completada');
+
         return $orden->fresh(['cliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio']);
     }
 
@@ -95,6 +103,8 @@ class OrdenTrabajoService
         }
         $orden->fecha_cierre = now();
         $orden->save();
+        $this->calendarioEventoService->marcarDesdeOrden($orden, 'cancelada');
+
         return $orden->fresh(['cliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio']);
     }
 

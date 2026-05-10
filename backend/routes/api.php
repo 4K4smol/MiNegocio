@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\AdminSolicitudRegistroController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CalendarioEventoController;
 use App\Http\Controllers\Api\V1\ClienteController;
+use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeclaracionResponsableSoftwareController;
 use App\Http\Controllers\Api\V1\EstadoFacturaController;
 use App\Http\Controllers\Api\V1\FacturaController;
@@ -57,6 +59,10 @@ Route::prefix('v1')->group(function (): void {
         Route::apiResource('inventario-unidades-medida', InventarioUnidadMedidaController::class);
         Route::apiResource('modulos', ModuloController::class);
         Route::apiResource('roles', RoleController::class);
+        Route::apiResource('calendario-eventos', CalendarioEventoController::class);
+        Route::get('dashboard/resumen', [DashboardController::class, 'resumen']);
+        Route::get('dashboard/proximas-ordenes', [DashboardController::class, 'proximasOrdenes']);
+        Route::get('dashboard/calendario', [DashboardController::class, 'calendario']);
         Route::get('ordenes-trabajo', [OrdenTrabajoController::class, 'index']);
         Route::post('ordenes-trabajo', [OrdenTrabajoController::class, 'store']);
         Route::get('ordenes-trabajo/{orden}', [OrdenTrabajoController::class, 'show']);
