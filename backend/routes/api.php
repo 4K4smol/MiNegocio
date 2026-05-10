@@ -5,16 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\V1\AdminSolicitudRegistroController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ClienteController;
-use App\Http\Controllers\Api\V1\ServicioController;
-use App\Http\Controllers\Api\V1\TipoClienteController;
-use App\Http\Controllers\Api\V1\TipoDocumentoIdentidadController;
-use App\Http\Controllers\Api\V1\TipoEmpresaController;
-use App\Http\Controllers\Api\V1\TipoEventoFacturacionController;
-use App\Http\Controllers\Api\V1\TipoFacturaController;
-use App\Http\Controllers\Api\V1\TipoInventarioMovimientoController;
-use App\Http\Controllers\Api\V1\TipoLocalizacionClienteController;
-use App\Http\Controllers\Api\V1\TipoRectificacionController;
-use App\Http\Controllers\Api\V1\TipoRegistroFacturacionController;
+use App\Http\Controllers\Api\V1\DeclaracionResponsableSoftwareController;
 use App\Http\Controllers\Api\V1\EstadoFacturaController;
 use App\Http\Controllers\Api\V1\FacturaController;
 use App\Http\Controllers\Api\V1\InformeController;
@@ -25,15 +16,25 @@ use App\Http\Controllers\Api\V1\InventarioUbicacionController;
 use App\Http\Controllers\Api\V1\InventarioUnidadMedidaController;
 use App\Http\Controllers\Api\V1\ModuloController;
 use App\Http\Controllers\Api\V1\OrdenTrabajoController;
+use App\Http\Controllers\Api\V1\RegistroEventoController;
+use App\Http\Controllers\Api\V1\RegistroEventoFacturacionController;
+use App\Http\Controllers\Api\V1\RegistroFacturacionController;
 use App\Http\Controllers\Api\V1\RoleController;
+use App\Http\Controllers\Api\V1\ServicioController;
 use App\Http\Controllers\Api\V1\ServicioPrecioController;
 use App\Http\Controllers\Api\V1\ServicioTarifaController;
 use App\Http\Controllers\Api\V1\TareaController;
-use App\Http\Controllers\Api\V1\VerificacionUsuarioController;
-use App\Http\Controllers\Api\V1\RegistroFacturacionController;
-use App\Http\Controllers\Api\V1\RegistroEventoController;
-use App\Http\Controllers\Api\V1\RegistroEventoFacturacionController;
+use App\Http\Controllers\Api\V1\TipoClienteController;
+use App\Http\Controllers\Api\V1\TipoDocumentoIdentidadController;
+use App\Http\Controllers\Api\V1\TipoEmpresaController;
+use App\Http\Controllers\Api\V1\TipoEventoFacturacionController;
+use App\Http\Controllers\Api\V1\TipoFacturaController;
+use App\Http\Controllers\Api\V1\TipoInventarioMovimientoController;
+use App\Http\Controllers\Api\V1\TipoLocalizacionClienteController;
+use App\Http\Controllers\Api\V1\TipoRectificacionController;
+use App\Http\Controllers\Api\V1\TipoRegistroFacturacionController;
 use App\Http\Controllers\Api\V1\VerifactuController;
+use App\Http\Controllers\Api\V1\VerificacionUsuarioController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -75,6 +76,9 @@ Route::prefix('v1')->group(function (): void {
         Route::get('registros-evento/exportar', [RegistroEventoController::class, 'exportar']);
         Route::get('registros-evento-facturacion', [RegistroEventoFacturacionController::class, 'index']);
         Route::get('registros-evento-facturacion/exportar', [RegistroEventoFacturacionController::class, 'exportar']);
+        Route::get('declaraciones-responsables-software', [DeclaracionResponsableSoftwareController::class, 'index']);
+        Route::post('declaraciones-responsables-software', [DeclaracionResponsableSoftwareController::class, 'store']);
+        Route::get('declaraciones-responsables-software/{id}', [DeclaracionResponsableSoftwareController::class, 'show']);
         Route::post('verifactu/enviar-pendientes', [VerifactuController::class, 'enviarPendientes']);
 
         Route::middleware('admin')->group(function (): void {

@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\Empresa;
-use App\Models\Factura;
 use App\Models\OrdenTrabajo;
 use App\Models\OrdenTrabajoLinea;
-use App\Models\RegistroEventoFacturacion;
 use App\Models\RegistroFacturacion;
 use App\Models\User;
 use App\Services\FacturacionDesdeOrdenService;
+use App\Services\RegistroFacturacionCadenaService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
@@ -36,7 +35,7 @@ class FacturacionLegalFlowTest extends TestCase
             'estado',
             'lineas',
             'empresa',
-            'cliente.localizacionPrincipal'
+            'cliente.localizacionPrincipal',
         ]), $user);
     }
 
@@ -48,12 +47,32 @@ class FacturacionLegalFlowTest extends TestCase
             'estado',
             'lineas',
             'empresa',
-            'cliente.localizacionPrincipal'
+            'cliente.localizacionPrincipal',
         ]), $user);
 
         $this->assertDatabaseHas('facturas', ['id' => $factura->id]);
         $this->assertDatabaseHas('registros_facturacion', ['factura_id' => $factura->id]);
         $this->assertDatabaseHas('registros_evento_facturacion', ['factura_id' => $factura->id, 'codigo_evento' => 'REGISTRO_FACTURACION_ALTA_CREADO']);
+    }
+
+    public function test_no_duplica_facturacion_de_una_orden_ya_facturada(): void
+    {
+        [$user, $orden] = $this->crearContextoOrden('completada', 'OT-002-B');
+
+        app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden->fresh([
+            'estado',
+            'lineas',
+            'empresa',
+            'cliente.localizacionPrincipal',
+        ]), $user);
+
+        $this->expectException(RuntimeException::class);
+        app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden->fresh([
+            'estado',
+            'lineas',
+            'empresa',
+            'cliente.localizacionPrincipal',
+        ]), $user);
     }
 
     public function test_dos_facturas_misma_empresa_quedan_encadenadas(): void
@@ -65,13 +84,13 @@ class FacturacionLegalFlowTest extends TestCase
             'estado',
             'lineas',
             'empresa',
-            'cliente.localizacionPrincipal'
+            'cliente.localizacionPrincipal',
         ]), $user);
         $factura2 = app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden2->fresh([
             'estado',
             'lineas',
             'empresa',
-            'cliente.localizacionPrincipal'
+            'cliente.localizacionPrincipal',
         ]), $user);
 
         $registros = RegistroFacturacion::query()->where('empresa_id', $user->empresa_id)->orderBy('id')->get();
@@ -87,15 +106,15 @@ class FacturacionLegalFlowTest extends TestCase
             'estado',
             'lineas',
             'empresa',
-            'cliente.localizacionPrincipal'
+            'cliente.localizacionPrincipal',
         ]), $user);
 
-        $this->actingAs($user, 'sanctum')->postJson('/api/v1/facturas/' . $factura->id . '/anular', ['motivo_anulacion' => 'Cliente solicita anulación'])->assertOk();
+        $this->actingAs($user, 'sanctum')->postJson('/api/v1/facturas/'.$factura->id.'/anular', ['motivo_anulacion' => 'Cliente solicita anulación'])->assertOk();
 
         $this->assertDatabaseHas('registros_facturacion', ['factura_id' => $factura->id, 'tipo_registro_facturacion_id' => 2]);
         $this->assertDatabaseHas('registros_evento_facturacion', ['factura_id' => $factura->id, 'codigo_evento' => 'REGISTRO_FACTURACION_ANULACION_CREADO']);
 
-        $this->actingAs($user, 'sanctum')->postJson('/api/v1/facturas/' . $factura->id . '/anular')->assertStatus(500);
+        $this->actingAs($user, 'sanctum')->postJson('/api/v1/facturas/'.$factura->id.'/anular')->assertStatus(500);
     }
 
     private function crearContextoOrden(string $estadoCodigo, string $numeroOrden, ?int $empresaId = null): array
@@ -109,7 +128,7 @@ class FacturacionLegalFlowTest extends TestCase
             'cliente_id' => 1,
             'numero' => $numeroOrden,
             'estado_id' => $estadoId,
-            'estado_codigo' => $estadoCodigo
+            'estado_codigo' => $estadoCodigo,
         ]);
 
         OrdenTrabajoLinea::query()->create([
@@ -143,5 +162,53 @@ class FacturacionLegalFlowTest extends TestCase
         app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden->fresh(['estado', 'lineas', 'empresa', 'cliente.localizacionPrincipal']), $user);
 
         $this->actingAs($user, 'sanctum')->getJson('/api/v1/registros-facturacion/validar-cadena')->assertOk()->assertJsonPath('data.valida', true);
+    }
+
+    public function test_validacion_cadena_detecta_enlace_roto(): void
+    {
+        [$user, $orden1] = $this->crearContextoOrden('completada', 'OT-012');
+        [$__, $orden2] = $this->crearContextoOrden('completada', 'OT-013', $user->empresa_id);
+
+        app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden1->fresh(['estado', 'lineas', 'empresa', 'cliente.localizacionPrincipal']), $user);
+        app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden2->fresh(['estado', 'lineas', 'empresa', 'cliente.localizacionPrincipal']), $user);
+
+        $registro = RegistroFacturacion::query()->where('empresa_id', $user->empresa_id)->orderByDesc('id')->firstOrFail();
+        $registro->registro_anterior_hash_64 = str_repeat('0', 64);
+        $registro->save();
+
+        $resultado = app(RegistroFacturacionCadenaService::class)->validarCadenaEmpresa((int) $user->empresa_id);
+
+        $this->assertFalse($resultado['valida']);
+        $this->assertTrue(collect($resultado['errores'])->contains(fn (array $error) => str_contains($error['motivo'], 'No enlaza')));
+    }
+
+    public function test_validacion_cadena_detecta_primer_registro_mal_marcado(): void
+    {
+        [$user, $orden] = $this->crearContextoOrden('completada', 'OT-014');
+        app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden->fresh(['estado', 'lineas', 'empresa', 'cliente.localizacionPrincipal']), $user);
+
+        $registro = RegistroFacturacion::query()->where('empresa_id', $user->empresa_id)->firstOrFail();
+        $registro->primer_registro_cadena = false;
+        $registro->save();
+
+        $resultado = app(RegistroFacturacionCadenaService::class)->validarCadenaEmpresa((int) $user->empresa_id);
+
+        $this->assertFalse($resultado['valida']);
+        $this->assertTrue(collect($resultado['errores'])->contains(fn (array $error) => str_contains($error['motivo'], 'primer registro')));
+    }
+
+    public function test_validacion_cadena_detecta_hash_manipulado(): void
+    {
+        [$user, $orden] = $this->crearContextoOrden('completada', 'OT-015');
+        app(FacturacionDesdeOrdenService::class)->generarDesdeOrden($orden->fresh(['estado', 'lineas', 'empresa', 'cliente.localizacionPrincipal']), $user);
+
+        $registro = RegistroFacturacion::query()->where('empresa_id', $user->empresa_id)->firstOrFail();
+        $registro->importe_total = 999.99;
+        $registro->save();
+
+        $resultado = app(RegistroFacturacionCadenaService::class)->validarCadenaEmpresa((int) $user->empresa_id);
+
+        $this->assertFalse($resultado['valida']);
+        $this->assertTrue(collect($resultado['errores'])->contains(fn (array $error) => str_contains($error['motivo'], 'hash_actual')));
     }
 }

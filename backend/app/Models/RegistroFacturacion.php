@@ -49,6 +49,11 @@ class RegistroFacturacion extends Model
         'productor_nombre',
         'enviado_aeat_at',
         'respuesta_aeat',
+        'estado_remision',
+        'intentos_remision',
+        'ultimo_intento_at',
+        'codigo_error_aeat',
+        'descripcion_error_aeat',
     ];
 
     protected $casts = [
@@ -61,28 +66,37 @@ class RegistroFacturacion extends Model
         'indicador_multiples_ot' => 'boolean',
         'generado_at' => 'datetime',
         'enviado_aeat_at' => 'datetime',
+        'respuesta_aeat' => 'array',
+        'estado_remision' => 'string',
+        'intentos_remision' => 'integer',
+        'ultimo_intento_at' => 'datetime',
     ];
 
     protected static function booted(): void
     {
-        static::deleting(fn() => throw new RuntimeException('No se pueden borrar registros_facturacion.'));
+        static::deleting(fn () => throw new RuntimeException('No se pueden borrar registros_facturacion.'));
     }
+
     public function factura(): BelongsTo
     {
         return $this->belongsTo(Factura::class, 'factura_id');
     }
+
     public function tipoRegistroFacturacion(): BelongsTo
     {
         return $this->belongsTo(TipoRegistroFacturacion::class, 'tipo_registro_facturacion_id');
     }
+
     public function modoRemisionFacturacion(): BelongsTo
     {
         return $this->belongsTo(ModoRemisionFacturacion::class, 'modo_remision_facturacion_id');
     }
+
     public function empresa(): BelongsTo
     {
         return $this->belongsTo(Empresa::class, 'empresa_id');
     }
+
     public function tipoFactura(): BelongsTo
     {
         return $this->belongsTo(TipoFactura::class, 'tipo_factura_id');

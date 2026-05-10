@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\EstadoFactura;
 use App\Models\Factura;
+use App\Models\FacturaLinea;
 use App\Models\OrdenTrabajo;
 use App\Models\OrdenTrabajoEstado;
 use App\Models\TipoFactura;
@@ -17,14 +18,17 @@ use RuntimeException;
 class FacturacionDesdeOrdenService
 {
     public function __construct(private readonly RegistroFacturacionService $registroFacturacionService, private readonly RegistroEventoFacturacionService $registroEventoFacturacionService) {}
+
     private const ROL_ADMIN = 'admin';
 
     private const ESTADO_ORDEN_COMPLETADA = 'completada';
+
     private const ESTADO_ORDEN_FACTURADA = 'facturada';
 
     private const TIPO_FACTURA_ORDINARIA = 'ordinaria';
 
     private const ESTADO_FACTURA_EMITIDA = 'emitida';
+
     private const ESTADO_FACTURA_BORRADOR = 'borrador';
 
     private const SERIE_FACTURA = 'A';
@@ -42,7 +46,7 @@ class FacturacionDesdeOrdenService
             $this->validarOrdenFacturable($orden, $user);
 
             $facturables = $orden->lineas
-                ->filter(fn($linea) => (bool) $linea->facturable && (float) $linea->cantidad > (float) ($linea->facturado_cantidad ?? 0))
+                ->filter(fn ($linea) => (bool) $linea->facturable && (float) $linea->cantidad > (float) ($linea->facturado_cantidad ?? 0))
                 ->values();
 
             if ($facturables->isEmpty()) {
@@ -120,9 +124,26 @@ class FacturacionDesdeOrdenService
             throw new RuntimeException('Solo se pueden facturar órdenes completadas.');
         }
 
+        if ($this->ordenTieneFacturaAsociada($orden)) {
+            throw new RuntimeException('La orden ya tiene una factura asociada.');
+        }
+
         if (! $orden->empresa || ! $orden->cliente) {
             throw new RuntimeException('La orden no tiene empresa o cliente asociado para generar snapshot fiscal.');
         }
+    }
+
+    private function ordenTieneFacturaAsociada(OrdenTrabajo $orden): bool
+    {
+        $lineaIds = $orden->lineas->pluck('id');
+
+        if ($lineaIds->isEmpty()) {
+            return false;
+        }
+
+        return FacturaLinea::query()
+            ->whereIn('orden_trabajo_linea_id', $lineaIds)
+            ->exists();
     }
 
     private function obtenerTipoFactura(): TipoFactura
@@ -164,7 +185,7 @@ class FacturacionDesdeOrdenService
         $ultimaFactura = Factura::query()
             ->where('empresa_id', $empresaId)
             ->where('serie', self::SERIE_FACTURA)
-            ->where('numero', 'like', 'F-' . $anio . '-%')
+            ->where('numero', 'like', 'F-'.$anio.'-%')
             ->orderByDesc('id')
             ->lockForUpdate()
             ->first();
@@ -176,7 +197,7 @@ class FacturacionDesdeOrdenService
             $siguienteNumero = $ultimoSecuencial + 1;
         }
 
-        return 'F-' . $anio . '-' . str_pad((string) $siguienteNumero, 6, '0', STR_PAD_LEFT);
+        return 'F-'.$anio.'-'.str_pad((string) $siguienteNumero, 6, '0', STR_PAD_LEFT);
     }
 
     private function crearLineasFactura(Factura $factura, Collection $facturables): Collection
@@ -238,7 +259,7 @@ class FacturacionDesdeOrdenService
         $subtotal = 0.0;
         $cuotaIva = 0.0;
 
-        $grupos = $lineasFactura->groupBy(fn($linea) => (string) $linea->iva_porcentaje);
+        $grupos = $lineasFactura->groupBy(fn ($linea) => (string) $linea->iva_porcentaje);
 
         foreach ($grupos as $iva => $items) {
             $base = round((float) $items->sum('base_imponible'), 2);
@@ -276,5 +297,4 @@ class FacturacionDesdeOrdenService
         $orden->estado_codigo = $estadoFacturada->codigo;
         $orden->save();
     }
-
 }

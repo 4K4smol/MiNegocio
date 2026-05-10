@@ -8,12 +8,12 @@ use App\Models\Factura;
 use App\Models\ModoRemisionFacturacion;
 use App\Models\RegistroFacturacion;
 use App\Models\TipoRegistroFacturacion;
+use Carbon\CarbonInterface;
 use RuntimeException;
 
 class RegistroFacturacionService
 {
     private const CODIGO_SISTEMA = 'MINNEGOCIO-RRSIF';
-
 
     public function __construct(private readonly RegistroFacturacionXmlBuilder $xmlBuilder) {}
 
@@ -21,10 +21,12 @@ class RegistroFacturacionService
     {
         return RegistroFacturacion::query()->where('empresa_id', $empresaId)->orderByDesc('id')->lockForUpdate()->first();
     }
+
     public function crearRegistroFacturacionAlta(Factura $factura): RegistroFacturacion
     {
         return $this->crearRegistro($factura, 'alta');
     }
+
     public function crearRegistroFacturacionAnulacion(Factura $factura, string $motivo = 'Anulación de factura'): RegistroFacturacion
     {
         return $this->crearRegistro($factura, 'anulacion', $motivo);
@@ -34,23 +36,14 @@ class RegistroFacturacionService
     {
         $tipo = TipoRegistroFacturacion::query()->where('codigo', $tipoCodigo)->first();
         $modo = ModoRemisionFacturacion::query()->where('codigo', 'verifactu')->first();
-        if (! $tipo || ! $modo) throw new RuntimeException('Faltan catálogos de registro de facturación.');
+        if (! $tipo || ! $modo) {
+            throw new RuntimeException('Faltan catálogos de registro de facturación.');
+        }
 
         $anterior = $this->obtenerRegistroAnterior((int) $factura->empresa_id);
         $generadoAt = now();
 
-        $hash = $this->calcularHash([
-
-            'tipo' => $tipoCodigo,
-            'factura_id' => $factura->id,
-            'serie' => $factura->serie,
-            'numero' => $factura->numero,
-            'fecha_expedicion' => $factura->fecha_emision->toDateString(),
-            'importe_total' => $factura->total,
-            'registro_anterior_hash_64' => $anterior?->hash_actual,
-            'motivo' => $motivo,
-            'generado_at' => $generadoAt->toISOString(),
-        ]);
+        $hash = $this->calcularHash($this->construirPayloadHash($factura, $tipoCodigo, $anterior, $motivo, $generadoAt));
 
         $data = [
             'factura_id' => $factura->id,
@@ -78,7 +71,7 @@ class RegistroFacturacionService
             'codigo_sistema_informatico' => self::CODIGO_SISTEMA,
             'nombre_sistema' => (string) config('app.name', 'MiNegocio'),
             'version_sistema' => (string) config('app.version', '1.0.0'),
-            'numero_instalacion' => 'EMP-' . $factura->empresa_id,
+            'numero_instalacion' => 'EMP-'.$factura->empresa_id,
             'tipo_uso_posible_solo_verifactu' => true,
             'tipo_uso_posible_multi_ot' => true,
             'indicador_multiples_ot' => false,
@@ -93,7 +86,72 @@ class RegistroFacturacionService
         return RegistroFacturacion::query()->create($data);
     }
 
-    private function calcularHash(array $payload): string
+    public function recalcularHashDesdeRegistro(RegistroFacturacion $registro): string
+    {
+        $registro->loadMissing(['factura', 'tipoRegistroFacturacion']);
+
+        if (! $registro->factura) {
+            throw new RuntimeException('No se puede recalcular el hash sin la factura asociada.');
+        }
+
+        return $this->calcularHash($this->construirPayloadHashDesdeRegistro($registro));
+    }
+
+    public function construirPayloadHash(
+        Factura $factura,
+        string $tipoCodigo,
+        ?RegistroFacturacion $anterior,
+        ?string $motivo,
+        CarbonInterface $generadoAt
+    ): array {
+        return [
+            'tipo' => $tipoCodigo,
+            'factura_id' => $factura->id,
+            'serie' => $factura->serie,
+            'numero' => $factura->numero,
+            'fecha_expedicion' => $factura->fecha_emision?->toDateString(),
+            'importe_total' => $factura->total,
+            'registro_anterior_hash_64' => $anterior?->hash_actual,
+            'motivo' => $tipoCodigo === 'anulacion' ? $motivo : null,
+            'generado_at' => $generadoAt->toISOString(),
+        ];
+    }
+
+    private function construirPayloadHashDesdeRegistro(RegistroFacturacion $registro): array
+    {
+        return [
+            'tipo' => $registro->tipoRegistroFacturacion?->codigo,
+            'factura_id' => $registro->factura_id,
+            'serie' => $registro->serie,
+            'numero' => $registro->numero,
+            'fecha_expedicion' => $registro->fecha_expedicion?->toDateString(),
+            'importe_total' => $registro->importe_total,
+            'registro_anterior_hash_64' => $registro->registro_anterior_hash_64,
+            'motivo' => $registro->tipoRegistroFacturacion?->codigo === 'anulacion'
+                ? $this->extraerMotivoDesdeXml($registro)
+                : null,
+            'generado_at' => $registro->generado_at?->toISOString(),
+        ];
+    }
+
+    private function extraerMotivoDesdeXml(RegistroFacturacion $registro): ?string
+    {
+        if (! $registro->xml_contenido) {
+            return null;
+        }
+
+        $xml = @simplexml_load_string($registro->xml_contenido);
+
+        if (! $xml || ! isset($xml->Motivo)) {
+            return null;
+        }
+
+        $motivo = trim((string) $xml->Motivo);
+
+        return $motivo !== '' ? $motivo : null;
+    }
+
+    public function calcularHash(array $payload): string
     {
         return hash('sha256', json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
     }
