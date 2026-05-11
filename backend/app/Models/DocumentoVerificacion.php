@@ -18,6 +18,7 @@ class DocumentoVerificacion extends Model
         'nombre_original',
         'mime_type',
         'tamano',
+        'hash_sha256',
     ];
 
     public function solicitudVerificacion(): BelongsTo

@@ -89,7 +89,8 @@ class RegistroEntidadService
         $uuid = (string) Str::uuid();
         $ext = $file->getClientOriginalExtension();
         $path = sprintf('%d/%s_%s.%s', $solicitudId, $tipo, $uuid, $ext);
-        Storage::disk('verificaciones')->put($path, $file->getContent());
+        $content = $file->getContent();
+        Storage::disk('verificaciones')->put($path, $content);
 
         return DocumentoVerificacion::query()->create([
             'solicitud_verificacion_id' => $solicitudId,
@@ -98,6 +99,7 @@ class RegistroEntidadService
             'nombre_original' => $file->getClientOriginalName(),
             'mime_type' => $file->getClientMimeType(),
             'tamano' => $file->getSize(),
+            'hash_sha256' => hash('sha256', $content),
         ]);
     }
 }

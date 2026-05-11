@@ -16,8 +16,12 @@ class SolicitudVerificacion extends Model
         'user_id',
         'empresa_id',
         'estado_verificacion_id',
+        'estado_identidad',
+        'estado_empresa',
+        'estado_representacion',
         'revisado_por',
         'observaciones',
+        'motivo_rechazo',
         'fecha_revision'
     ];
 
@@ -45,5 +49,10 @@ class SolicitudVerificacion extends Model
     public function documentos(): HasMany
     {
         return $this->hasMany(DocumentoVerificacion::class, 'solicitud_verificacion_id');
+    }
+
+    public function eventosAdmin(): HasMany
+    {
+        return $this->hasMany(AdminVerificacionEvento::class, 'solicitud_verificacion_id');
     }
 }

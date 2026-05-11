@@ -29,6 +29,13 @@ class Empresa extends Model
         'tipo_empresa_id',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'activa' => 'boolean',
+        ];
+    }
+
     public function tipoEmpresa(): BelongsTo
     {
         return $this->belongsTo(TipoEmpresa::class, 'tipo_empresa_id');

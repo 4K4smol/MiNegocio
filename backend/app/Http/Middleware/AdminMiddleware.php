@@ -14,7 +14,11 @@ class AdminMiddleware
     {
         $user = $request->user();
 
-        if ($user === null || $user->role?->nombre !== 'admin') {
+        if ($user === null) {
+            abort(401, 'No autenticado.');
+        }
+
+        if ($user->role?->nombre !== 'admin') {
             abort(403, 'No autorizado.');
         }
 

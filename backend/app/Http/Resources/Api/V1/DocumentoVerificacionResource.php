@@ -18,6 +18,8 @@ class DocumentoVerificacionResource extends JsonResource
             'nombre_original' => $this->nombre_original,
             'mime_type' => $this->mime_type,
             'tamano' => $this->tamano,
+            'hash_sha256' => $this->hash_sha256,
+            'created_at' => $this->created_at,
         ];
     }
 }

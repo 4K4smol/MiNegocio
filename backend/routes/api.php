@@ -106,6 +106,23 @@ Route::prefix('v1')->group(function (): void {
         Route::middleware('admin')->group(function (): void {
             Route::apiResource('modulos', ModuloController::class);
             Route::apiResource('roles', RoleController::class);
+            Route::get('admin/dashboard', [AdminSolicitudRegistroController::class, 'dashboard']);
+            Route::get('admin/solicitudes', [AdminSolicitudRegistroController::class, 'index']);
+            Route::get('admin/solicitudes/{solicitud}', [AdminSolicitudRegistroController::class, 'show']);
+            Route::post('admin/solicitudes/{solicitud}/aprobar-identidad', [AdminSolicitudRegistroController::class, 'aprobarIdentidad']);
+            Route::post('admin/solicitudes/{solicitud}/rechazar-identidad', [AdminSolicitudRegistroController::class, 'rechazarIdentidad']);
+            Route::post('admin/solicitudes/{solicitud}/aprobar-empresa', [AdminSolicitudRegistroController::class, 'aprobarEmpresa']);
+            Route::post('admin/solicitudes/{solicitud}/rechazar-empresa', [AdminSolicitudRegistroController::class, 'rechazarEmpresa']);
+            Route::post('admin/solicitudes/{solicitud}/aprobar-representacion', [AdminSolicitudRegistroController::class, 'aprobarRepresentacion']);
+            Route::post('admin/solicitudes/{solicitud}/rechazar-representacion', [AdminSolicitudRegistroController::class, 'rechazarRepresentacion']);
+            Route::post('admin/solicitudes/{solicitud}/aprobar-total', [AdminSolicitudRegistroController::class, 'aprobarTotal']);
+            Route::post('admin/solicitudes/{solicitud}/rechazar-total', [AdminSolicitudRegistroController::class, 'rechazarTotal']);
+            Route::get('admin/documentos/{documento}/descargar', [AdminSolicitudRegistroController::class, 'verDocumento']);
+            Route::get('admin/empresas', [AdminSolicitudRegistroController::class, 'empresas']);
+            Route::get('admin/empresas/{empresa}', [AdminSolicitudRegistroController::class, 'empresa']);
+            Route::patch('admin/empresas/{empresa}/activar', [AdminSolicitudRegistroController::class, 'activarEmpresa']);
+            Route::patch('admin/empresas/{empresa}/desactivar', [AdminSolicitudRegistroController::class, 'desactivarEmpresa']);
+            Route::get('admin/catalogos', [AdminSolicitudRegistroController::class, 'catalogos']);
             Route::get('admin/solicitudes-registro', [AdminSolicitudRegistroController::class, 'index']);
             Route::get('admin/solicitudes-registro/{solicitud}', [AdminSolicitudRegistroController::class, 'show']);
             Route::get('admin/documentos-verificacion/{documento}/ver', [AdminSolicitudRegistroController::class, 'verDocumento']);
