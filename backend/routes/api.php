@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\AdminEmpresaModuloController;
 use App\Http\Controllers\Api\V1\AdminSolicitudRegistroController;
+use App\Http\Controllers\Api\V1\Admin\DocumentoVerificacionController as AdminDocumentoVerificacionController;
+use App\Http\Controllers\Api\V1\Admin\SolicitudVerificacionController as AdminSolicitudVerificacionController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CalendarioEventoController;
 use App\Http\Controllers\Api\V1\ClienteController;
@@ -106,6 +108,12 @@ Route::prefix('v1')->group(function (): void {
         Route::middleware('admin')->group(function (): void {
             Route::apiResource('modulos', ModuloController::class);
             Route::apiResource('roles', RoleController::class);
+            Route::get('admin/solicitudes-verificacion', [AdminSolicitudVerificacionController::class, 'index']);
+            Route::get('admin/solicitudes-verificacion/{empresa}', [AdminSolicitudVerificacionController::class, 'show']);
+            Route::post('admin/solicitudes-verificacion/{empresa}/aprobar', [AdminSolicitudVerificacionController::class, 'aprobar']);
+            Route::post('admin/solicitudes-verificacion/{empresa}/rechazar', [AdminSolicitudVerificacionController::class, 'rechazar']);
+            Route::post('admin/solicitudes-verificacion/{empresa}/solicitar-subsanacion', [AdminSolicitudVerificacionController::class, 'solicitarSubsanacion']);
+            Route::get('admin/documentos-verificacion/{documento}/preview', [AdminDocumentoVerificacionController::class, 'preview']);
             Route::get('admin/dashboard', [AdminSolicitudRegistroController::class, 'dashboard']);
             Route::get('admin/solicitudes', [AdminSolicitudRegistroController::class, 'index']);
             Route::get('admin/solicitudes/{solicitud}', [AdminSolicitudRegistroController::class, 'show']);

@@ -9,35 +9,21 @@ class EstadosVerificacionSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('estados_verificacion')->insert([
-            [
-                'id' => 1,
-                'nombre' => 'pendiente',
-                'descripcion' => 'Pendiente de revisión',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 2,
-                'nombre' => 'en_revision',
-                'descripcion' => 'Verificación en proceso de revisión',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 3,
-                'nombre' => 'aprobada',
-                'descripcion' => 'Verificación aprobada',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 4,
-                'nombre' => 'rechazada',
-                'descripcion' => 'Verificación rechazada',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+        foreach ([
+            ['nombre' => 'pendiente', 'descripcion' => 'Pendiente de revision'],
+            ['nombre' => 'en_revision', 'descripcion' => 'Verificacion en proceso de revision'],
+            ['nombre' => 'aprobada', 'descripcion' => 'Verificacion aprobada'],
+            ['nombre' => 'rechazada', 'descripcion' => 'Verificacion rechazada'],
+            ['nombre' => 'subsanacion', 'descripcion' => 'Pendiente de subsanacion documental'],
+        ] as $estado) {
+            DB::table('estados_verificacion')->updateOrInsert(
+                ['nombre' => $estado['nombre']],
+                [
+                    'descripcion' => $estado['descripcion'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+            );
+        }
     }
 }
