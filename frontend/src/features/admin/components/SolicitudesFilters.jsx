@@ -17,8 +17,8 @@ export function SolicitudesFilters({ filters, onChange, loading }) {
                 <select value={filters.estado} onChange={(event) => update("estado", event.target.value)} disabled={loading}>
                     <option value="">Todos</option>
                     <option value="pendiente">Pendiente</option>
-                    <option value="en_revision">En revision</option>
-                    <option value="subsanacion">Subsanacion</option>
+                    <option value="en_revision">En revisión</option>
+                    <option value="subsanacion">Subsanación</option>
                     <option value="aprobada">Aprobada</option>
                     <option value="rechazada">Rechazada</option>
                 </select>

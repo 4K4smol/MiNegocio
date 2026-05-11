@@ -1,19 +1,19 @@
 const TITLES = {
     aprobar: "Aprobar solicitud",
     rechazar: "Rechazar solicitud",
-    subsanacion: "Pedir subsanacion",
+    subsanacion: "Pedir subsanación",
 };
 
 const DESCRIPTIONS = {
-    aprobar: "Confirma que la documentacion es correcta. Se activaran la empresa y el usuario responsable.",
-    rechazar: "Indica el motivo para dejar constancia en el historial de revision.",
-    subsanacion: "Indica que documentacion debe aportar o corregir el solicitante.",
+    aprobar: "Confirma que la documentación es correcta. Se activarán la empresa y el usuario responsable.",
+    rechazar: "Indica el motivo para dejar constancia en el historial de revisión.",
+    subsanacion: "Indica qué documentación debe aportar o corregir el solicitante.",
 };
 
 const OPTIONS = [
     ["identidad", "Identidad"],
     ["empresa_actividad", "Empresa / actividad"],
-    ["representacion", "Representacion"],
+    ["representacion", "Representación"],
     ["otros", "Otros"],
 ];
 
@@ -28,7 +28,7 @@ export function AdminDecisionModal({ type, value, selectedDocuments, loading, er
             <form className="admin-modal decision-modal" onSubmit={onSubmit}>
                 <header>
                     <div>
-                        <span className="admin-kicker">Decision administrativa</span>
+                        <span className="admin-kicker">Decisión administrativa</span>
                         <h3>{TITLES[type]}</h3>
                     </div>
                     <button type="button" className="admin-icon-button admin-button-ghost" onClick={onClose} aria-label="Cerrar">
@@ -41,7 +41,7 @@ export function AdminDecisionModal({ type, value, selectedDocuments, loading, er
                     <textarea
                         value={value}
                         onChange={(event) => onChange(event.target.value)}
-                        placeholder={type === "aprobar" ? "Documentacion correcta." : "Describe el motivo de la decision"}
+                        placeholder={type === "aprobar" ? "Documentación correcta." : "Describe el motivo de la decisión"}
                         required={requiresMotivo}
                     />
                 </label>

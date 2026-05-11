@@ -11,12 +11,12 @@ import { ErrorState } from "../components/ErrorState";
 import { LoadingState } from "../components/LoadingState";
 
 const TABS = [
-    ["modulos", "Modulos"],
+    ["modulos", "Módulos"],
     ["roles", "Roles"],
     ["estados_verificacion", "Estados de verificacion"],
     ["tipos_empresa", "Tipos de empresa"],
     ["tipos_documento_identidad", "Tipos de documento"],
-    ["otros", "Otros catalogos"],
+    ["otros", "Otros catálogos"],
 ];
 
 const EMPTY_FORM = {
@@ -40,7 +40,7 @@ function ModuloFormModal({ mode, value, error, loading, onChange, onClose, onSub
                 <header>
                     <div>
                         <span className="admin-kicker">Modulo</span>
-                        <h3>{mode === "create" ? "Nuevo modulo" : "Editar modulo"}</h3>
+                        <h3>{mode === "create" ? "Nuevo módulo" : "Editar módulo"}</h3>
                     </div>
                     <button type="button" className="admin-icon-button admin-button-ghost" onClick={onClose} aria-label="Cerrar" disabled={loading}>
                         X
@@ -87,7 +87,7 @@ function ModuloFormModal({ mode, value, error, loading, onChange, onClose, onSub
                         Cancelar
                     </button>
                     <button type="submit" className="admin-button" disabled={loading}>
-                        {loading ? "Guardando..." : "Guardar modulo"}
+                        {loading ? "Guardando..." : "Guardar módulo"}
                     </button>
                 </footer>
             </form>
@@ -217,7 +217,7 @@ export function ConfiguracionGlobalPage() {
             setFormMode(null);
             await load();
         } catch (apiError) {
-            setFormError(apiError.message || "No se ha podido guardar el modulo.");
+            setFormError(apiError.message || "No se ha podido guardar el módulo.");
         } finally {
             setSaving(false);
         }
@@ -229,11 +229,11 @@ export function ConfiguracionGlobalPage() {
         setSuccess("");
         try {
             await confirm.action();
-            setSuccess(confirm.successMessage || "Operacion completada correctamente.");
+            setSuccess(confirm.successMessage || "Operación completada correctamente.");
             setConfirm(null);
             await load();
         } catch (apiError) {
-            setError(apiError.message || "No se ha podido actualizar el modulo.");
+            setError(apiError.message || "No se ha podido actualizar el módulo.");
         } finally {
             setSaving(false);
         }
@@ -244,8 +244,8 @@ export function ConfiguracionGlobalPage() {
     return (
         <section className="admin-page admin-configuracion-page">
             <AdminPageHeader
-                title="Configuracion global"
-                description="Gestiona los catalogos y parametros base de MiNegocio."
+                title="Configuración global"
+                description="Gestiona los catálogos y parámetros base de MiNegocio."
             />
             {error ? <ErrorState>{error}</ErrorState> : null}
             {success ? <div className="admin-success-alert">{success}</div> : null}
@@ -261,22 +261,22 @@ export function ConfiguracionGlobalPage() {
             {activeTab === "modulos" ? (
                 <>
                     <AdminFiltersBar>
-                        <input placeholder="Buscar por codigo, nombre o descripcion" value={search} onChange={(event) => setSearch(event.target.value)} />
+                        <input placeholder="Buscar por código, nombre o descripción" value={search} onChange={(event) => setSearch(event.target.value)} />
                         <div className="config-toolbar-spacer" />
                         <button type="button" className="admin-button" onClick={openCreate}>
-                            Nuevo modulo
+                            Nuevo módulo
                         </button>
                     </AdminFiltersBar>
 
                     <AdminDataTable
                         columns={["Codigo", "Nombre", "Descripcion", "Orden visual", "Icono", "Estado", "Acciones"]}
-                        empty={!filteredModulos.length ? <EmptyState title="Sin modulos" description="No hay modulos que coincidan con la busqueda." /> : null}
+                        empty={!filteredModulos.length ? <EmptyState title="Sin módulos" description="No hay módulos que coincidan con la búsqueda." /> : null}
                     >
                         {filteredModulos.map((modulo) => (
                             <tr key={modulo.id}>
                                 <td><strong>{modulo.codigo}</strong></td>
                                 <td>{modulo.nombre}</td>
-                                <td>{modulo.descripcion || "Sin descripcion"}</td>
+                                <td>{modulo.descripcion || "Sin descripción"}</td>
                                 <td>{modulo.orden_visual ?? "No indicado"}</td>
                                 <td>{modulo.icono || "Sin icono"}</td>
                                 <td><AdminStatusBadge estado={modulo.activo ? "activa" : "inactiva"} /></td>
@@ -287,12 +287,12 @@ export function ConfiguracionGlobalPage() {
                                             label: modulo.activo ? "Desactivar" : "Activar",
                                             variant: modulo.activo ? "danger" : "success",
                                             onClick: () => setConfirm({
-                                                title: `${modulo.activo ? "Desactivar" : "Activar"} modulo`,
+                                                title: `${modulo.activo ? "Desactivar" : "Activar"} módulo`,
                                                 description: modulo.activo
                                                     ? `Confirma que quieres desactivar ${modulo.nombre}.`
                                                     : `Confirma que quieres activar ${modulo.nombre}.`,
                                                 action: () => modulo.activo ? adminApi.desactivarModulo(modulo.id) : adminApi.activarModulo(modulo.id),
-                                                successMessage: modulo.activo ? "Modulo desactivado correctamente." : "Modulo activado correctamente.",
+                                                successMessage: modulo.activo ? "Módulo desactivado correctamente." : "Módulo activado correctamente.",
                                             }),
                                         },
                                     ]} />
@@ -319,7 +319,7 @@ export function ConfiguracionGlobalPage() {
                         {roles.map((role) => (
                             <tr key={role.id}>
                                 <td><strong>{role.nombre}</strong></td>
-                                <td>{role.descripcion || "Sin descripcion"}</td>
+                                <td>{role.descripcion || "Sin descripción"}</td>
                                 <td>{formatDate(role.created_at)}</td>
                             </tr>
                         ))}
@@ -339,8 +339,8 @@ export function ConfiguracionGlobalPage() {
                     {catalogoActual.length ? (
                         <div className="catalog-grid">
                             {catalogoActual.map((item) => (
-                                <article key={`${item.catalogo || activeTab}-${item.id || item.nombre}`}>
-                                    <strong>{item.nombre || item.descripcion}</strong>
+                            <article key={`${item.catalogo || activeTab}-${item.id || item.nombre}`}>
+                                <strong>{item.nombre || item.descripcion}</strong>
                                     {item.descripcion ? <p>{item.descripcion}</p> : null}
                                     {item.catalogo ? <small>{item.catalogo}</small> : null}
                                 </article>

@@ -35,7 +35,7 @@ export function AdminDashboardPage() {
         <section className="admin-page">
             <AdminPageHeader
                 title="Dashboard administrador"
-                description="Vision general de empresas, usuarios, solicitudes y actividad administrativa."
+                description="Visión general de empresas, usuarios, solicitudes y actividad administrativa."
             />
 
             <AdminStatsGrid stats={[
@@ -53,8 +53,8 @@ export function AdminDashboardPage() {
                 <Link className="admin-button" to="/admin/solicitudes">Revisar solicitudes</Link>
                 <Link className="admin-button admin-button-ghost" to="/admin/usuarios">Ver usuarios</Link>
                 <Link className="admin-button admin-button-ghost" to="/admin/empresas">Ver empresas</Link>
-                <Link className="admin-button admin-button-ghost" to="/admin/auditoria">Ver auditoria</Link>
-                <Link className="admin-button admin-button-ghost" to="/admin/configuracion">Configuracion global</Link>
+                <Link className="admin-button admin-button-ghost" to="/admin/auditoria">Ver auditoría</Link>
+                <Link className="admin-button admin-button-ghost" to="/admin/configuracion">Configuración global</Link>
             </section>
 
             <div className="admin-dashboard-grid">
@@ -63,7 +63,7 @@ export function AdminDashboardPage() {
                         <h3>Solicitudes recientes</h3>
                     </div>
                     <AdminDataTable
-                        columns={["Empresa", "Responsable", "Estado", "Fecha"]}
+                        columns={["Empresa", "Responsable", "Estado", "Fecha", "Acción"]}
                         empty={!solicitudes.length ? <EmptyState title="Sin solicitudes recientes" /> : null}
                     >
                         {solicitudes.map((solicitud) => (
@@ -75,13 +75,18 @@ export function AdminDashboardPage() {
                                 <td>{solicitud.responsable?.email || "No indicado"}</td>
                                 <td><EstadoSolicitudBadge estado={solicitud.estado_verificacion} /></td>
                                 <td>{formatDate(solicitud.fecha_solicitud)}</td>
+                                <td>
+                                    <Link className="admin-link-action" to={`/admin/solicitudes/${solicitud.id}`}>
+                                        Ver expediente
+                                    </Link>
+                                </td>
                             </tr>
                         ))}
                     </AdminDataTable>
                 </section>
                 <aside className="admin-card admin-activity">
                     <div className="admin-card-header">
-                        <h3>Ultimas acciones</h3>
+                        <h3>Últimas acciones</h3>
                         <Link className="admin-link-action" to="/admin/auditoria">Ver todo</Link>
                     </div>
                     {eventos.length ? eventos.map((evento) => (

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { adminSolicitudesApi, previewDocumentoVerificacion } from "../api/adminSolicitudesApi";
 import { AdminDecisionModal } from "../components/AdminDecisionModal";
+import { AdminPagination } from "../components/AdminPagination";
 import { DocumentoPreviewModal } from "../components/DocumentoPreviewModal";
 import { SolicitudDetallePanel } from "../components/SolicitudDetallePanel";
 import { SolicitudesFilters } from "../components/SolicitudesFilters";
@@ -16,8 +17,8 @@ const INITIAL_FILTERS = {
 
 const SUMMARY_STATES = [
     ["pendiente", "Pendientes"],
-    ["en_revision", "En revision"],
-    ["subsanacion", "Subsanacion"],
+    ["en_revision", "En revisión"],
+    ["subsanacion", "Subsanación"],
     ["aprobada", "Aprobadas"],
     ["rechazada", "Rechazadas"],
 ];
@@ -27,7 +28,9 @@ const getErrorMessage = (error, fallback) => error?.message || fallback;
 export function AdminSolicitudesPage() {
     const { id: routeEmpresaId } = useParams();
     const [filters, setFilters] = useState(INITIAL_FILTERS);
+    const [page, setPage] = useState(1);
     const [solicitudes, setSolicitudes] = useState([]);
+    const [meta, setMeta] = useState(null);
     const [selectedId, setSelectedId] = useState(null);
     const [detalle, setDetalle] = useState(null);
     const [loadingList, setLoadingList] = useState(true);
@@ -47,15 +50,16 @@ export function AdminSolicitudesPage() {
         setLoadingList(true);
         setError("");
         try {
-            const response = await adminSolicitudesApi.listar({ ...filters, per_page: 50 });
+            const response = await adminSolicitudesApi.listar({ ...filters, page, per_page: 15 });
             setSolicitudes(response.items);
+            setMeta(response.meta);
             setSelectedId((current) => current ?? (routeEmpresaId ? Number(routeEmpresaId) : null) ?? response.items[0]?.id ?? null);
         } catch (apiError) {
             setError(getErrorMessage(apiError, "No se han podido cargar las solicitudes."));
         } finally {
             setLoadingList(false);
         }
-    }, [filters, routeEmpresaId]);
+    }, [filters, page, routeEmpresaId]);
 
     const loadDetalle = useCallback(async (empresaId) => {
         if (!empresaId) {
@@ -118,7 +122,7 @@ export function AdminSolicitudesPage() {
             return;
         }
 
-        if (decision.type === "aprobar" && !window.confirm("Confirmas la aprobacion de esta solicitud?")) {
+        if (decision.type === "aprobar" && !window.confirm("¿Confirmas la aprobación de esta solicitud?")) {
             return;
         }
 
@@ -137,14 +141,14 @@ export function AdminSolicitudesPage() {
                     motivo,
                     documentos_requeridos: decisionDocuments,
                 });
-                setSuccess("Subsanacion solicitada correctamente.");
+                    setSuccess("Subsanación solicitada correctamente.");
             }
 
             setDecision(null);
             await loadSolicitudes();
             await loadDetalle(decision.empresaId);
         } catch (apiError) {
-            setDecisionError(getErrorMessage(apiError, "No se ha podido completar la decision."));
+            setDecisionError(getErrorMessage(apiError, "No se ha podido completar la decisión."));
         } finally {
             setSavingDecision(false);
         }
@@ -184,9 +188,9 @@ export function AdminSolicitudesPage() {
         <section className="admin-page solicitudes-page">
             <header className="admin-section-header solicitudes-header">
                 <div>
-                    <span className="admin-kicker">Administracion</span>
-                    <h2>Solicitudes de registro</h2>
-                    <p>Revisa expedientes, documentos y decisiones de alta desde un unico panel.</p>
+                    <span className="admin-kicker">Administración</span>
+                    <h2>Solicitudes de verificación</h2>
+                    <p>Revisión de altas de usuarios, empresas y documentación.</p>
                 </div>
             </header>
 
@@ -201,7 +205,14 @@ export function AdminSolicitudesPage() {
                 ))}
             </section>
 
-            <SolicitudesFilters filters={filters} onChange={setFilters} loading={loadingList} />
+            <SolicitudesFilters
+                filters={filters}
+                onChange={(nextFilters) => {
+                    setFilters(nextFilters);
+                    setPage(1);
+                }}
+                loading={loadingList}
+            />
 
             {error ? <div className="form-alert">{error}</div> : null}
             {success ? <div className="admin-success-alert">{success}</div> : null}
@@ -210,7 +221,7 @@ export function AdminSolicitudesPage() {
             {!loadingList && solicitudes.length === 0 ? (
                 <section className="admin-card admin-empty-inline">
                     <strong>No hay solicitudes con estos filtros.</strong>
-                    <p>Ajusta la busqueda o cambia el estado seleccionado.</p>
+                    <p>Ajusta la búsqueda o cambia el estado seleccionado.</p>
                 </section>
             ) : null}
 
@@ -222,6 +233,7 @@ export function AdminSolicitudesPage() {
                         onSelect={setSelectedId}
                         onDecision={openDecision}
                     />
+                    <AdminPagination meta={meta} disabled={loadingList} onPageChange={setPage} />
                     <SolicitudDetallePanel
                         solicitud={detalle}
                         loading={loadingDetail}

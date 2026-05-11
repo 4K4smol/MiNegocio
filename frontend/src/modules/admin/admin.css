@@ -261,6 +261,39 @@
   white-space: pre-wrap;
 }
 
+.admin-pagination {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  color: var(--admin-muted);
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 12px 14px;
+}
+
+.admin-pagination div {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-user-list li {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.admin-user-list li div {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-user-list li small {
+  color: var(--admin-muted);
+}
+
 .admin-actions-dropdown {
   display: none;
 }
@@ -341,5 +374,11 @@
   .admin-configuracion-page .admin-filters-bar,
   .config-form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-pagination,
+  .admin-user-list li {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

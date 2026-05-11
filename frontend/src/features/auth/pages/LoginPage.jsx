@@ -10,11 +10,11 @@ const getErrorMessage = (error) => {
     if (error?.isForbidden?.()) {
         return (
             error.message ||
-            "Tu cuenta esta pendiente de validacion o se encuentra inactiva."
+            "Tu cuenta está pendiente de validación o se encuentra inactiva."
         );
     }
     if (error?.status >= 500) return "Error de servidor. Intentalo de nuevo mas tarde.";
-    return error?.message || "No se ha podido iniciar sesion.";
+    return error?.message || "No se ha podido iniciar sesión.";
 };
 
 const isAdminSession = (session) =>
@@ -42,7 +42,7 @@ export function LoginPage() {
     const validate = () => {
         const nextErrors = {};
         if (!form.email.trim()) nextErrors.email = "El correo es obligatorio.";
-        if (!form.password) nextErrors.password = "La contrasena es obligatoria.";
+        if (!form.password) nextErrors.password = "La contraseña es obligatoria.";
         setErrors(nextErrors);
         return Object.keys(nextErrors).length === 0;
     };
@@ -67,7 +67,7 @@ export function LoginPage() {
             }
 
             if (session?.puede_acceder_crm !== true) {
-                setMessage("Tu cuenta esta pendiente de validacion administrativa.");
+                setMessage("Tu cuenta está pendiente de validación administrativa.");
                 return;
             }
 
@@ -90,8 +90,8 @@ export function LoginPage() {
     return (
         <section className="auth-page">
             <div className="auth-panel">
-                <span className="eyebrow">Area de Gestion</span>
-                <h1>Iniciar sesion</h1>
+                <span className="eyebrow">Área de gestión</span>
+                <h1>Iniciar sesión</h1>
                 <p>
                     Accede al panel privado para gestionar clientes, ordenes,
                     facturas e informes.
@@ -111,7 +111,7 @@ export function LoginPage() {
                     <FormInput
                         autoComplete="current-password"
                         error={errors.password}
-                        label="Contrasena"
+                        label="Contraseña"
                         name="password"
                         onChange={handleChange}
                         required
@@ -125,12 +125,12 @@ export function LoginPage() {
                 </form>
                 <div className="auth-links">
                     <Link to="/registro">Crear cuenta</Link>
-                    <Link to="/">Volver a la pagina publica</Link>
+                    <Link to="/">Volver a la página pública</Link>
                 </div>
             </div>
             <aside className="auth-side">
                 <strong>MiNegocio</strong>
-                <span>Operaciones, facturacion e informes conectados.</span>
+                <span>Operaciones, facturación e informes conectados.</span>
             </aside>
         </section>
     );

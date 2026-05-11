@@ -58,7 +58,7 @@ export function EmpresaDetalleAdminPage() {
 
     return (
         <section className="admin-page">
-            <AdminPageHeader title={empresa.nombre_fiscal} description="Detalle administrativo de empresa, usuarios, modulos y solicitudes vinculadas." />
+            <AdminPageHeader title={empresa.nombre_fiscal} description="Detalle administrativo de empresa, usuarios, módulos y solicitudes vinculadas." />
             {error ? <ErrorState>{error}</ErrorState> : null}
             <div className="admin-detail-grid">
                 <section className="admin-card admin-data-card">
@@ -68,35 +68,44 @@ export function EmpresaDetalleAdminPage() {
                         <dt>Nombre comercial</dt><dd>{empresa.nombre_comercial || "No indicado"}</dd>
                         <dt>Tipo</dt><dd>{empresa.tipo_empresa?.nombre || "No indicado"}</dd>
                         <dt>Correo</dt><dd>{empresa.correo || "No indicado"}</dd>
-                        <dt>Telefono</dt><dd>{empresa.telefono || "No indicado"}</dd>
+                        <dt>Teléfono</dt><dd>{empresa.telefono || "No indicado"}</dd>
                         <dt>Municipio</dt><dd>{empresa.municipio || "No indicado"}</dd>
-                        <dt>Estado</dt><dd><AdminStatusBadge estado={empresa.activa ? "aprobada" : "rechazada"} /></dd>
+                        <dt>Estado</dt><dd><AdminStatusBadge estado={empresa.activa ? "activa" : "inactiva"} /></dd>
                     </dl>
                 </section>
                 <section className="admin-card admin-data-card">
                     <h3>Usuarios asociados</h3>
-                    <ul className="admin-list">
+                    <ul className="admin-list admin-user-list">
                         {(empresa.usuarios || []).map((usuario) => (
-                            <li key={usuario.id}>{usuario.nombre || usuario.email} · {usuario.role || "Sin rol"}</li>
+                            <li key={usuario.id}>
+                                <div>
+                                    <strong>{usuario.nombre || "Sin nombre"}</strong>
+                                    <small>{usuario.email}</small>
+                                </div>
+                                <div>
+                                    <span>{usuario.role || "Sin rol"}</span>
+                                    <AdminStatusBadge estado={usuario.activo ? "activa" : "inactiva"} />
+                                </div>
+                            </li>
                         ))}
                     </ul>
                 </section>
             </div>
 
-            <AdminDataTable columns={["Modulo", "Codigo", "Global", "Empresa", "Acciones"]}>
+            <AdminDataTable columns={["Módulo", "Código", "Global", "Empresa", "Acciones"]}>
                 {modulos.map((modulo) => (
                     <tr key={modulo.id}>
                         <td><strong>{modulo.nombre}</strong><small>{modulo.descripcion}</small></td>
                         <td>{modulo.codigo}</td>
-                        <td><AdminStatusBadge estado={modulo.activo ? "aprobada" : "rechazada"} /></td>
-                        <td><AdminStatusBadge estado={modulo.activo_empresa ? "aprobada" : "rechazada"} /></td>
+                        <td><AdminStatusBadge estado={modulo.activo ? "activa" : "inactiva"} /></td>
+                        <td><AdminStatusBadge estado={modulo.activo_empresa ? "activa" : "inactiva"} /></td>
                         <td>
                             <AdminActionsMenu actions={[
                                 {
                                     label: modulo.activo_empresa ? "Desactivar en empresa" : "Activar en empresa",
                                     variant: modulo.activo_empresa ? "warning" : "success",
                                     onClick: () => setConfirm({
-                                        title: `${modulo.activo_empresa ? "Desactivar" : "Activar"} modulo`,
+                                        title: `${modulo.activo_empresa ? "Desactivar" : "Activar"} módulo`,
                                         description: `${modulo.nombre} en ${empresa.nombre_fiscal}`,
                                         action: () => modulo.activo_empresa
                                             ? adminApi.desactivarModuloEmpresa(empresa.id, modulo.codigo)

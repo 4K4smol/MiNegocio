@@ -20,6 +20,8 @@ export function SolicitudesTable({ solicitudes = [], selectedId, onSelect, onDec
     const getTipo = (solicitud) => solicitud.empresa?.tipo_empresa || solicitud.tipoEmpresa || "No indicado";
     const getEstado = (solicitud) => solicitud.estado_verificacion || solicitud.estado || "pendiente";
     const getFecha = (solicitud) => solicitud.fecha_solicitud || solicitud.fecha || solicitud.created_at;
+    const can = (solicitud, action) =>
+        !Array.isArray(solicitud.acciones_disponibles) || solicitud.acciones_disponibles.includes(action);
 
     return (
         <section className="admin-card solicitudes-table-card">
@@ -58,9 +60,9 @@ export function SolicitudesTable({ solicitudes = [], selectedId, onSelect, onDec
                                     <AdminActionsMenu
                                         actions={[
                                             { label: "Ver expediente", onClick: () => onSelect?.(solicitud.id), variant: "primary" },
-                                            { label: "Aprobar", onClick: () => onDecision?.("aprobar", solicitud.id), variant: "success", hidden: !onDecision },
-                                            { label: "Rechazar", onClick: () => onDecision?.("rechazar", solicitud.id), variant: "danger", hidden: !onDecision },
-                                            { label: "Pedir subsanacion", onClick: () => onDecision?.("subsanacion", solicitud.id), variant: "warning", hidden: !onDecision },
+                                            { label: "Aprobar", onClick: () => onDecision?.("aprobar", solicitud.id), variant: "success", hidden: !onDecision || !can(solicitud, "aprobar") },
+                                            { label: "Rechazar", onClick: () => onDecision?.("rechazar", solicitud.id), variant: "danger", hidden: !onDecision || !can(solicitud, "rechazar") },
+                                            { label: "Pedir subsanación", onClick: () => onDecision?.("subsanacion", solicitud.id), variant: "warning", hidden: !onDecision || !can(solicitud, "solicitar_subsanacion") },
                                         ]}
                                     />
                                 </td>

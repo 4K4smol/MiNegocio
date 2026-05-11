@@ -6,6 +6,7 @@ import { AdminConfirmModal } from "../components/AdminConfirmModal";
 import { AdminDataTable } from "../components/AdminDataTable";
 import { AdminFiltersBar } from "../components/AdminFiltersBar";
 import { AdminPageHeader } from "../components/AdminPageHeader";
+import { AdminPagination } from "../components/AdminPagination";
 import { AdminStatusBadge } from "../components/AdminStatusBadge";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
@@ -17,7 +18,9 @@ const fullName = (user) => [user.nombre || user.name, user.apellido1, user.apell
 export function UsuariosAdminPage() {
     const { usuario: currentUser } = useAuth();
     const [filters, setFilters] = useState({ texto: "", rol: "", activo: "", empresa: "" });
+    const [page, setPage] = useState(1);
     const [usuarios, setUsuarios] = useState([]);
+    const [meta, setMeta] = useState(null);
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -30,10 +33,11 @@ export function UsuariosAdminPage() {
         setError("");
         try {
             const [usersResponse, catalogos] = await Promise.all([
-                adminApi.getAdminUsuarios({ ...filters, per_page: 50 }),
+                adminApi.getAdminUsuarios({ ...filters, page, per_page: 15 }),
                 adminApi.getAdminCatalogos(),
             ]);
             setUsuarios(usersResponse.items);
+            setMeta(usersResponse.meta);
             setRoles(catalogos.roles || []);
         } catch (apiError) {
             setError(apiError.message || "No se han podido cargar los usuarios.");
@@ -45,7 +49,7 @@ export function UsuariosAdminPage() {
     useEffect(() => {
         load();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [filters]);
+    }, [filters, page]);
 
     const execute = async (label, action) => {
         setSaving(true);
@@ -69,22 +73,22 @@ export function UsuariosAdminPage() {
         <section className="admin-page">
             <AdminPageHeader title="Usuarios" description="Consulta usuarios registrados, estado de acceso y roles." />
             <AdminFiltersBar>
-                <input placeholder="Buscar nombre, email o empresa" value={filters.texto} onChange={(event) => setFilters({ ...filters, texto: event.target.value })} />
-                <select value={filters.rol} onChange={(event) => setFilters({ ...filters, rol: event.target.value })}>
+                <input placeholder="Buscar nombre, email o empresa" value={filters.texto} onChange={(event) => { setFilters({ ...filters, texto: event.target.value }); setPage(1); }} />
+                <select value={filters.rol} onChange={(event) => { setFilters({ ...filters, rol: event.target.value }); setPage(1); }}>
                     <option value="">Todos los roles</option>
                     {roles.map((role) => <option key={role.id} value={role.nombre}>{role.nombre}</option>)}
                 </select>
-                <select value={filters.activo} onChange={(event) => setFilters({ ...filters, activo: event.target.value })}>
+                <select value={filters.activo} onChange={(event) => { setFilters({ ...filters, activo: event.target.value }); setPage(1); }}>
                     <option value="">Todos</option>
                     <option value="true">Activos</option>
                     <option value="false">Inactivos</option>
                 </select>
-                <input placeholder="Empresa" value={filters.empresa} onChange={(event) => setFilters({ ...filters, empresa: event.target.value })} />
+                <input placeholder="Empresa" value={filters.empresa} onChange={(event) => { setFilters({ ...filters, empresa: event.target.value }); setPage(1); }} />
             </AdminFiltersBar>
             {error ? <ErrorState>{error}</ErrorState> : null}
             <AdminDataTable
                 columns={["Nombre", "Email", "Rol", "Empresa", "Estado", "Alta", "Acciones"]}
-                empty={!usuarios.length ? <EmptyState title="No hay usuarios" description="Ajusta los filtros para ampliar la busqueda." /> : null}
+                empty={!usuarios.length ? <EmptyState title="No hay usuarios" description="Ajusta los filtros para ampliar la búsqueda." /> : null}
             >
                 {usuarios.map((user) => (
                     <tr key={user.id}>
@@ -92,7 +96,7 @@ export function UsuariosAdminPage() {
                         <td>{user.email}</td>
                         <td>{user.role?.nombre || "Sin rol"}</td>
                         <td>{user.empresa?.nombre_fiscal || "Sin empresa"}</td>
-                        <td><AdminStatusBadge estado={user.activo ? "aprobada" : "rechazada"} /></td>
+                        <td><AdminStatusBadge estado={user.activo ? "activa" : "inactiva"} /></td>
                         <td>{formatDate(user.created_at)}</td>
                         <td>
                             <AdminActionsMenu actions={[
@@ -118,7 +122,7 @@ export function UsuariosAdminPage() {
                                         label: `Cambiar rol a ${role.label}`,
                                         onClick: () => setConfirm({
                                             title: "Cambiar rol",
-                                            description: `${fullName(user)} pasara a ${role.label}.`,
+                                            description: `${fullName(user)} pasará a ${role.label}.`,
                                             action: () => adminApi.cambiarRolUsuario(user.id, role.value),
                                         }),
                                     })),
@@ -127,6 +131,7 @@ export function UsuariosAdminPage() {
                     </tr>
                 ))}
             </AdminDataTable>
+            <AdminPagination meta={meta} disabled={loading} onPageChange={setPage} />
             <AdminConfirmModal
                 open={Boolean(confirm)}
                 title={confirm?.title}
@@ -149,10 +154,10 @@ export function UsuariosAdminPage() {
                         </header>
                         <dl className="admin-data-list">
                             <div><dt>Email</dt><dd>{selected.email}</dd></div>
-                            <div><dt>Telefono</dt><dd>{selected.telefono || "No indicado"}</dd></div>
+                            <div><dt>Teléfono</dt><dd>{selected.telefono || "No indicado"}</dd></div>
                             <div><dt>Rol</dt><dd>{selected.role?.nombre || "Sin rol"}</dd></div>
                             <div><dt>Empresa</dt><dd>{selected.empresa?.nombre_fiscal || "Sin empresa"}</dd></div>
-                            <div><dt>Estado</dt><dd>{selected.activo ? "Activo" : "Inactivo"}</dd></div>
+                            <div><dt>Estado</dt><dd>{selected.activo ? "Activo" : "No activo"}</dd></div>
                             <div><dt>Alta</dt><dd>{formatDate(selected.created_at)}</dd></div>
                         </dl>
                     </section>

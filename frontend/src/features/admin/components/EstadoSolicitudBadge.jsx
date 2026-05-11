@@ -1,11 +1,11 @@
 const LABELS = {
     pendiente: "Pendiente",
-    en_revision: "En revision",
-    subsanacion: "Subsanacion",
+    en_revision: "En revisión",
+    subsanacion: "Subsanación",
     aprobada: "Aprobada",
     rechazada: "Rechazada",
-    activa: "Activa",
-    inactiva: "Inactiva",
+    activa: "Activo",
+    inactiva: "No activo",
 };
 
 const CLASS_NAMES = {

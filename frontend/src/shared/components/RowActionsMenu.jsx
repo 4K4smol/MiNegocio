@@ -54,7 +54,7 @@ export function RowActionsMenu({ actions = [] }) {
 
     const runAction = (action) => {
         if (action.disabled) return false;
-        if (action.confirm && !window.confirm(action.confirmMessage || "Confirma esta accion.")) return false;
+        if (action.confirm && !window.confirm(action.confirmMessage || "Confirma esta acción.")) return false;
         action.onClick?.();
         setIsOpen(false);
         return true;

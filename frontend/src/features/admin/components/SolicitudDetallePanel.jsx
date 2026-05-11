@@ -3,7 +3,7 @@ import { EstadoSolicitudBadge } from "./EstadoSolicitudBadge";
 const GROUP_LABELS = {
     identidad: "Identidad",
     empresa_actividad: "Empresa / actividad",
-    representacion: "Representacion",
+    representacion: "Representación",
     otros: "Otros",
 };
 
@@ -60,12 +60,12 @@ export function SolicitudDetallePanel({ solicitud, loading, onPreviewDocument, o
                         ["Nombre comercial", empresa.nombre_comercial],
                         ["NIF", empresa.nif],
                         ["Correo", empresa.correo],
-                        ["Telefono", empresa.telefono],
-                        ["Direccion fiscal", empresa.direccion_fiscal],
+                        ["Teléfono", empresa.telefono],
+                        ["Dirección fiscal", empresa.direccion_fiscal],
                         ["Municipio", empresa.municipio],
                         ["Provincia", empresa.provincia],
                         ["Tipo empresa", empresa.tipo_empresa],
-                        ["Estado", empresa.activa ? "Activa" : "Inactiva"],
+                        ["Estado", empresa.activa ? "Activo" : "No activo"],
                     ]} />
                 </article>
                 <article className="admin-card admin-data-card">
@@ -73,8 +73,8 @@ export function SolicitudDetallePanel({ solicitud, loading, onPreviewDocument, o
                     <DataList items={[
                         ["Nombre", [responsable.nombre, responsable.apellido1, responsable.apellido2].filter(Boolean).join(" ")],
                         ["Email", responsable.email],
-                        ["Telefono", responsable.telefono],
-                        ["Estado", responsable.activo ? "Activo" : "Inactivo"],
+                        ["Teléfono", responsable.telefono],
+                        ["Estado", responsable.activo ? "Activo" : "No activo"],
                     ]} />
                 </article>
             </div>
@@ -84,7 +84,7 @@ export function SolicitudDetallePanel({ solicitud, loading, onPreviewDocument, o
                 <div className="phase-grid">
                     <div><span>Identidad</span><EstadoSolicitudBadge estado={solicitud.estado_identidad} /></div>
                     <div><span>Empresa / actividad</span><EstadoSolicitudBadge estado={solicitud.estado_empresa} /></div>
-                    <div><span>Representacion</span><EstadoSolicitudBadge estado={solicitud.estado_representacion || "No aplica"} /></div>
+                    <div><span>Representación</span><EstadoSolicitudBadge estado={solicitud.estado_representacion || "No aplica"} /></div>
                 </div>
             </section>
 
@@ -130,12 +130,12 @@ export function SolicitudDetallePanel({ solicitud, loading, onPreviewDocument, o
                         ))}
                     </div>
                 ) : (
-                    <p className="admin-empty-inline">Todavia no hay eventos de revision.</p>
+                    <p className="admin-empty-inline">Todavía no hay eventos de revisión.</p>
                 )}
             </section>
 
             <section className="admin-card decision-zone">
-                <h3>Decision</h3>
+                <h3>Decisión</h3>
                 <div className="admin-actions">
                     <button type="button" className="admin-button admin-button-success" onClick={() => onDecision("aprobar", solicitud.id)}>
                         Aprobar solicitud
