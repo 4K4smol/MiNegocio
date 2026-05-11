@@ -110,7 +110,7 @@ class SolicitudVerificacionController extends ApiController
 
     private function cargarEmpresa(Empresa $empresa): Empresa
     {
-        return $empresa->load([
+        $empresa->load([
             'tipoEmpresa',
             'verificacion.estadoVerificacion',
             'solicitudesVerificacion' => fn ($query) => $query->with([
@@ -121,5 +121,9 @@ class SolicitudVerificacionController extends ApiController
                 'eventosAdmin.admin',
             ])->latest(),
         ]);
+
+        abort_if($empresa->solicitudesVerificacion->isEmpty(), 404, 'No existe una solicitud de verificacion para esta empresa.');
+
+        return $empresa;
     }
 }

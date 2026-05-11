@@ -27,6 +27,7 @@ class AdminSolicitudVerificacionResource extends JsonResource
             ],
             'responsable' => $this->responsableBasico(),
             'estado_verificacion' => $estado,
+            'estado_actual' => $estado,
             'documentos_count' => $solicitud?->documentos_count ?? $solicitud?->documentos?->count() ?? 0,
             'fecha_solicitud' => $solicitud?->created_at,
             'acciones_disponibles' => $this->accionesDisponibles($estado),

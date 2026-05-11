@@ -108,6 +108,8 @@ Route::prefix('v1')->group(function (): void {
         Route::middleware('admin')->group(function (): void {
             Route::apiResource('modulos', ModuloController::class);
             Route::apiResource('roles', RoleController::class);
+            // Flujo moderno usado por la pantalla frontend /admin/solicitudes.
+            // Estos endpoints trabajan con Empresa como route model binding.
             Route::get('admin/solicitudes-verificacion', [AdminSolicitudVerificacionController::class, 'index']);
             Route::get('admin/solicitudes-verificacion/{empresa}', [AdminSolicitudVerificacionController::class, 'show']);
             Route::post('admin/solicitudes-verificacion/{empresa}/aprobar', [AdminSolicitudVerificacionController::class, 'aprobar']);

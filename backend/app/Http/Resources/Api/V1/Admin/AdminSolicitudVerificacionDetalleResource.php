@@ -73,6 +73,7 @@ class AdminSolicitudVerificacionDetalleResource extends JsonResource
                     'email' => $evento->admin->email,
                 ] : null,
             ])->values() ?? [],
+            'estado_verificacion' => $estado,
             'estado_actual' => $estado,
             'estado_identidad' => $solicitud?->estado_identidad,
             'estado_empresa' => $solicitud?->estado_empresa,

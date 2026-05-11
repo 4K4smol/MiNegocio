@@ -172,6 +172,24 @@ class AdminSolicitudVerificacionFlowTest extends TestCase
         $this->assertDatabaseHas('admin_verificacion_eventos', ['accion' => 'solicitar_subsanacion']);
     }
 
+    public function test_endpoint_moderno_no_debe_usar_id_de_solicitud(): void
+    {
+        Empresa::query()->create([
+            'tipo_empresa_id' => $this->tipoEmpresaId('sociedad'),
+            'nombre_fiscal' => 'Empresa sin solicitud',
+            'nif' => 'B99999990',
+            'activa' => false,
+        ]);
+
+        [, $empresa, $solicitud] = $this->crearSolicitud('B10000011', 'sociedad');
+
+        $this->assertNotSame($empresa->id, $solicitud->id);
+
+        $this->actingAs($this->crearAdmin(), 'sanctum')
+            ->getJson("/api/v1/admin/solicitudes-verificacion/{$solicitud->id}")
+            ->assertNotFound();
+    }
+
     /**
      * @return array{0: User, 1: Empresa, 2: SolicitudVerificacion}
      */
