@@ -35,6 +35,16 @@ class AdminVerificacionEvento extends Model
         return $this->belongsTo(User::class, 'user_admin_id');
     }
 
+    public function usuario(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function empresa(): BelongsTo
+    {
+        return $this->belongsTo(Empresa::class, 'empresa_id');
+    }
+
     public function solicitudVerificacion(): BelongsTo
     {
         return $this->belongsTo(SolicitudVerificacion::class, 'solicitud_verificacion_id');

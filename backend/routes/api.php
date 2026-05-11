@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\AdminEmpresaModuloController;
 use App\Http\Controllers\Api\V1\AdminSolicitudRegistroController;
+use App\Http\Controllers\Api\V1\Admin\AdminAuditoriaController;
+use App\Http\Controllers\Api\V1\Admin\AdminDashboardController;
+use App\Http\Controllers\Api\V1\Admin\AdminUsuarioController;
 use App\Http\Controllers\Api\V1\Admin\DocumentoVerificacionController as AdminDocumentoVerificacionController;
 use App\Http\Controllers\Api\V1\Admin\SolicitudVerificacionController as AdminSolicitudVerificacionController;
 use App\Http\Controllers\Api\V1\AuthController;
@@ -107,7 +110,10 @@ Route::prefix('v1')->group(function (): void {
 
         Route::middleware('admin')->group(function (): void {
             Route::apiResource('modulos', ModuloController::class);
+            Route::patch('modulos/{id}/activar', [ModuloController::class, 'activar']);
+            Route::patch('modulos/{id}/desactivar', [ModuloController::class, 'desactivar']);
             Route::apiResource('roles', RoleController::class);
+            Route::get('admin/dashboard', [AdminDashboardController::class, 'index']);
             // Flujo moderno usado por la pantalla frontend /admin/solicitudes.
             // Estos endpoints trabajan con Empresa como route model binding.
             Route::get('admin/solicitudes-verificacion', [AdminSolicitudVerificacionController::class, 'index']);
@@ -116,7 +122,12 @@ Route::prefix('v1')->group(function (): void {
             Route::post('admin/solicitudes-verificacion/{empresa}/rechazar', [AdminSolicitudVerificacionController::class, 'rechazar']);
             Route::post('admin/solicitudes-verificacion/{empresa}/solicitar-subsanacion', [AdminSolicitudVerificacionController::class, 'solicitarSubsanacion']);
             Route::get('admin/documentos-verificacion/{documento}/preview', [AdminDocumentoVerificacionController::class, 'preview']);
-            Route::get('admin/dashboard', [AdminSolicitudRegistroController::class, 'dashboard']);
+            Route::get('admin/usuarios', [AdminUsuarioController::class, 'index']);
+            Route::get('admin/usuarios/{user}', [AdminUsuarioController::class, 'show']);
+            Route::patch('admin/usuarios/{user}/activar', [AdminUsuarioController::class, 'activar']);
+            Route::patch('admin/usuarios/{user}/desactivar', [AdminUsuarioController::class, 'desactivar']);
+            Route::patch('admin/usuarios/{user}/rol', [AdminUsuarioController::class, 'cambiarRol']);
+            Route::get('admin/auditoria', [AdminAuditoriaController::class, 'index']);
             Route::get('admin/solicitudes', [AdminSolicitudRegistroController::class, 'index']);
             Route::get('admin/solicitudes/{solicitud}', [AdminSolicitudRegistroController::class, 'show']);
             Route::post('admin/solicitudes/{solicitud}/aprobar-identidad', [AdminSolicitudRegistroController::class, 'aprobarIdentidad']);

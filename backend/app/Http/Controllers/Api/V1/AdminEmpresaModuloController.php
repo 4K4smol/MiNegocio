@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Resources\Api\V1\ModuloResource;
+use App\Models\AdminVerificacionEvento;
 use App\Models\Empresa;
 use App\Models\Modulo;
 use App\Services\ModuloService;
@@ -42,6 +43,14 @@ class AdminEmpresaModuloController extends ApiController
     {
         $empresaModulo = $this->moduloService->activarModulo($empresa->id, $modulo);
 
+        AdminVerificacionEvento::query()->create([
+            'user_admin_id' => request()->user()->id,
+            'empresa_id' => $empresa->id,
+            'accion' => 'activar_modulo_empresa',
+            'estado_nuevo' => 'activo',
+            'metadatos' => ['modulo' => $modulo, 'modulo_id' => $empresaModulo->modulo_id],
+        ]);
+
         return $this->updated([
             'empresa_id' => $empresa->id,
             'modulo_id' => $empresaModulo->modulo_id,
@@ -52,6 +61,15 @@ class AdminEmpresaModuloController extends ApiController
     public function desactivar(Empresa $empresa, string $modulo): JsonResponse
     {
         $this->moduloService->desactivarModulo($empresa->id, $modulo);
+
+        AdminVerificacionEvento::query()->create([
+            'user_admin_id' => request()->user()->id,
+            'empresa_id' => $empresa->id,
+            'accion' => 'desactivar_modulo_empresa',
+            'estado_anterior' => 'activo',
+            'estado_nuevo' => 'inactivo',
+            'metadatos' => ['modulo' => $modulo],
+        ]);
 
         return $this->updated([
             'empresa_id' => $empresa->id,
