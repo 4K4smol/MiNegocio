@@ -1,4 +1,4 @@
-import { apiRequest } from './httpClient'
+import { apiRequest } from '../../../shared/api'
 
 export const facturasApi = {
     list: (params) => apiRequest('facturas', { params }),

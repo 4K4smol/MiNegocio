@@ -21,9 +21,7 @@ const appendValue = (formData, key, value) => {
     }
 
     if (Array.isArray(value)) {
-        value.forEach((item, index) => {
-            appendValue(formData, `${key}[${index}]`, item)
-        })
+        value.forEach((item, index) => appendValue(formData, `${key}[${index}]`, item))
         return
     }
 

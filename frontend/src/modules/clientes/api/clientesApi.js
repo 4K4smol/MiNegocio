@@ -1,4 +1,4 @@
-import { createCrudApi } from './crudApi'
+import { createCrudApi } from '../../../shared/api'
 
 export const clientesApi = createCrudApi('clientes')
 

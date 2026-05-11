@@ -26,7 +26,7 @@ const appendParam = (searchParams, key, value) => {
     searchParams.append(key, value)
 }
 
-const buildUrl = (path, params) => {
+export const buildApiUrl = (path, params) => {
     const url = new URL(
         `${normalizeBaseUrl(API_BASE_URL)}/${normalizePath(path)}`,
     )
@@ -85,7 +85,7 @@ export const apiRequest = async (path, options = {}) => {
         }
     }
 
-    const response = await fetch(buildUrl(path, params), requestOptions)
+    const response = await fetch(buildApiUrl(path, params), requestOptions)
 
     if (response.status === 204) {
         return {
