@@ -1,4 +1,4 @@
-import { API_BASE_URL } from './apiConfig'
+import { API_BASE_URL } from '../../app/config/env'
 import { ApiError } from './apiError'
 import { clearAuthStorage, getToken } from './tokenStorage'
 
@@ -104,4 +104,3 @@ export const apiRequest = async (path, options = {}) => {
 
     return payload
 }
-

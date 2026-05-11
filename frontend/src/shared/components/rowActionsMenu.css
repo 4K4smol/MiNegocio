@@ -1,0 +1,109 @@
+.row-actions {
+  display: inline-flex;
+  justify-content: flex-end;
+  min-width: 32px;
+  position: relative;
+}
+
+.row-actions__button {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  color: var(--color-primary, #6d28d9);
+  cursor: pointer;
+  display: inline-flex;
+  height: 32px;
+  justify-content: center;
+  padding: 0;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease,
+    transform 180ms ease;
+  width: 32px;
+}
+
+.row-actions__button:hover,
+.row-actions__button:focus-visible,
+.row-actions__button.is-open {
+  background: #ede9fe;
+  border-color: #c4b5fd;
+  color: #6d28d9;
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.12);
+  outline: none;
+}
+
+.row-actions__button .row-actions__icon {
+  display: inline-block;
+  font-size: 22px;
+  line-height: 1;
+  margin-top: -2px;
+  transition: transform 180ms ease;
+}
+
+.row-actions__button.is-open .row-actions__icon {
+  transform: rotate(90deg);
+}
+
+.row-actions__menu {
+  background: #ffffff;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 12px;
+  box-shadow: 0 20px 48px rgba(17, 24, 39, 0.16);
+  display: grid;
+  min-width: 190px;
+  padding: 6px;
+  position: fixed;
+  z-index: 100;
+}
+
+.row-actions__item {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 9px;
+  color: var(--color-text, #111827);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  gap: 9px;
+  min-height: 36px;
+  padding: 8px 10px;
+  text-align: left;
+  text-decoration: none;
+  width: 100%;
+}
+
+.row-actions__item:hover,
+.row-actions__item:focus-visible {
+  background: #f5f3ff;
+  color: #6d28d9;
+  outline: none;
+}
+
+.row-actions__item:disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.row-actions__item--success {
+  color: #16a34a;
+}
+
+.row-actions__item--danger {
+  color: #dc2626;
+}
+
+.row-actions__item--warning {
+  color: #d97706;
+}
+
+.row-actions__item .row-actions__icon {
+  align-items: center;
+  display: inline-flex;
+  min-width: 16px;
+}

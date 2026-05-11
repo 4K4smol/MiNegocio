@@ -1,10 +1,11 @@
 import { objectToFormData } from './formData'
 import { apiRequest } from './httpClient'
+import { endpoints } from './endpoints'
 import { clearAuthStorage, setSession, setToken } from './tokenStorage'
 
 export const authApi = {
     login: async (credentials) => {
-        const response = await apiRequest('auth/login', {
+        const response = await apiRequest(endpoints.auth.login, {
             method: 'POST',
             body: credentials,
             auth: false,
@@ -19,17 +20,27 @@ export const authApi = {
     },
 
     register: (data) =>
-        apiRequest('auth/register', {
+        apiRequest(endpoints.auth.register, {
             method: 'POST',
-            body: objectToFormData(data),
+            body: data instanceof FormData ? data : objectToFormData(data),
             auth: false,
         }),
 
-    me: () => apiRequest('auth/me'),
+    getTiposEmpresa: () =>
+        apiRequest(endpoints.catalogos.tiposEmpresa, {
+            auth: false,
+        }),
+
+    getTiposDocumentoIdentidad: () =>
+        apiRequest(endpoints.catalogos.tiposDocumentoIdentidad, {
+            auth: false,
+        }),
+
+    me: () => apiRequest(endpoints.auth.me),
 
     logout: async () => {
         try {
-            return await apiRequest('auth/logout', {
+            return await apiRequest(endpoints.auth.logout, {
                 method: 'POST',
             })
         } finally {
@@ -37,4 +48,3 @@ export const authApi = {
         }
     },
 }
-

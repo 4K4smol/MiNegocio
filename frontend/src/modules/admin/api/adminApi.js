@@ -1,0 +1,66 @@
+import { adminApi as baseAdminApi, previewDocumento } from "../../../features/admin/api/adminApi";
+
+export const adminApi = {
+    getAdminDashboard: baseAdminApi.getAdminDashboard,
+
+    getSolicitudesVerificacion: baseAdminApi.getSolicitudesVerificacion,
+    getSolicitudVerificacionDetalle: baseAdminApi.getSolicitudVerificacionDetalle,
+    aprobarSolicitudVerificacion: baseAdminApi.aprobarSolicitud,
+    rechazarSolicitudVerificacion: baseAdminApi.rechazarSolicitud,
+    solicitarSubsanacionSolicitud: baseAdminApi.solicitarSubsanacion,
+    previewDocumentoVerificacion: previewDocumento,
+
+    getAdminUsuarios: baseAdminApi.getAdminUsuarios,
+    getAdminUsuarioDetalle: baseAdminApi.getAdminUsuarioDetalle,
+    activarAdminUsuario: baseAdminApi.activarUsuario,
+    desactivarAdminUsuario: baseAdminApi.desactivarUsuario,
+    cambiarRolAdminUsuario: baseAdminApi.cambiarRolUsuario,
+
+    getAdminEmpresas: baseAdminApi.getAdminEmpresas,
+    getAdminEmpresaDetalle: baseAdminApi.getAdminEmpresaDetalle,
+    activarAdminEmpresa: baseAdminApi.activarEmpresa,
+    desactivarAdminEmpresa: baseAdminApi.desactivarEmpresa,
+    getAdminEmpresaModulos: baseAdminApi.getEmpresaModulos,
+    activarModuloEmpresa: baseAdminApi.activarModuloEmpresa,
+    desactivarModuloEmpresa: baseAdminApi.desactivarModuloEmpresa,
+
+    getAdminAuditoria: baseAdminApi.getAdminAuditoria,
+
+    getAdminCatalogos: baseAdminApi.getAdminCatalogos,
+    getAdminModulos: baseAdminApi.getAdminModulos,
+    getAdminRoles: baseAdminApi.getAdminRoles,
+    crearAdminModulo: baseAdminApi.crearModulo,
+    actualizarAdminModulo: baseAdminApi.actualizarModulo,
+    activarAdminModulo: baseAdminApi.activarModulo,
+    desactivarAdminModulo: baseAdminApi.desactivarModulo,
+};
+
+export const {
+    getAdminDashboard,
+    getSolicitudesVerificacion,
+    getSolicitudVerificacionDetalle,
+    aprobarSolicitudVerificacion,
+    rechazarSolicitudVerificacion,
+    solicitarSubsanacionSolicitud,
+    previewDocumentoVerificacion,
+    getAdminUsuarios,
+    getAdminUsuarioDetalle,
+    activarAdminUsuario,
+    desactivarAdminUsuario,
+    cambiarRolAdminUsuario,
+    getAdminEmpresas,
+    getAdminEmpresaDetalle,
+    activarAdminEmpresa,
+    desactivarAdminEmpresa,
+    getAdminEmpresaModulos,
+    activarModuloEmpresa,
+    desactivarModuloEmpresa,
+    getAdminAuditoria,
+    getAdminCatalogos,
+    getAdminModulos,
+    getAdminRoles,
+    crearAdminModulo,
+    actualizarAdminModulo,
+    activarAdminModulo,
+    desactivarAdminModulo,
+} = adminApi;

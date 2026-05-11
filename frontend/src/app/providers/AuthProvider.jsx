@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { authService } from "../../features/auth/services/authService";
 import {
-    authApi,
     clearAuthStorage,
     getSession,
     getToken,
@@ -27,7 +27,7 @@ export function AuthProvider({ children }) {
 
         setIsLoading(true);
         try {
-            const response = await authApi.me();
+            const response = await authService.me();
             const nextSession = response?.data || null;
             setSessionState(nextSession);
             return nextSession;
@@ -37,7 +37,7 @@ export function AuthProvider({ children }) {
     }, []);
 
     const login = useCallback(async (credentials) => {
-        const response = await authApi.login(credentials);
+        const response = await authService.login(credentials);
         setTokenState(getToken());
         setSessionState(getSession());
         return response;
@@ -45,7 +45,7 @@ export function AuthProvider({ children }) {
 
     const logout = useCallback(async () => {
         try {
-            await authApi.logout();
+            await authService.logout();
         } finally {
             clearAuthStorage();
             setTokenState(null);
