@@ -711,6 +711,66 @@ input {
   line-height: 1.55;
 }
 
+.splash-page {
+  align-items: center;
+  background:
+    radial-gradient(circle at 20% 18%, rgba(109, 40, 217, 0.16), transparent 28rem),
+    linear-gradient(135deg, #f8fafc 0%, #ffffff 42%, #eef2ff 100%);
+  display: grid;
+  min-height: 100vh;
+  padding: 24px;
+  place-items: center;
+}
+
+.splash-panel {
+  align-items: center;
+  display: grid;
+  gap: 22px;
+  justify-items: center;
+  width: min(100%, 440px);
+}
+
+.splash-logo {
+  display: block;
+  height: auto;
+  max-width: min(320px, 82vw);
+  width: 100%;
+}
+
+.splash-loader {
+  background: #dbeafe;
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+  width: min(280px, 70vw);
+}
+
+.splash-loader span {
+  animation: splash-loading 1.15s ease-in-out infinite;
+  background: linear-gradient(90deg, #1e3a8a, #6d28d9, #0f766e);
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+  width: 42%;
+}
+
+.splash-panel p {
+  color: #52677a;
+  font-size: 15px;
+  font-weight: 800;
+  margin: 0;
+}
+
+@keyframes splash-loading {
+  0% {
+    transform: translateX(-105%);
+  }
+
+  100% {
+    transform: translateX(245%);
+  }
+}
+
 .register-page {
   display: block;
   max-width: 1120px;

@@ -4,6 +4,7 @@ import {
     clearAuthStorage,
     getSession,
     getToken,
+    setSession,
 } from "../../shared/api";
 import { AuthContext } from "./authContext";
 
@@ -30,6 +31,7 @@ export function AuthProvider({ children }) {
             const response = await authService.me();
             const nextSession = response?.data || null;
             setSessionState(nextSession);
+            if (nextSession) setSession(nextSession);
             return nextSession;
         } finally {
             setIsLoading(false);

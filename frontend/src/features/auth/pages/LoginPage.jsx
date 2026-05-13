@@ -13,25 +13,26 @@ const getErrorMessage = (error) => {
             "Tu cuenta está pendiente de validación o se encuentra inactiva."
         );
     }
-    if (error?.status >= 500) return "Error de servidor. Intentalo de nuevo mas tarde.";
+    if (error?.status >= 500) {
+        return "Error de servidor. Intentalo de nuevo mas tarde.";
+    }
     return error?.message || "No se ha podido iniciar sesión.";
 };
 
-const isAdminSession = (session) =>
-    session?.role?.nombre === "admin" ||
-    session?.user?.role?.nombre === "admin" ||
-    session?.usuario?.role?.nombre === "admin" ||
-    session?.role === "admin" ||
-    session?.rol === "admin";
+const getRedirectTarget = (from) => {
+    if (!from) return "/app";
+    if (typeof from === "string") return from;
+    return `${from.pathname || "/app"}${from.search || ""}${from.hash || ""}`;
+};
 
 export function LoginPage() {
     const [form, setForm] = useState({ email: "", password: "" });
     const [errors, setErrors] = useState({});
-    const [message, setMessage] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const [message, setMessage] = useState(location.state?.message || "");
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -59,21 +60,15 @@ export function LoginPage() {
                 password: form.password,
                 device_name: "MiNegocio Web",
             });
-            const session = response?.data;
+            const destination = getRedirectTarget(location.state?.from);
 
-            if (isAdminSession(session)) {
-                navigate("/admin", { replace: true });
-                return;
-            }
-
-            if (session?.puede_acceder_crm !== true) {
-                setMessage("Tu cuenta está pendiente de validación administrativa.");
-                return;
-            }
-
-            const destination = location.state?.from?.pathname || "/app";
-
-            navigate(destination, { replace: true });
+            navigate("/splash", {
+                replace: true,
+                state: {
+                    destination,
+                    loginSession: response?.data || null,
+                },
+            });
         } catch (error) {
             setMessage(getErrorMessage(error));
             if (error?.errors) {
