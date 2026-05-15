@@ -1,0 +1,205 @@
+.calendar-month-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  width: 100%;
+}
+
+.calendar-month-header,
+.calendar-month-title,
+.calendar-month-controls {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+}
+
+.calendar-month-header {
+  justify-content: space-between;
+}
+
+.calendar-month-title__icon {
+  align-items: center;
+  background: #ede9fe;
+  border-radius: 8px;
+  color: var(--color-primary);
+  display: inline-flex;
+  height: 44px;
+  justify-content: center;
+  width: 44px;
+}
+
+.calendar-month-title h2 {
+  color: var(--color-primary-dark);
+  margin: 2px 0 0;
+}
+
+.calendar-month-controls strong {
+  color: var(--color-text);
+  min-width: 150px;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.calendar-month-nav {
+  height: 38px;
+  padding: 0;
+  width: 38px;
+}
+
+.calendar-month-grid {
+  background: var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  overflow: hidden;
+}
+
+.calendar-month-weekday {
+  background: #f8fafc;
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 900;
+  padding: 10px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.calendar-day-cell {
+  background: #ffffff;
+  display: grid;
+  gap: 8px;
+  min-height: clamp(126px, 13vh, 178px);
+  padding: 10px;
+}
+
+.calendar-day-cell.has-orders {
+  background: #fdfcff;
+}
+
+.calendar-day-cell.is-outside-month {
+  background: #f8fafc;
+}
+
+.calendar-day-cell.is-outside-month .calendar-day-cell__number {
+  color: #9ca3af;
+}
+
+.calendar-day-cell.is-today {
+  box-shadow: inset 0 0 0 2px rgba(109, 40, 217, 0.32);
+}
+
+.calendar-day-cell__number {
+  align-items: center;
+  color: var(--color-text);
+  display: inline-flex;
+  font-weight: 900;
+  height: 26px;
+  justify-content: center;
+  width: 26px;
+}
+
+.calendar-day-cell.is-today .calendar-day-cell__number {
+  background: var(--color-primary);
+  border-radius: 999px;
+  color: #ffffff;
+}
+
+.calendar-day-cell__orders {
+  display: grid;
+  gap: 6px;
+}
+
+.calendar-order-badge {
+  border-left: 4px solid var(--color-primary);
+  border-radius: 8px;
+  color: var(--color-text);
+  display: grid;
+  gap: 3px;
+  padding: 7px 8px;
+}
+
+.calendar-order-badge strong {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-order-badge span {
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.calendar-order-badge--pendiente {
+  background: #fffbeb;
+  border-left-color: var(--color-warning);
+}
+
+.calendar-order-badge--programada,
+.calendar-order-badge--en_proceso,
+.calendar-order-badge--en_progreso {
+  background: #f5f3ff;
+  border-left-color: var(--color-primary);
+}
+
+.calendar-order-badge--completada {
+  background: #f0fdf4;
+  border-left-color: var(--color-success);
+}
+
+.calendar-order-badge--cancelada {
+  background: #fef2f2;
+  border-left-color: var(--color-danger);
+}
+
+.calendar-order-badge--facturada {
+  background: #eef2ff;
+  border-left-color: var(--color-primary-dark);
+}
+
+.calendar-month-empty {
+  background: #f8fafc;
+  border: 1px dashed #c4b5fd;
+  border-radius: 8px;
+  color: var(--color-muted);
+  font-weight: 800;
+  margin: 0;
+  padding: 14px;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .calendar-month-header,
+  .calendar-month-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .calendar-month-controls strong {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .calendar-month-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-month-weekday {
+    display: none;
+  }
+
+  .calendar-day-cell {
+    min-height: auto;
+  }
+
+  .calendar-day-cell.is-outside-month:not(.has-orders) {
+    display: none;
+  }
+}

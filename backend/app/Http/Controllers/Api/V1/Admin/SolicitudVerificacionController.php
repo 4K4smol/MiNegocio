@@ -108,6 +108,36 @@ class SolicitudVerificacionController extends ApiController
         );
     }
 
+    public function aprobarIdentidad(Request $request, Empresa $empresa): JsonResponse
+    {
+        return $this->aprobarFase($request, $empresa, 'identidad');
+    }
+
+    public function rechazarIdentidad(Request $request, Empresa $empresa): JsonResponse
+    {
+        return $this->rechazarFase($request, $empresa, 'identidad');
+    }
+
+    public function aprobarEmpresa(Request $request, Empresa $empresa): JsonResponse
+    {
+        return $this->aprobarFase($request, $empresa, 'empresa');
+    }
+
+    public function rechazarEmpresa(Request $request, Empresa $empresa): JsonResponse
+    {
+        return $this->rechazarFase($request, $empresa, 'empresa');
+    }
+
+    public function aprobarRepresentacion(Request $request, Empresa $empresa): JsonResponse
+    {
+        return $this->aprobarFase($request, $empresa, 'representacion');
+    }
+
+    public function rechazarRepresentacion(Request $request, Empresa $empresa): JsonResponse
+    {
+        return $this->rechazarFase($request, $empresa, 'representacion');
+    }
+
     private function cargarEmpresa(Empresa $empresa): Empresa
     {
         $empresa->load([
@@ -125,5 +155,29 @@ class SolicitudVerificacionController extends ApiController
         abort_if($empresa->solicitudesVerificacion->isEmpty(), 404, 'No existe una solicitud de verificacion para esta empresa.');
 
         return $empresa;
+    }
+
+    private function aprobarFase(Request $request, Empresa $empresa, string $fase): JsonResponse
+    {
+        $empresa = $this->service->aprobarFase($empresa, $request->user(), $fase);
+
+        return $this->success(
+            new AdminSolicitudVerificacionDetalleResource($this->cargarEmpresa($empresa)),
+            'Fase aprobada correctamente.',
+        );
+    }
+
+    private function rechazarFase(Request $request, Empresa $empresa, string $fase): JsonResponse
+    {
+        $data = $request->validate([
+            'motivo' => ['required', 'string', 'min:5', 'max:2000'],
+        ]);
+
+        $empresa = $this->service->rechazarFase($empresa, $request->user(), $fase, $data['motivo']);
+
+        return $this->success(
+            new AdminSolicitudVerificacionDetalleResource($this->cargarEmpresa($empresa)),
+            'Fase rechazada correctamente.',
+        );
     }
 }

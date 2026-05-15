@@ -12,7 +12,7 @@ export function AdminSidebar() {
                 />
                 <small>Panel administrador</small>
             </div>
-            <nav className="admin-sidebar-nav" aria-label="Menu de administracion">
+            <nav className="admin-sidebar-nav" aria-label="Menú de administración">
                 {adminNavigation.map((item) => (
                     <NavLink key={item.to} to={item.to} end>
                         <AppIcon icon={item.icon} size={18} />

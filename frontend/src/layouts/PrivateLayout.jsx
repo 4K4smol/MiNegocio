@@ -1,39 +1,21 @@
-import { NavLink, Outlet } from "react-router-dom";
 import { empresaNavigation } from "../app/config/navigation";
-import { AppIcon } from "../components/ui/AppIcon";
+import { PrivateAreaLayout } from "../shared/components/layout/PrivateAreaLayout";
 import { useAuth } from "../shared/hooks/useAuth";
 
 export function PrivateLayout() {
     const { logout, usuario } = useAuth();
 
     return (
-        <div className="app-shell">
-            <aside className="sidebar">
-                <div className="sidebar-header">
-                    <span className="brand">MiNegocio</span>
-                    <small>
-                        {usuario?.name || usuario?.nombre || "Empresa"}
-                    </small>
-                </div>
-                <nav className="sidebar-nav" aria-label="Menu de empresa">
-                    {empresaNavigation.map((item) => (
-                        <NavLink
-                            key={item.to}
-                            to={item.to}
-                            end={item.to === "/app"}
-                        >
-                            <AppIcon icon={item.icon} size={18} />
-                            {item.label}
-                        </NavLink>
-                    ))}
-                </nav>
-                <button className="text-button" type="button" onClick={logout}>
-                    Cerrar sesion
-                </button>
-            </aside>
-            <main className="app-main">
-                <Outlet />
-            </main>
-        </div>
+        <PrivateAreaLayout
+            areaLabel="Menú de empresa"
+            defaultTitle="Panel de control"
+            navigation={empresaNavigation}
+            onLogout={logout}
+            sidebarSubtitle="CRM empresarial"
+            topbarEyebrow="Panel de control"
+            usuario={usuario}
+            userRoleLabel="Usuario empresa"
+            variant="empresa"
+        />
     );
 }

@@ -34,7 +34,7 @@ export function RegisterStepReview({
             </section>
             <label className="check-field review-confirm">
                 <input checked={confirm} onChange={onConfirm} type="checkbox" />
-                <span>Confirmo que la informacion es correcta.</span>
+                <span>Confirmo que la información es correcta.</span>
             </label>
             {errors.confirmReview ? (
                 <small className="field-error">{errors.confirmReview}</small>

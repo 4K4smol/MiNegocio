@@ -69,7 +69,7 @@ export function RegisterStepBusiness({ data, errors, onChange }) {
                 />
                 <FormInput
                     error={errors["empresa.telefono"]}
-                    label="Telefono de empresa"
+                    label="Teléfono de empresa"
                     name="telefono"
                     onChange={onChange}
                     value={data.telefono}

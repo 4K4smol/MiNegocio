@@ -1,8 +1,11 @@
+import { EmptyState as SharedEmptyState } from "../../../shared/components/EmptyState";
+
 export function EmptyState({ title = "Sin resultados", description }) {
     return (
-        <section className="admin-card admin-empty-inline">
-            <strong>{title}</strong>
-            {description ? <p>{description}</p> : null}
-        </section>
+        <SharedEmptyState
+            className="admin-card admin-empty-inline"
+            description={description}
+            title={title}
+        />
     );
 }

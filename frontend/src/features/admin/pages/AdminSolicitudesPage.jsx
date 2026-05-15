@@ -106,6 +106,13 @@ export function AdminSolicitudesPage() {
         setDecisionError("");
     };
 
+    const openPhaseDecision = (type, fase, label, empresaId = selectedId) => {
+        setDecision({ type: `${type}_fase`, empresaId, fase, label });
+        setDecisionText("");
+        setDecisionDocuments([]);
+        setDecisionError("");
+    };
+
     const closeDecision = () => {
         if (savingDecision) return;
         setDecision(null);
@@ -117,7 +124,7 @@ export function AdminSolicitudesPage() {
         if (!decision) return;
 
         const motivo = decisionText.trim();
-        if (decision.type !== "aprobar" && motivo.length < 5) {
+        if (!["aprobar", "aprobar_fase"].includes(decision.type) && motivo.length < 5) {
             setDecisionError("El motivo debe tener al menos 5 caracteres.");
             return;
         }
@@ -136,6 +143,12 @@ export function AdminSolicitudesPage() {
             } else if (decision.type === "rechazar") {
                 await adminSolicitudesApi.rechazar(decision.empresaId, { motivo });
                 setSuccess("Solicitud rechazada correctamente.");
+            } else if (decision.type === "aprobar_fase") {
+                await adminSolicitudesApi.aprobarFase(decision.empresaId, decision.fase);
+                setSuccess("Fase aprobada correctamente.");
+            } else if (decision.type === "rechazar_fase") {
+                await adminSolicitudesApi.rechazarFase(decision.empresaId, decision.fase, { motivo });
+                setSuccess("Fase rechazada correctamente.");
             } else {
                 await adminSolicitudesApi.solicitarSubsanacion(decision.empresaId, {
                     motivo,
@@ -239,12 +252,14 @@ export function AdminSolicitudesPage() {
                         loading={loadingDetail}
                         onPreviewDocument={openPreview}
                         onDecision={openDecision}
+                        onPhaseDecision={openPhaseDecision}
                     />
                 </div>
             ) : null}
 
             <AdminDecisionModal
                 type={decision?.type}
+                contextLabel={decision?.label}
                 value={decisionText}
                 selectedDocuments={decisionDocuments}
                 loading={savingDecision}

@@ -1,3 +1,4 @@
+import { AdminActionsMenu } from "./AdminActionsMenu";
 import { EstadoSolicitudBadge } from "./EstadoSolicitudBadge";
 
 const GROUP_LABELS = {
@@ -19,6 +20,18 @@ const formatDateTime = (value) => {
     return new Intl.DateTimeFormat("es-ES", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 };
 
+const PHASES = [
+    { id: "identidad", label: "Identidad", stateKey: "estado_identidad" },
+    { id: "empresa", label: "Empresa / actividad", stateKey: "estado_empresa" },
+    { id: "representacion", label: "Representacion", stateKey: "estado_representacion" },
+];
+
+const normalize = (value) =>
+    String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+
 function DataList({ items }) {
     return (
         <dl className="admin-data-list">
@@ -32,7 +45,7 @@ function DataList({ items }) {
     );
 }
 
-export function SolicitudDetallePanel({ solicitud, loading, onPreviewDocument, onDecision }) {
+export function SolicitudDetallePanel({ solicitud, loading, onPreviewDocument, onDecision, onPhaseDecision }) {
     if (loading) return <section className="admin-card"><p className="admin-loading">Cargando expediente...</p></section>;
     if (!solicitud) return <section className="admin-card admin-empty-inline">Selecciona una solicitud para revisar el expediente.</section>;
 
@@ -40,6 +53,12 @@ export function SolicitudDetallePanel({ solicitud, loading, onPreviewDocument, o
     const responsable = solicitud.responsable || {};
     const documentos = solicitud.documentos || {};
     const historial = solicitud.historial || [];
+    const estadoGlobal = solicitud.estado_actual || solicitud.estado_verificacion;
+    const solicitudCerrada = ["aprobada", "rechazada"].includes(estadoGlobal);
+    const representacionNoAplica = solicitud.estado_representacion === null && normalize(empresa.tipo_empresa) === "autonomo";
+    const puedeAprobarGlobal = solicitud.estado_identidad === "aprobada"
+        && solicitud.estado_empresa === "aprobada"
+        && (representacionNoAplica || solicitud.estado_representacion === "aprobada");
 
     return (
         <section className="solicitud-detail-panel">
@@ -49,7 +68,7 @@ export function SolicitudDetallePanel({ solicitud, loading, onPreviewDocument, o
                     <h2>{empresa.nombre_fiscal || "Solicitud de registro"}</h2>
                     <p>{empresa.nif || "NIF no indicado"}</p>
                 </div>
-                <EstadoSolicitudBadge estado={solicitud.estado_actual || solicitud.estado_verificacion} />
+                <EstadoSolicitudBadge estado={estadoGlobal} />
             </div>
 
             <div className="admin-detail-grid">
@@ -82,9 +101,37 @@ export function SolicitudDetallePanel({ solicitud, loading, onPreviewDocument, o
             <section className="admin-card fases-card">
                 <h3>Fases</h3>
                 <div className="phase-grid">
-                    <div><span>Identidad</span><EstadoSolicitudBadge estado={solicitud.estado_identidad} /></div>
-                    <div><span>Empresa / actividad</span><EstadoSolicitudBadge estado={solicitud.estado_empresa} /></div>
-                    <div><span>Representación</span><EstadoSolicitudBadge estado={solicitud.estado_representacion || "No aplica"} /></div>
+                    {PHASES.map((phase) => {
+                        const noAplica = phase.id === "representacion" && representacionNoAplica;
+                        const estado = noAplica ? "No aplica" : solicitud[phase.stateKey];
+
+                        return (
+                            <div key={phase.id}>
+                                <span>{phase.label}</span>
+                                <div className="phase-actions">
+                                    <EstadoSolicitudBadge estado={estado} />
+                                    {!noAplica && !solicitudCerrada ? (
+                                        <AdminActionsMenu
+                                            actions={[
+                                                {
+                                                    label: "Aprobar fase",
+                                                    onClick: () => onPhaseDecision?.("aprobar", phase.id, phase.label, solicitud.id),
+                                                    variant: "success",
+                                                    disabled: solicitud[phase.stateKey] === "aprobada",
+                                                },
+                                                {
+                                                    label: "Rechazar fase",
+                                                    onClick: () => onPhaseDecision?.("rechazar", phase.id, phase.label, solicitud.id),
+                                                    variant: "danger",
+                                                    disabled: solicitud[phase.stateKey] === "rechazada",
+                                                },
+                                            ]}
+                                        />
+                                    ) : null}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </section>
 
@@ -101,9 +148,7 @@ export function SolicitudDetallePanel({ solicitud, loading, onPreviewDocument, o
                                             <strong>{documento.nombre_original}</strong>
                                             <small>{documento.tipo_documento} · {documento.mime_type || "mime no indicado"} · {formatBytes(documento.tamano)}</small>
                                         </div>
-                                        <button type="button" className="admin-button admin-button-ghost" onClick={() => onPreviewDocument(documento)}>
-                                            Ver documento
-                                        </button>
+                                        <AdminActionsMenu actions={[{ label: "Ver documento", onClick: () => onPreviewDocument(documento) }]} />
                                     </div>
                                 ))
                             ) : (
@@ -137,16 +182,19 @@ export function SolicitudDetallePanel({ solicitud, loading, onPreviewDocument, o
             <section className="admin-card decision-zone">
                 <h3>Decisión</h3>
                 <div className="admin-actions">
-                    <button type="button" className="admin-button admin-button-success" onClick={() => onDecision("aprobar", solicitud.id)}>
+                    <button type="button" className="admin-button admin-button-success" onClick={() => onDecision("aprobar", solicitud.id)} disabled={!puedeAprobarGlobal || solicitudCerrada}>
                         Aprobar solicitud
                     </button>
-                    <button type="button" className="admin-button admin-button-danger" onClick={() => onDecision("rechazar", solicitud.id)}>
+                    <button type="button" className="admin-button admin-button-danger" onClick={() => onDecision("rechazar", solicitud.id)} disabled={solicitudCerrada}>
                         Rechazar solicitud
                     </button>
-                    <button type="button" className="admin-button admin-button-warning" onClick={() => onDecision("subsanacion", solicitud.id)}>
+                    <button type="button" className="admin-button admin-button-warning" onClick={() => onDecision("subsanacion", solicitud.id)} disabled={solicitudCerrada}>
                         Pedir subsanacion
                     </button>
                 </div>
+                {!puedeAprobarGlobal && !solicitudCerrada ? (
+                    <p className="decision-hint">Aprueba primero las fases obligatorias para cerrar la solicitud.</p>
+                ) : null}
             </section>
         </section>
     );

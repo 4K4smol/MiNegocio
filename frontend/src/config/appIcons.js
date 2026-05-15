@@ -4,6 +4,8 @@ import {
     BriefcaseBusiness,
     Building2,
     CalendarDays,
+    ChevronLeft,
+    ChevronRight,
     ClipboardList,
     Download,
     Eye,
@@ -31,6 +33,7 @@ export const appIcons = {
     servicios: BriefcaseBusiness,
     ordenes: ClipboardList,
     calendario: CalendarDays,
+    anterior: ChevronLeft,
     facturas: FileText,
     inventario: Boxes,
     informes: BarChart3,
@@ -47,5 +50,6 @@ export const appIcons = {
     eliminar: Trash2,
     buscar: Search,
     crear: Plus,
+    siguiente: ChevronRight,
     descargar: Download,
 };

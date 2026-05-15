@@ -1,3 +1,7 @@
-import { createCrudApi, endpoints } from "../../../shared/api";
+import { apiRequest, createCrudApi, endpoints } from "../../../shared/api";
 
-export const calendarioService = createCrudApi(endpoints.calendario);
+export const calendarioService = {
+    ...createCrudApi(endpoints.calendarioEventos),
+    dashboardCalendario: (params) =>
+        apiRequest(endpoints.dashboardCalendario, { params }),
+};

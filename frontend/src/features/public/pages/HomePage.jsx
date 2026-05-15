@@ -12,14 +12,14 @@ const modules = [
     },
     {
         icon: appIcons.ordenes,
-        title: "Ordenes de trabajo",
+        title: "Órdenes de trabajo",
         description: "Planifica, asigna y controla servicios pendientes o completados.",
     },
     {
         icon: appIcons.facturas,
-        title: "Facturacion",
+        title: "Facturación",
         description:
-            "Genera facturas desde ordenes completadas y prepara el sistema para trazabilidad legal.",
+            "Genera facturas desde órdenes completadas y prepara el sistema para trazabilidad legal.",
     },
     {
         icon: appIcons.inventario,
@@ -34,7 +34,7 @@ const modules = [
     {
         icon: appIcons.informes,
         title: "Informes",
-        description: "Consulta metricas mensuales y evolucion del negocio.",
+        description: "Consulta métricas mensuales y evolución del negocio.",
     },
 ];
 
@@ -43,12 +43,12 @@ export function HomePage() {
         <div className="public-home">
             <section className="hero-section">
                 <div className="hero-copy">
-                    <span className="eyebrow">CRM para autonomos y PYMES</span>
+                    <span className="eyebrow">CRM para autónomos y PYMES</span>
                     <h1>Gestiona tu negocio desde una sola plataforma</h1>
                     <p>
-                        Clientes, ordenes de trabajo, facturas, inventario,
-                        calendario e informes en un unico sistema pensado para
-                        autonomos y pequenas empresas.
+                        Clientes, órdenes de trabajo, facturas, inventario,
+                        calendario e informes en un único sistema pensado para
+                        autónomos y pequeñas empresas.
                     </p>
                     <div className="actions">
                         <Link className="button" to="/registro">
@@ -57,7 +57,7 @@ export function HomePage() {
                         </Link>
                         <Link className="button button-secondary" to="/login">
                             <AppIcon icon={appIcons.login} size={18} />
-                            Iniciar sesion
+                            Iniciar sesión
                         </Link>
                     </div>
                 </div>
@@ -70,11 +70,11 @@ export function HomePage() {
                 aria-labelledby="modules-title"
             >
                 <div className="section-heading">
-                    <span className="eyebrow">Modulos</span>
+                    <span className="eyebrow">Módulos</span>
                     <h2 id="modules-title">Todo conectado para trabajar mejor</h2>
                     <p>
                         Una base operativa sobria y escalable para controlar el
-                        dia a dia sin duplicar informacion.
+                        día a día sin duplicar información.
                     </p>
                 </div>
                 <div className="modules-grid">
@@ -90,11 +90,11 @@ export function HomePage() {
                 aria-labelledby="workflow-title"
             >
                 <div className="section-heading">
-                    <span className="eyebrow">Como funciona</span>
-                    <h2 id="workflow-title">De la operacion diaria a la decision</h2>
+                    <span className="eyebrow">Cómo funciona</span>
+                    <h2 id="workflow-title">De la operación diaria a la decisión</h2>
                     <p>
                         MiNegocio organiza el flujo de trabajo desde el primer
-                        contacto hasta la factura, manteniendo la informacion
+                        contacto hasta la factura, manteniendo la información
                         conectada y lista para consultar.
                     </p>
                 </div>
@@ -102,12 +102,12 @@ export function HomePage() {
                     <article>
                         <span>01</span>
                         <h3>Centraliza</h3>
-                        <p>Reune clientes, servicios y datos operativos en un mismo lugar.</p>
+                        <p>Reúne clientes, servicios y datos operativos en un mismo lugar.</p>
                     </article>
                     <article>
                         <span>02</span>
                         <h3>Ejecuta</h3>
-                        <p>Planifica ordenes, controla inventario y convierte trabajo en facturas.</p>
+                        <p>Planifica órdenes, controla inventario y convierte trabajo en facturas.</p>
                     </article>
                     <article>
                         <span>03</span>

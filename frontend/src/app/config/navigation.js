@@ -4,12 +4,9 @@ export const empresaNavigation = [
     { label: "Dashboard", to: "/app", icon: appIcons.dashboard },
     { label: "Clientes", to: "/app/clientes", icon: appIcons.clientes },
     { label: "Servicios", to: "/app/servicios", icon: appIcons.servicios },
-    { label: "Ordenes", to: "/app/ordenes-trabajo", icon: appIcons.ordenes },
-    { label: "Calendario", to: "/app/calendario", icon: appIcons.calendario },
-    { label: "Facturas", to: "/app/facturas", icon: appIcons.facturas },
     { label: "Inventario", to: "/app/inventario", icon: appIcons.inventario },
-    { label: "Informes", to: "/app/informes", icon: appIcons.informes },
-    { label: "Configuracion", to: "/app/configuracion", icon: appIcons.configuracion },
+    { label: "Órdenes", to: "/app/ordenes-trabajo", icon: appIcons.ordenes },
+    { label: "Facturación", to: "/app/facturas", icon: appIcons.facturas },
 ];
 
 export const adminNavigation = [

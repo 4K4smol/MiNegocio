@@ -28,6 +28,8 @@ class ModuloController extends AbstractCrudController
     {
         $record = Modulo::query()->create($request->validated());
 
+        $this->registrarEventoCatalogo($request, 'crear_modulo', null, 'creado', $record);
+
         return $this->created(
             ModuloResource::make($record)->resolve()
         );
@@ -41,8 +43,14 @@ class ModuloController extends AbstractCrudController
             return $this->notFound();
         }
 
+        $estadoAnterior = $record->only(['codigo', 'nombre', 'descripcion', 'activo', 'orden_visual', 'icono']);
         $record->fill($request->validated());
         $record->save();
+
+        $this->registrarEventoCatalogo($request, 'actualizar_modulo', 'actualizado', 'actualizado', $record, [
+            'anterior' => $estadoAnterior,
+            'nuevo' => $record->only(['codigo', 'nombre', 'descripcion', 'activo', 'orden_visual', 'icono']),
+        ]);
 
         return $this->updated(
             ModuloResource::make($record)->resolve()
@@ -72,12 +80,26 @@ class ModuloController extends AbstractCrudController
 
         AdminVerificacionEvento::query()->create([
             'user_admin_id' => $request->user()->id,
-            'accion' => $activo ? 'activar_modulo_global' : 'desactivar_modulo_global',
+            'accion' => $activo ? 'activar_modulo' : 'desactivar_modulo',
             'estado_anterior' => $anterior,
             'estado_nuevo' => $activo ? 'activo' : 'inactivo',
             'metadatos' => ['modulo_id' => $record->id, 'codigo' => $record->codigo],
         ]);
 
         return $this->updated(ModuloResource::make($record->fresh())->resolve(), 'Modulo actualizado correctamente.');
+    }
+
+    private function registrarEventoCatalogo(Request $request, string $accion, ?string $estadoAnterior, ?string $estadoNuevo, Modulo $record, array $metadatos = []): void
+    {
+        AdminVerificacionEvento::query()->create([
+            'user_admin_id' => $request->user()->id,
+            'accion' => $accion,
+            'estado_anterior' => $estadoAnterior,
+            'estado_nuevo' => $estadoNuevo,
+            'metadatos' => array_merge([
+                'modulo_id' => $record->id,
+                'codigo' => $record->codigo,
+            ], $metadatos),
+        ]);
     }
 }

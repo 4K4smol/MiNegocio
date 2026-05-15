@@ -55,6 +55,10 @@ export const adminApi = {
     rechazarSolicitud: (empresaId, data) => apiRequest(`admin/solicitudes-verificacion/${empresaId}/rechazar`, { method: "POST", body: data }),
     solicitarSubsanacion: (empresaId, data) =>
         apiRequest(`admin/solicitudes-verificacion/${empresaId}/solicitar-subsanacion`, { method: "POST", body: data }),
+    aprobarFaseSolicitud: (empresaId, fase) =>
+        apiRequest(`admin/solicitudes-verificacion/${empresaId}/fases/${fase}/aprobar`, { method: "POST" }),
+    rechazarFaseSolicitud: (empresaId, fase, data) =>
+        apiRequest(`admin/solicitudes-verificacion/${empresaId}/fases/${fase}/rechazar`, { method: "POST", body: data }),
     previewDocumento,
 
     getAdminUsuarios: (params) => paginated(apiRequest("admin/usuarios", { params })),
@@ -80,6 +84,18 @@ export const adminApi = {
     actualizarModulo: (id, data) => apiRequest(`modulos/${id}`, { method: "PUT", body: data }),
     activarModulo: (id) => apiRequest(`modulos/${id}/activar`, { method: "PATCH" }),
     desactivarModulo: (id) => apiRequest(`modulos/${id}/desactivar`, { method: "PATCH" }),
+    getTiposCliente: (params) => paginated(apiRequest("tipos-cliente", { params })),
+    crearTipoCliente: (data) => apiRequest("tipos-cliente", { method: "POST", body: data }),
+    actualizarTipoCliente: (id, data) => apiRequest(`tipos-cliente/${id}`, { method: "PUT", body: data }),
+    activarTipoCliente: (id) => apiRequest(`tipos-cliente/${id}/activar`, { method: "PATCH" }),
+    desactivarTipoCliente: (id) => apiRequest(`tipos-cliente/${id}/desactivar`, { method: "PATCH" }),
+    getTiposLocalizacionCliente: (params) => paginated(apiRequest("tipos-localizacion-cliente", { params })),
+    crearTipoLocalizacionCliente: (data) => apiRequest("tipos-localizacion-cliente", { method: "POST", body: data }),
+    actualizarTipoLocalizacionCliente: (id, data) => apiRequest(`tipos-localizacion-cliente/${id}`, { method: "PUT", body: data }),
+    activarTipoLocalizacionCliente: (id) => apiRequest(`tipos-localizacion-cliente/${id}/activar`, { method: "PATCH" }),
+    desactivarTipoLocalizacionCliente: (id) => apiRequest(`tipos-localizacion-cliente/${id}/desactivar`, { method: "PATCH" }),
+    getTiposEmpresa: (params) => paginated(apiRequest("tipos-empresa", { params })),
+    getTiposDocumentoIdentidad: (params) => paginated(apiRequest("tipos-documento-identidad", { params })),
 
     // Compatibilidad con el servicio legacy mientras se retiran pantallas antiguas.
     getSolicitudes: (params) => apiRequest("admin/solicitudes", { params }),

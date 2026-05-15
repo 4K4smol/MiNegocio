@@ -30,7 +30,7 @@ export function RegisterStepAccess({ data, documentTypes, errors, onChange, onTo
                 />
                 <FormInput
                     error={errors["usuario.telefono"]}
-                    label="Telefono"
+                    label="Teléfono"
                     name="telefono"
                     onChange={onChange}
                     value={data.telefono}

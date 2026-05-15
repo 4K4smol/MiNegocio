@@ -1,7 +1,7 @@
 const orders = [
-    { client: "Taller Norte", service: "Revision mensual", status: "Completada" },
-    { client: "Clinica Alba", service: "Mantenimiento", status: "En progreso" },
-    { client: "Estudio Luma", service: "Instalacion", status: "Pendiente" },
+    { client: "Taller Norte", service: "Revisión mensual", status: "Completada" },
+    { client: "Clínica Alba", service: "Mantenimiento", status: "En progreso" },
+    { client: "Estudio Luma", service: "Instalación", status: "Pendiente" },
 ];
 
 const days = ["L", "M", "X", "J", "V", "S", "D"];
@@ -54,7 +54,7 @@ export function DashboardPreview() {
             </div>
 
             <div className="preview-card">
-                <div className="preview-card-title">Ordenes recientes</div>
+                <div className="preview-card-title">Órdenes recientes</div>
                 <div className="orders-table">
                     {orders.map((order) => (
                         <div className="order-row" key={order.client}>

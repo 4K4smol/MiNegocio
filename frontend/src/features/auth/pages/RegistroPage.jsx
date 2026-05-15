@@ -291,7 +291,7 @@ export function RegistroPage() {
         }
 
         if (step === 5 && !confirmReview) {
-            nextErrors.confirmReview = "Confirma que la informacion es correcta.";
+            nextErrors.confirmReview = "Confirma que la información es correcta.";
         }
 
         setErrors(nextErrors);
@@ -406,7 +406,7 @@ export function RegistroPage() {
                     </p>
                     <Link className="button" to="/login">
                         <AppIcon icon={appIcons.login} size={18} />
-                        Ir a iniciar sesion
+                        Ir a iniciar sesión
                     </Link>
                 </div>
             </section>

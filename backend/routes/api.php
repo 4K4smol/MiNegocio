@@ -49,6 +49,8 @@ Route::prefix('v1')->group(function (): void {
     Route::post('auth/register', [AuthController::class, 'register']);
     Route::post('register', [AuthController::class, 'register']);
     Route::post('auth/login', [AuthController::class, 'login']);
+    Route::apiResource('tipos-documento-identidad', TipoDocumentoIdentidadController::class)->only(['index', 'show']);
+    Route::apiResource('tipos-empresa', TipoEmpresaController::class)->only(['index', 'show']);
 
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('auth/me', [AuthController::class, 'me']);
@@ -112,7 +114,7 @@ Route::prefix('v1')->group(function (): void {
             Route::apiResource('modulos', ModuloController::class);
             Route::patch('modulos/{id}/activar', [ModuloController::class, 'activar']);
             Route::patch('modulos/{id}/desactivar', [ModuloController::class, 'desactivar']);
-            Route::apiResource('roles', RoleController::class);
+            Route::apiResource('roles', RoleController::class)->only(['index', 'show']);
             Route::get('admin/dashboard', [AdminDashboardController::class, 'index']);
             // Flujo moderno usado por la pantalla frontend /admin/solicitudes.
             // Estos endpoints trabajan con Empresa como route model binding.
@@ -121,6 +123,12 @@ Route::prefix('v1')->group(function (): void {
             Route::post('admin/solicitudes-verificacion/{empresa}/aprobar', [AdminSolicitudVerificacionController::class, 'aprobar']);
             Route::post('admin/solicitudes-verificacion/{empresa}/rechazar', [AdminSolicitudVerificacionController::class, 'rechazar']);
             Route::post('admin/solicitudes-verificacion/{empresa}/solicitar-subsanacion', [AdminSolicitudVerificacionController::class, 'solicitarSubsanacion']);
+            Route::post('admin/solicitudes-verificacion/{empresa}/fases/identidad/aprobar', [AdminSolicitudVerificacionController::class, 'aprobarIdentidad']);
+            Route::post('admin/solicitudes-verificacion/{empresa}/fases/identidad/rechazar', [AdminSolicitudVerificacionController::class, 'rechazarIdentidad']);
+            Route::post('admin/solicitudes-verificacion/{empresa}/fases/empresa/aprobar', [AdminSolicitudVerificacionController::class, 'aprobarEmpresa']);
+            Route::post('admin/solicitudes-verificacion/{empresa}/fases/empresa/rechazar', [AdminSolicitudVerificacionController::class, 'rechazarEmpresa']);
+            Route::post('admin/solicitudes-verificacion/{empresa}/fases/representacion/aprobar', [AdminSolicitudVerificacionController::class, 'aprobarRepresentacion']);
+            Route::post('admin/solicitudes-verificacion/{empresa}/fases/representacion/rechazar', [AdminSolicitudVerificacionController::class, 'rechazarRepresentacion']);
             Route::get('admin/documentos-verificacion/{documento}/preview', [AdminDocumentoVerificacionController::class, 'preview']);
             Route::get('admin/usuarios', [AdminUsuarioController::class, 'index']);
             Route::get('admin/usuarios/{user}', [AdminUsuarioController::class, 'show']);
@@ -152,6 +160,14 @@ Route::prefix('v1')->group(function (): void {
             Route::get('admin/empresas/{empresa}/modulos', [AdminEmpresaModuloController::class, 'index']);
             Route::post('admin/empresas/{empresa}/modulos/{modulo}/activar', [AdminEmpresaModuloController::class, 'activar']);
             Route::post('admin/empresas/{empresa}/modulos/{modulo}/desactivar', [AdminEmpresaModuloController::class, 'desactivar']);
+            Route::apiResource('tipos-cliente', TipoClienteController::class)->except(['index', 'show']);
+            Route::patch('tipos-cliente/{id}/activar', [TipoClienteController::class, 'activar']);
+            Route::patch('tipos-cliente/{id}/desactivar', [TipoClienteController::class, 'desactivar']);
+            Route::apiResource('tipos-localizacion-cliente', TipoLocalizacionClienteController::class)->except(['index', 'show']);
+            Route::patch('tipos-localizacion-cliente/{id}/activar', [TipoLocalizacionClienteController::class, 'activar']);
+            Route::patch('tipos-localizacion-cliente/{id}/desactivar', [TipoLocalizacionClienteController::class, 'desactivar']);
+            Route::apiResource('tipos-empresa', TipoEmpresaController::class)->except(['index', 'show']);
+            Route::apiResource('tipos-documento-identidad', TipoDocumentoIdentidadController::class)->except(['index', 'show']);
         });
 
         Route::middleware('modulo:clientes')->group(function (): void {
@@ -165,13 +181,11 @@ Route::prefix('v1')->group(function (): void {
         });
 
         Route::apiResource('tareas', TareaController::class);
-        Route::apiResource('tipos-cliente', TipoClienteController::class);
-        Route::apiResource('tipos-documento-identidad', TipoDocumentoIdentidadController::class);
-        Route::apiResource('tipos-empresa', TipoEmpresaController::class);
+        Route::apiResource('tipos-cliente', TipoClienteController::class)->only(['index', 'show']);
         Route::apiResource('tipos-evento-facturacion', TipoEventoFacturacionController::class);
         Route::apiResource('tipos-factura', TipoFacturaController::class);
         Route::apiResource('tipos-inventario-movimiento', TipoInventarioMovimientoController::class);
-        Route::apiResource('tipos-localizacion-cliente', TipoLocalizacionClienteController::class);
+        Route::apiResource('tipos-localizacion-cliente', TipoLocalizacionClienteController::class)->only(['index', 'show']);
         Route::apiResource('tipos-rectificacion', TipoRectificacionController::class);
         Route::apiResource('tipos-registro-facturacion', TipoRegistroFacturacionController::class);
         Route::apiResource('verificaciones-usuario', VerificacionUsuarioController::class);

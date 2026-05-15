@@ -7,6 +7,7 @@ namespace App\Http\Resources\Api\V1\Admin;
 use App\Services\Admin\SolicitudVerificacionAdminService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Str;
 
 class AdminSolicitudVerificacionResource extends JsonResource
 {
@@ -28,9 +29,12 @@ class AdminSolicitudVerificacionResource extends JsonResource
             'responsable' => $this->responsableBasico(),
             'estado_verificacion' => $estado,
             'estado_actual' => $estado,
+            'estado_identidad' => $solicitud?->estado_identidad,
+            'estado_empresa' => $solicitud?->estado_empresa,
+            'estado_representacion' => $solicitud?->estado_representacion,
             'documentos_count' => $solicitud?->documentos_count ?? $solicitud?->documentos?->count() ?? 0,
             'fecha_solicitud' => $solicitud?->created_at,
-            'acciones_disponibles' => $this->accionesDisponibles($estado),
+            'acciones_disponibles' => $this->accionesDisponibles($estado, $solicitud),
         ];
     }
 
@@ -59,12 +63,32 @@ class AdminSolicitudVerificacionResource extends JsonResource
         ];
     }
 
-    private function accionesDisponibles(?string $estado): array
+    private function accionesDisponibles(?string $estado, $solicitud): array
     {
         if ($estado === SolicitudVerificacionAdminService::ESTADO_RECHAZADA || $estado === SolicitudVerificacionAdminService::ESTADO_APROBADA) {
             return ['ver_detalle'];
         }
 
-        return ['ver_detalle', 'aprobar', 'rechazar', 'solicitar_subsanacion'];
+        $acciones = ['ver_detalle', 'rechazar', 'solicitar_subsanacion'];
+
+        if ($this->puedeAprobar($solicitud)) {
+            $acciones[] = 'aprobar';
+        }
+
+        return $acciones;
+    }
+
+    private function puedeAprobar($solicitud): bool
+    {
+        if ($solicitud === null) {
+            return false;
+        }
+
+        $tipoEmpresa = Str::of((string) $this->tipoEmpresa?->nombre)->lower()->ascii()->toString();
+        $representacionNoAplica = $solicitud->estado_representacion === null && $tipoEmpresa === 'autonomo';
+
+        return $solicitud->estado_identidad === SolicitudVerificacionAdminService::ESTADO_APROBADA
+            && $solicitud->estado_empresa === SolicitudVerificacionAdminService::ESTADO_APROBADA
+            && ($representacionNoAplica || $solicitud->estado_representacion === SolicitudVerificacionAdminService::ESTADO_APROBADA);
     }
 }

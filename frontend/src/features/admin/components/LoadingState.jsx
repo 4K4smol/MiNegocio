@@ -1,3 +1,5 @@
+import { LoadingState as SharedLoadingState } from "../../../shared/components/LoadingState";
+
 export function LoadingState({ children = "Cargando..." }) {
-    return <p className="admin-loading">{children}</p>;
+    return <SharedLoadingState className="admin-loading">{children}</SharedLoadingState>;
 }

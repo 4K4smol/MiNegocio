@@ -3,7 +3,7 @@ import { PlaceholderPage } from "../../../shared/components/PlaceholderPage";
 export function ConfiguracionPage() {
     return (
         <PlaceholderPage
-            title="Configuracion"
+            title="Configuración"
             description="Ajustes de empresa, usuarios, fiscalidad y preferencias."
         />
     );

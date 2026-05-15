@@ -1,35 +1,40 @@
 const TITLES = {
     aprobar: "Aprobar solicitud",
     rechazar: "Rechazar solicitud",
-    subsanacion: "Pedir subsanación",
+    subsanacion: "Pedir subsanacion",
+    aprobar_fase: "Aprobar fase",
+    rechazar_fase: "Rechazar fase",
 };
 
 const DESCRIPTIONS = {
-    aprobar: "Confirma que la documentación es correcta. Se activarán la empresa y el usuario responsable.",
-    rechazar: "Indica el motivo para dejar constancia en el historial de revisión.",
-    subsanacion: "Indica qué documentación debe aportar o corregir el solicitante.",
+    aprobar: "Confirma que la documentacion es correcta. Se activaran la empresa y el usuario responsable.",
+    rechazar: "Indica el motivo para dejar constancia en el historial de revision.",
+    subsanacion: "Indica que documentacion debe aportar o corregir el solicitante.",
+    aprobar_fase: "Confirma que la documentacion de esta fase es correcta.",
+    rechazar_fase: "Indica el motivo para dejar constancia en el historial de revision.",
 };
 
 const OPTIONS = [
     ["identidad", "Identidad"],
     ["empresa_actividad", "Empresa / actividad"],
-    ["representacion", "Representación"],
+    ["representacion", "Representacion"],
     ["otros", "Otros"],
 ];
 
-export function AdminDecisionModal({ type, value, selectedDocuments, loading, error, onChange, onToggleDocument, onClose, onSubmit }) {
+export function AdminDecisionModal({ type, contextLabel, value, selectedDocuments = [], loading, error, onChange, onToggleDocument, onClose, onSubmit }) {
     if (!type) return null;
 
-    const requiresMotivo = type !== "aprobar";
+    const requiresMotivo = !["aprobar", "aprobar_fase"].includes(type);
     const canSubmit = !loading && (!requiresMotivo || value.trim().length >= 5);
+    const title = contextLabel ? `${TITLES[type]}: ${contextLabel}` : TITLES[type];
 
     return (
         <div className="admin-modal-backdrop" role="presentation">
             <form className="admin-modal decision-modal" onSubmit={onSubmit}>
                 <header>
                     <div>
-                        <span className="admin-kicker">Decisión administrativa</span>
-                        <h3>{TITLES[type]}</h3>
+                        <span className="admin-kicker">Decision administrativa</span>
+                        <h3>{title}</h3>
                     </div>
                     <button type="button" className="admin-icon-button admin-button-ghost" onClick={onClose} aria-label="Cerrar">
                         X
@@ -37,11 +42,11 @@ export function AdminDecisionModal({ type, value, selectedDocuments, loading, er
                 </header>
                 <p>{DESCRIPTIONS[type]}</p>
                 <label>
-                    <span>{type === "aprobar" ? "Observaciones" : "Motivo obligatorio"}</span>
+                    <span>{requiresMotivo ? "Motivo obligatorio" : "Observaciones"}</span>
                     <textarea
                         value={value}
                         onChange={(event) => onChange(event.target.value)}
-                        placeholder={type === "aprobar" ? "Documentación correcta." : "Describe el motivo de la decisión"}
+                        placeholder={requiresMotivo ? "Describe el motivo de la decision" : "Documentacion correcta."}
                         required={requiresMotivo}
                     />
                 </label>
@@ -67,7 +72,11 @@ export function AdminDecisionModal({ type, value, selectedDocuments, loading, er
                     <button type="button" className="admin-button admin-button-ghost" onClick={onClose} disabled={loading}>
                         Cancelar
                     </button>
-                    <button type="submit" className={`admin-button ${type === "rechazar" ? "admin-button-danger" : type === "subsanacion" ? "admin-button-warning" : "admin-button-success"}`} disabled={!canSubmit}>
+                    <button
+                        type="submit"
+                        className={`admin-button ${type === "rechazar" || type === "rechazar_fase" ? "admin-button-danger" : type === "subsanacion" ? "admin-button-warning" : "admin-button-success"}`}
+                        disabled={!canSubmit}
+                    >
                         {loading ? "Procesando..." : TITLES[type]}
                     </button>
                 </footer>

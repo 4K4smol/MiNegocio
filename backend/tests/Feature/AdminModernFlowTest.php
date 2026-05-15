@@ -55,6 +55,16 @@ class AdminModernFlowTest extends TestCase
         $admin = $this->crearAdmin();
 
         $this->actingAs($admin, 'sanctum')
+            ->postJson("/api/v1/admin/solicitudes-verificacion/{$empresaAprobar->id}/fases/identidad/aprobar")
+            ->assertOk();
+        $this->actingAs($admin, 'sanctum')
+            ->postJson("/api/v1/admin/solicitudes-verificacion/{$empresaAprobar->id}/fases/empresa/aprobar")
+            ->assertOk();
+        $this->actingAs($admin, 'sanctum')
+            ->postJson("/api/v1/admin/solicitudes-verificacion/{$empresaAprobar->id}/fases/representacion/aprobar")
+            ->assertOk();
+
+        $this->actingAs($admin, 'sanctum')
             ->postJson("/api/v1/admin/solicitudes-verificacion/{$empresaAprobar->id}/aprobar", ['observaciones' => 'Correcto.'])
             ->assertOk();
 

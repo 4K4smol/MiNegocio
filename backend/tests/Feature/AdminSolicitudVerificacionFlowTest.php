@@ -107,7 +107,24 @@ class AdminSolicitudVerificacionFlowTest extends TestCase
     {
         [$user, $empresa] = $this->crearSolicitud('B10000006', 'sociedad');
 
-        $this->actingAs($this->crearAdmin(), 'sanctum')
+        $admin = $this->crearAdmin();
+
+        $this->actingAs($admin, 'sanctum')
+            ->postJson("/api/v1/admin/solicitudes-verificacion/{$empresa->id}/fases/identidad/aprobar")
+            ->assertOk()
+            ->assertJsonPath('data.estado_identidad', 'aprobada');
+
+        $this->actingAs($admin, 'sanctum')
+            ->postJson("/api/v1/admin/solicitudes-verificacion/{$empresa->id}/fases/empresa/aprobar")
+            ->assertOk()
+            ->assertJsonPath('data.estado_empresa', 'aprobada');
+
+        $this->actingAs($admin, 'sanctum')
+            ->postJson("/api/v1/admin/solicitudes-verificacion/{$empresa->id}/fases/representacion/aprobar")
+            ->assertOk()
+            ->assertJsonPath('data.estado_representacion', 'aprobada');
+
+        $this->actingAs($admin, 'sanctum')
             ->postJson("/api/v1/admin/solicitudes-verificacion/{$empresa->id}/aprobar", [
                 'observaciones' => 'Documentacion correcta.',
             ])
@@ -116,7 +133,17 @@ class AdminSolicitudVerificacionFlowTest extends TestCase
 
         $this->assertTrue($user->fresh()->activo);
         $this->assertTrue($empresa->fresh()->activa);
+        $this->assertDatabaseHas('admin_verificacion_eventos', ['accion' => 'aprobar_fase_identidad']);
         $this->assertDatabaseHas('admin_verificacion_eventos', ['accion' => 'aprobar_solicitud']);
+    }
+
+    public function test_no_se_puede_aprobar_solicitud_con_fases_pendientes(): void
+    {
+        [, $empresa] = $this->crearSolicitud('B10000012', 'sociedad');
+
+        $this->actingAs($this->crearAdmin(), 'sanctum')
+            ->postJson("/api/v1/admin/solicitudes-verificacion/{$empresa->id}/aprobar")
+            ->assertStatus(422);
     }
 
     public function test_no_se_puede_aprobar_una_solicitud_rechazada(): void

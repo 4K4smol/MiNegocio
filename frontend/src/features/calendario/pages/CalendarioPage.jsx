@@ -4,7 +4,7 @@ export function CalendarioPage() {
     return (
         <PlaceholderPage
             title="Calendario"
-            description="Planificacion de trabajos, citas y eventos."
+            description="Planificación de trabajos, citas y eventos."
         />
     );
 }

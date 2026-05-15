@@ -1,12 +1,20 @@
-export function AdminPageHeader({ eyebrow = "Administracion", title, description, actions }) {
+import { PageHeader } from "../../../shared/components/PageHeader";
+
+export function AdminPageHeader({
+    actions,
+    description,
+    eyebrow = "Administración",
+    title,
+}) {
     return (
-        <header className="admin-section-header">
-            <div>
-                <span className="admin-kicker">{eyebrow}</span>
-                <h2>{title}</h2>
-                {description ? <p>{description}</p> : null}
-            </div>
-            {actions ? <div className="admin-actions">{actions}</div> : null}
-        </header>
+        <PageHeader
+            actions={actions}
+            actionsClassName="admin-actions page-actions"
+            className="admin-section-header"
+            description={description}
+            eyebrow={eyebrow}
+            headingLevel={2}
+            title={title}
+        />
     );
 }

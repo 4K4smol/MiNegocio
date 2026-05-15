@@ -27,7 +27,7 @@ export function ClienteForm({
                 />
             </label>
             <label>
-                Telefono
+                Teléfono
                 <input
                     name="telefono"
                     defaultValue={initialValues.telefono || ""}

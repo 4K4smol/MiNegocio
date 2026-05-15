@@ -1,16 +1,15 @@
-export function AdminDataTable({ columns = [], children, empty }) {
-    if (empty) return empty;
+import { DataTable } from "../../../shared/components/DataTable";
 
+export function AdminDataTable({ columns = [], children, empty }) {
     return (
-        <section className="admin-card admin-table-card">
-            <div className="admin-table-wrap">
-                <table className="admin-table">
-                    <thead>
-                        <tr>{columns.map((column) => <th key={column}>{column}</th>)}</tr>
-                    </thead>
-                    <tbody>{children}</tbody>
-                </table>
-            </div>
-        </section>
+        <DataTable
+            cardClassName="admin-card admin-table-card"
+            columns={columns}
+            empty={empty}
+            tableClassName="admin-table"
+            wrapClassName="admin-table-wrap"
+        >
+            {children}
+        </DataTable>
     );
 }

@@ -10,6 +10,7 @@ use App\Models\EstadoVerificacion;
 use App\Models\SolicitudVerificacion;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SolicitudVerificacionAdminService
 {
@@ -18,6 +19,12 @@ class SolicitudVerificacionAdminService
     public const ESTADO_SUBSANACION = 'subsanacion';
     public const ESTADO_APROBADA = 'aprobada';
     public const ESTADO_RECHAZADA = 'rechazada';
+
+    private const FASES = [
+        'identidad' => 'estado_identidad',
+        'empresa' => 'estado_empresa',
+        'representacion' => 'estado_representacion',
+    ];
 
     /**
      * @param array{observaciones?: string|null} $data
@@ -32,14 +39,13 @@ class SolicitudVerificacionAdminService
                 abort(422, 'La solicitud no se puede aprobar desde su estado actual.');
             }
 
+            abort_unless($this->puedeAprobarSolicitud($solicitud), 422, 'Faltan fases obligatorias de verificacion.');
+
             $aprobadaId = $this->estadoId(self::ESTADO_APROBADA);
             $observaciones = $data['observaciones'] ?? null;
 
             $solicitud->update([
                 'estado_verificacion_id' => $aprobadaId,
-                'estado_identidad' => self::ESTADO_APROBADA,
-                'estado_empresa' => self::ESTADO_APROBADA,
-                'estado_representacion' => $solicitud->estado_representacion === null ? null : self::ESTADO_APROBADA,
                 'observaciones' => $observaciones ?? $solicitud->observaciones,
                 'motivo_rechazo' => null,
                 'revisado_por' => $admin->id,
@@ -67,6 +73,16 @@ class SolicitudVerificacionAdminService
 
             return $empresa->fresh();
         });
+    }
+
+    public function aprobarFase(Empresa $empresa, User $admin, string $fase): Empresa
+    {
+        return $this->actualizarFase($empresa, $admin, $fase, self::ESTADO_APROBADA);
+    }
+
+    public function rechazarFase(Empresa $empresa, User $admin, string $fase, string $motivo): Empresa
+    {
+        return $this->actualizarFase($empresa, $admin, $fase, self::ESTADO_RECHAZADA, $motivo);
     }
 
     /**
@@ -154,7 +170,7 @@ class SolicitudVerificacionAdminService
     private function bloquearSolicitudActual(Empresa $empresa): SolicitudVerificacion
     {
         return SolicitudVerificacion::query()
-            ->with(['estadoVerificacion', 'user.verificacion', 'empresa.verificacion'])
+            ->with(['estadoVerificacion', 'user.verificacion', 'empresa.tipoEmpresa', 'empresa.verificacion'])
             ->where('empresa_id', $empresa->id)
             ->latest()
             ->lockForUpdate()
@@ -164,6 +180,60 @@ class SolicitudVerificacionAdminService
     private function estadoId(string $nombre): int
     {
         return (int) EstadoVerificacion::query()->where('nombre', $nombre)->firstOrFail()->id;
+    }
+
+    private function actualizarFase(Empresa $empresa, User $admin, string $fase, string $estado, ?string $motivo = null): Empresa
+    {
+        abort_unless(array_key_exists($fase, self::FASES), 404, 'Fase de verificacion no encontrada.');
+
+        return DB::transaction(function () use ($empresa, $admin, $fase, $estado, $motivo): Empresa {
+            $solicitud = $this->bloquearSolicitudActual($empresa);
+            $campo = self::FASES[$fase];
+
+            if ($fase === 'representacion' && $solicitud->{$campo} === null && ! $this->requiereRepresentacion($solicitud)) {
+                abort(422, 'La fase de representacion no aplica a esta solicitud.');
+            }
+
+            $estadoAnterior = $solicitud->{$campo};
+
+            $solicitud->update([
+                $campo => $estado,
+                'estado_verificacion_id' => $this->estadoId(self::ESTADO_EN_REVISION),
+                'motivo_rechazo' => $estado === self::ESTADO_RECHAZADA ? $motivo : null,
+                'observaciones' => $motivo ?? $solicitud->observaciones,
+                'revisado_por' => $admin->id,
+                'fecha_revision' => now(),
+            ]);
+
+            $this->registrarEvento(
+                $admin,
+                $solicitud,
+                $estado === self::ESTADO_APROBADA ? 'aprobar_fase_'.$fase : 'rechazar_fase_'.$fase,
+                $estadoAnterior,
+                $estado,
+                $motivo,
+                ['fase' => $fase],
+            );
+
+            return $empresa->fresh();
+        });
+    }
+
+    private function puedeAprobarSolicitud(SolicitudVerificacion $solicitud): bool
+    {
+        return $solicitud->estado_identidad === self::ESTADO_APROBADA
+            && $solicitud->estado_empresa === self::ESTADO_APROBADA
+            && (! $this->requiereRepresentacion($solicitud) || $solicitud->estado_representacion === self::ESTADO_APROBADA);
+    }
+
+    private function requiereRepresentacion(SolicitudVerificacion $solicitud): bool
+    {
+        $tipoEmpresa = Str::of((string) $solicitud->empresa?->tipoEmpresa?->nombre)
+            ->lower()
+            ->ascii()
+            ->toString();
+
+        return $tipoEmpresa !== 'autonomo';
     }
 
     /**
