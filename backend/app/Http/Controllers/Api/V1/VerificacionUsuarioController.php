@@ -9,6 +9,7 @@ use App\Http\Requests\Api\V1\UpdateVerificacionUsuarioRequest;
 use App\Http\Resources\Api\V1\VerificacionUsuarioResource;
 use App\Models\VerificacionUsuario;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class VerificacionUsuarioController extends AbstractCrudController
 {
@@ -22,13 +23,39 @@ class VerificacionUsuarioController extends AbstractCrudController
         return VerificacionUsuarioResource::class;
     }
 
+    public function showMine(Request $request): JsonResponse
+    {
+        $record = VerificacionUsuario::query()
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if ($record === null) {
+            return $this->notFound('No se encontró verificación para este usuario.');
+        }
+
+        return $this->success(VerificacionUsuarioResource::make($record)->resolve());
+    }
+
     public function store(StoreVerificacionUsuarioRequest $request): JsonResponse
     {
-        $record = VerificacionUsuario::query()->create($request->validated());
+        $userId = $request->user()->id;
 
-        return $this->created(
-            VerificacionUsuarioResource::make($record)->resolve()
-        );
+        $exists = VerificacionUsuario::query()
+            ->where('user_id', $userId)
+            ->exists();
+
+        if ($exists) {
+            return $this->validationError([
+                'user_id' => ['Ya existe una verificación de identidad para este usuario.'],
+            ]);
+        }
+
+        $data = $request->validated();
+        $data['user_id'] = $userId;
+
+        $record = VerificacionUsuario::query()->create($data);
+
+        return $this->created(VerificacionUsuarioResource::make($record)->resolve());
     }
 
     public function update(UpdateVerificacionUsuarioRequest $request, int $id): JsonResponse
@@ -42,8 +69,6 @@ class VerificacionUsuarioController extends AbstractCrudController
         $record->fill($request->validated());
         $record->save();
 
-        return $this->updated(
-            VerificacionUsuarioResource::make($record)->resolve()
-        );
+        return $this->updated(VerificacionUsuarioResource::make($record)->resolve());
     }
 }

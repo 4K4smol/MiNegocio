@@ -106,6 +106,9 @@ Route::prefix('v1')->group(function (): void {
             Route::apiResource('tipos-inventario-movimiento', TipoInventarioMovimientoController::class)->except(['index', 'show']);
             Route::apiResource('tipos-rectificacion', TipoRectificacionController::class)->except(['index', 'show']);
             Route::apiResource('tipos-registro-facturacion', TipoRegistroFacturacionController::class)->except(['index', 'show']);
+            Route::get('admin/verificaciones-usuario', [VerificacionUsuarioController::class, 'index']);
+            Route::get('admin/verificaciones-usuario/{id}', [VerificacionUsuarioController::class, 'show']);
+            Route::patch('admin/verificaciones-usuario/{id}', [VerificacionUsuarioController::class, 'update']);
         });
 
         Route::middleware('empresa.user')->group(function (): void {
@@ -179,6 +182,7 @@ Route::prefix('v1')->group(function (): void {
         Route::apiResource('tipos-localizacion-cliente', TipoLocalizacionClienteController::class)->only(['index', 'show']);
         Route::apiResource('tipos-rectificacion', TipoRectificacionController::class)->only(['index', 'show']);
         Route::apiResource('tipos-registro-facturacion', TipoRegistroFacturacionController::class)->only(['index', 'show']);
-        Route::apiResource('verificaciones-usuario', VerificacionUsuarioController::class);
+        Route::get('verificaciones-usuario/me', [VerificacionUsuarioController::class, 'showMine']);
+        Route::post('verificaciones-usuario', [VerificacionUsuarioController::class, 'store']);
     });
 });
