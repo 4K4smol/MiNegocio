@@ -64,8 +64,12 @@ const initialBusiness = {
 
 const initialDocuments = {
     dni_frontal: null,
+    dni_reverso: null,
+    selfie: null,
     documento_fiscal: null,
+    registro_mercantil: null,
     documento_representacion: null,
+    poder_apoderamiento: null,
 };
 
 const firstError = (errors, key) => {
@@ -89,14 +93,23 @@ const normalizeCollection = (response, fallback) => {
     }));
 };
 
-const isCompanyType = (business) => {
-    const name = String(business.tipo_empresa_nombre || "").toLowerCase();
-    return (
-        name.includes("sociedad") ||
-        name.includes("pyme") ||
-        name.includes("empresa") ||
-        String(business.tipo_empresa_id) === "2"
-    );
+const normalizeText = (value) =>
+    String(value || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+
+const requiresRepresentation = (business) => {
+    const name = normalizeText(business.tipo_empresa_nombre);
+    if (!name) return String(business.tipo_empresa_id) === "2";
+
+    return !name.includes("autonomo");
+};
+
+const documentRequiresBack = (tipoDocumento) => {
+    const name = normalizeText(tipoDocumento?.label || tipoDocumento?.nombre);
+    return name.includes("dni") || name.includes("nie");
 };
 
 const appendIfPresent = (formData, key, value) => {
@@ -156,7 +169,7 @@ export function RegistroPage() {
     const [tiposEmpresa, setTiposEmpresa] = useState(fallbackTiposEmpresa);
     const [tiposDocumento, setTiposDocumento] = useState(fallbackTiposDocumento);
 
-    const company = isCompanyType(business);
+    const company = requiresRepresentation(business);
 
     useEffect(() => {
         let isMounted = true;
@@ -199,6 +212,13 @@ export function RegistroPage() {
         );
         return tipo?.label || "No indicado";
     }, [business.tipo_empresa_id, tiposEmpresa]);
+
+    const selectedDocumentType = useMemo(
+        () => tiposDocumento.find((item) => String(item.value) === String(user.tipo_documento_identidad_id)),
+        [tiposDocumento, user.tipo_documento_identidad_id],
+    );
+
+    const requiresDniReverse = documentRequiresBack(selectedDocumentType);
 
     const updateUser = (event) => {
         const { name, value } = event.target;
@@ -278,11 +298,15 @@ export function RegistroPage() {
         if (step === 4) {
             if (!documents.dni_frontal) {
                 nextErrors["documentacion.dni_frontal"] =
-                    "Adjunta el documento de identidad.";
+                    "Adjunta el anverso o documento principal de identidad.";
             }
-            if (company && !documents.documento_fiscal) {
+            if (requiresDniReverse && !documents.dni_reverso) {
+                nextErrors["documentacion.dni_reverso"] =
+                    "Adjunta el reverso del DNI/NIE.";
+            }
+            if (!documents.documento_fiscal) {
                 nextErrors["documentacion.documento_fiscal"] =
-                    "Adjunta el documento fiscal de la empresa.";
+                    "Adjunta el documento fiscal o alta de actividad.";
             }
             if (company && !documents.documento_representacion) {
                 nextErrors["documentacion.documento_representacion"] =
@@ -376,6 +400,7 @@ export function RegistroPage() {
                     documents={documents}
                     errors={errors}
                     isCompany={company}
+                    requiresDniReverse={requiresDniReverse}
                     onFileChange={updateFile}
                 />
             );
@@ -388,6 +413,7 @@ export function RegistroPage() {
                 documents={documents}
                 errors={errors}
                 onConfirm={(event) => setConfirmReview(event.target.checked)}
+                requiresRepresentation={company}
                 tipoEmpresaLabel={tipoEmpresaLabel}
                 user={user}
             />

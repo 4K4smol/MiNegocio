@@ -146,6 +146,64 @@ class AdminSolicitudVerificacionFlowTest extends TestCase
             ->assertStatus(422);
     }
 
+    public function test_admin_puede_aprobar_autonomo_sin_representacion(): void
+    {
+        [$user, $empresa, $solicitud] = $this->crearSolicitud('12345678Z', 'autonomo');
+        $solicitud->update([
+            'estado_identidad' => 'aprobada',
+            'estado_empresa' => 'aprobada',
+            'estado_representacion' => null,
+        ]);
+
+        $this->actingAs($this->crearAdmin(), 'sanctum')
+            ->postJson("/api/v1/admin/solicitudes-verificacion/{$empresa->id}/aprobar")
+            ->assertOk()
+            ->assertJsonPath('data.estado_actual', 'aprobada');
+
+        $this->assertTrue($user->fresh()->activo);
+        $this->assertTrue($empresa->fresh()->activa);
+        $this->assertDatabaseHas('verificaciones_usuario', [
+            'user_id' => $user->id,
+            'estado_verificacion_id' => $this->estadoId('aprobada'),
+        ]);
+        $this->assertDatabaseHas('verificaciones_empresa', [
+            'empresa_id' => $empresa->id,
+            'estado_verificacion_id' => $this->estadoId('aprobada'),
+        ]);
+    }
+
+    public function test_admin_no_puede_aprobar_sociedad_sin_representacion_aprobada(): void
+    {
+        [, $empresa, $solicitud] = $this->crearSolicitud('B10000014', 'sociedad');
+        $solicitud->update([
+            'estado_identidad' => 'aprobada',
+            'estado_empresa' => 'aprobada',
+            'estado_representacion' => 'pendiente',
+        ]);
+
+        $this->actingAs($this->crearAdmin(), 'sanctum')
+            ->postJson("/api/v1/admin/solicitudes-verificacion/{$empresa->id}/aprobar")
+            ->assertStatus(422);
+    }
+
+    public function test_admin_puede_aprobar_sociedad_con_representacion_aprobada(): void
+    {
+        [$user, $empresa, $solicitud] = $this->crearSolicitud('B10000015', 'sociedad');
+        $solicitud->update([
+            'estado_identidad' => 'aprobada',
+            'estado_empresa' => 'aprobada',
+            'estado_representacion' => 'aprobada',
+        ]);
+
+        $this->actingAs($this->crearAdmin(), 'sanctum')
+            ->postJson("/api/v1/admin/solicitudes-verificacion/{$empresa->id}/aprobar")
+            ->assertOk()
+            ->assertJsonPath('data.estado_actual', 'aprobada');
+
+        $this->assertTrue($user->fresh()->activo);
+        $this->assertTrue($empresa->fresh()->activa);
+    }
+
     public function test_no_se_puede_aprobar_una_solicitud_rechazada(): void
     {
         [, $empresa, $solicitud] = $this->crearSolicitud('B10000007', 'sociedad');

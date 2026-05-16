@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Requests\Api\V1;
 
 use App\Models\TipoEmpresa;
+use App\Models\TipoDocumentoIdentidad;
+use App\Support\VerificacionRegistroRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Validator;
@@ -78,7 +80,7 @@ class RegisterUserRequest extends FormRequest
             ],
 
             'documentacion.documento_fiscal' => [
-                'nullable',
+                'required',
                 'file',
                 'mimes:jpg,jpeg,png,webp,pdf',
                 'max:10240',
@@ -112,6 +114,23 @@ class RegisterUserRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
+            $tipoDocumentoId = $this->input('usuario.tipo_documento_identidad_id');
+
+            if ($tipoDocumentoId !== null) {
+                $tipoDocumento = TipoDocumentoIdentidad::query()->find((int) $tipoDocumentoId);
+
+                if (
+                    $tipoDocumento !== null
+                    && VerificacionRegistroRules::requiereReversoDocumento($tipoDocumento->nombre)
+                    && ! $this->hasFile('documentacion.dni_reverso')
+                ) {
+                    $validator->errors()->add(
+                        'documentacion.dni_reverso',
+                        'El reverso del DNI/NIE es obligatorio para este tipo de documento.'
+                    );
+                }
+            }
+
             $tipoEmpresaId = $this->input('empresa.tipo_empresa_id');
 
             if ($tipoEmpresaId === null) {
@@ -124,15 +143,8 @@ class RegisterUserRequest extends FormRequest
                 return;
             }
 
-            $nombre = mb_strtolower((string) $tipoEmpresa->nombre);
-
-            $requiereRepresentacion =
-                str_contains($nombre, 'sociedad') ||
-                str_contains($nombre, 'pyme') ||
-                str_contains($nombre, 'empresa');
-
             if (
-                $requiereRepresentacion &&
+                VerificacionRegistroRules::requiereRepresentacion($tipoEmpresa->nombre) &&
                 ! $this->hasFile('documentacion.documento_representacion')
             ) {
                 $validator->errors()->add(

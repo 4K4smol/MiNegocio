@@ -9,8 +9,8 @@ use App\Models\Empresa;
 use App\Models\EstadoVerificacion;
 use App\Models\SolicitudVerificacion;
 use App\Models\User;
+use App\Support\VerificacionRegistroRules;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class SolicitudVerificacionAdminService
 {
@@ -228,12 +228,7 @@ class SolicitudVerificacionAdminService
 
     private function requiereRepresentacion(SolicitudVerificacion $solicitud): bool
     {
-        $tipoEmpresa = Str::of((string) $solicitud->empresa?->tipoEmpresa?->nombre)
-            ->lower()
-            ->ascii()
-            ->toString();
-
-        return $tipoEmpresa !== 'autonomo';
+        return VerificacionRegistroRules::requiereRepresentacion($solicitud->empresa?->tipoEmpresa?->nombre);
     }
 
     /**

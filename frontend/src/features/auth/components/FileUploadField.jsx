@@ -1,4 +1,4 @@
-const acceptedTypes = ".pdf,.jpg,.jpeg,.png";
+const acceptedTypes = ".pdf,.jpg,.jpeg,.png,.webp";
 
 export function FileUploadField({ error, help, label, name, onChange, required, value }) {
     return (

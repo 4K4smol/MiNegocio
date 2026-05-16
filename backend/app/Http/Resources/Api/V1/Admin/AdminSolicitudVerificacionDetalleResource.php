@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V1\Admin;
 
 use App\Services\Admin\SolicitudVerificacionAdminService;
+use App\Support\VerificacionRegistroRules;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Str;
 
 class AdminSolicitudVerificacionDetalleResource extends JsonResource
 {
@@ -141,8 +141,7 @@ class AdminSolicitudVerificacionDetalleResource extends JsonResource
             return false;
         }
 
-        $tipoEmpresa = Str::of((string) $this->tipoEmpresa?->nombre)->lower()->ascii()->toString();
-        $representacionNoAplica = $solicitud->estado_representacion === null && $tipoEmpresa === 'autonomo';
+        $representacionNoAplica = ! VerificacionRegistroRules::requiereRepresentacion($this->tipoEmpresa?->nombre);
 
         return $solicitud->estado_identidad === SolicitudVerificacionAdminService::ESTADO_APROBADA
             && $solicitud->estado_empresa === SolicitudVerificacionAdminService::ESTADO_APROBADA
