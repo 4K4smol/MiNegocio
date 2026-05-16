@@ -1,13 +1,5 @@
-import { useParams } from "react-router-dom";
-import { PlaceholderPage } from "../../../shared/components/PlaceholderPage";
+import { Navigate } from "react-router-dom";
 
 export function ServicioEditPage() {
-    const { servicioId } = useParams();
-
-    return (
-        <PlaceholderPage
-            title="Editar servicio"
-            description={`Edición del servicio ${servicioId} preparada para serviciosService.update.`}
-        />
-    );
+    return <Navigate replace to="/app/servicios" />;
 }

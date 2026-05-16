@@ -1,10 +1,5 @@
-import { PlaceholderPage } from "../../../shared/components/PlaceholderPage";
+import { Navigate } from "react-router-dom";
 
 export function ServicioCreatePage() {
-    return (
-        <PlaceholderPage
-            title="Nuevo servicio"
-            description="Formulario preparado para conectar con serviciosService.create."
-        />
-    );
+    return <Navigate replace to="/app/servicios" />;
 }

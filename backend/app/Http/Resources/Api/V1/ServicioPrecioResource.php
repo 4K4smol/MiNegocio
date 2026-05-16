@@ -24,6 +24,8 @@ class ServicioPrecioResource extends JsonResource
             'meta' => $this->meta,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'tarifa' => ServicioTarifaResource::make($this->whenLoaded('tarifa')),
+            'servicio' => ServicioResource::make($this->whenLoaded('servicio')),
         ];
     }
 }
