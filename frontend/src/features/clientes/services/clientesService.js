@@ -1,4 +1,7 @@
-import { createCrudApi, endpoints } from '../../../shared/api'
+import { apiRequest, createCrudApi, endpoints } from '../../../shared/api'
 
-export const clientesService = createCrudApi(endpoints.clientes)
+export const clientesService = {
+    ...createCrudApi(endpoints.clientes),
+    getTiposCliente: (params) => apiRequest(endpoints.catalogos.tiposCliente, { params }),
+}
 export const clientesApi = clientesService

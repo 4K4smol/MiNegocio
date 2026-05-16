@@ -6,6 +6,7 @@ export const endpoints = {
         register: "auth/register",
     },
     catalogos: {
+        tiposCliente: "tipos-cliente",
         tiposDocumentoIdentidad: "tipos-documento-identidad",
         tiposEmpresa: "tipos-empresa",
     },

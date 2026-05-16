@@ -8,6 +8,8 @@ use App\Http\Requests\Api\V1\StoreClienteRequest;
 use App\Http\Requests\Api\V1\UpdateClienteRequest;
 use App\Http\Resources\Api\V1\ClienteResource;
 use App\Models\Cliente;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 
 class ClienteController extends AbstractCrudController
 {
@@ -21,13 +23,16 @@ class ClienteController extends AbstractCrudController
         return ClienteResource::class;
     }
 
+    protected function baseQuery(Request $request): Builder
+    {
+        return parent::baseQuery($request)->with('tipoCliente');
+    }
+
     public function store(StoreClienteRequest $request)
     {
         $cliente = Cliente::query()->create($this->fillEmpresaIdFromUser($request->validated(), $request));
 
-        return $this->created(
-            ClienteResource::make($cliente)->resolve()
-        );
+        return $this->created(ClienteResource::make($cliente->load('tipoCliente'))->resolve());
     }
 
     public function update(UpdateClienteRequest $request, int $id)
@@ -41,8 +46,6 @@ class ClienteController extends AbstractCrudController
         $cliente->fill($this->fillEmpresaIdFromUser($request->validated(), $request));
         $cliente->save();
 
-        return $this->updated(
-            ClienteResource::make($cliente)->resolve()
-        );
+        return $this->updated(ClienteResource::make($cliente->load('tipoCliente'))->resolve());
     }
 }

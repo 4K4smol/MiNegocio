@@ -1101,6 +1101,11 @@ input {
   .public-footer {
     grid-template-columns: 1fr;
   }
+
+  .cliente-form,
+  .detail-list {
+    grid-template-columns: 1fr;
+  }
 }
 
 .form {
@@ -1120,10 +1125,71 @@ input {
   font-weight: 700;
 }
 
-.form input {
+.form input,
+.form select,
+.form textarea {
   border: 1px solid #bcccdc;
   border-radius: 6px;
   padding: 10px 12px;
+}
+
+.form textarea {
+  resize: vertical;
+}
+
+.cliente-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 860px;
+}
+
+.cliente-form .is-wide {
+  grid-column: 1 / -1;
+}
+
+.form-checkbox {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.form-checkbox input {
+  width: auto;
+}
+
+.form-actions {
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.detail-list {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.detail-list div {
+  background: #f8fafc;
+  border: 1px solid #dce4ea;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.detail-list dt {
+  color: #52677a;
+  font-size: 12px;
+  font-weight: 900;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.detail-list dd {
+  color: var(--color-text);
+  font-weight: 800;
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .table-card {
@@ -1212,6 +1278,13 @@ input {
 .badge-danger {
   background: #fef2f2;
   color: #991b1b;
+}
+
+@media (max-width: 760px) {
+  .cliente-form,
+  .detail-list {
+    grid-template-columns: 1fr;
+  }
 }
 
 .feedback-state,
