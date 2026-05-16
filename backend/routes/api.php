@@ -50,6 +50,7 @@ Route::prefix('v1')->group(function (): void {
     Route::post('auth/register', [AuthController::class, 'register']);
     Route::post('register', [AuthController::class, 'register']);
     Route::post('auth/login', [AuthController::class, 'login']);
+
     Route::apiResource('tipos-documento-identidad', TipoDocumentoIdentidadController::class)->only(['index', 'show']);
     Route::apiResource('tipos-empresa', TipoEmpresaController::class)->only(['index', 'show']);
 
@@ -59,46 +60,61 @@ Route::prefix('v1')->group(function (): void {
     });
 
     Route::middleware('auth:sanctum')->group(function (): void {
-        Route::apiResource('estados-factura', EstadoFacturaController::class);
+        Route::apiResource('estados-factura', EstadoFacturaController::class)->only(['index', 'show']);
 
         Route::middleware('admin')->group(function (): void {
+            Route::apiResource('estados-factura', EstadoFacturaController::class)->except(['index', 'show']);
+
             Route::apiResource('modulos', ModuloController::class);
             Route::patch('modulos/{id}/activar', [ModuloController::class, 'activar']);
             Route::patch('modulos/{id}/desactivar', [ModuloController::class, 'desactivar']);
+
             Route::apiResource('roles', RoleController::class)->only(['index', 'show']);
+
             Route::get('admin/dashboard', [AdminDashboardController::class, 'index']);
+
             Route::get('admin/solicitudes-verificacion', [AdminSolicitudVerificacionController::class, 'index']);
             Route::get('admin/solicitudes-verificacion/{empresa}', [AdminSolicitudVerificacionController::class, 'show']);
             Route::post('admin/solicitudes-verificacion/{empresa}/aprobar', [AdminSolicitudVerificacionController::class, 'aprobar']);
             Route::post('admin/solicitudes-verificacion/{empresa}/rechazar', [AdminSolicitudVerificacionController::class, 'rechazar']);
             Route::post('admin/solicitudes-verificacion/{empresa}/solicitar-subsanacion', [AdminSolicitudVerificacionController::class, 'solicitarSubsanacion']);
+
             Route::post('admin/solicitudes-verificacion/{empresa}/fases/identidad/aprobar', [AdminSolicitudVerificacionController::class, 'aprobarIdentidad']);
             Route::post('admin/solicitudes-verificacion/{empresa}/fases/identidad/rechazar', [AdminSolicitudVerificacionController::class, 'rechazarIdentidad']);
             Route::post('admin/solicitudes-verificacion/{empresa}/fases/empresa/aprobar', [AdminSolicitudVerificacionController::class, 'aprobarEmpresa']);
             Route::post('admin/solicitudes-verificacion/{empresa}/fases/empresa/rechazar', [AdminSolicitudVerificacionController::class, 'rechazarEmpresa']);
             Route::post('admin/solicitudes-verificacion/{empresa}/fases/representacion/aprobar', [AdminSolicitudVerificacionController::class, 'aprobarRepresentacion']);
             Route::post('admin/solicitudes-verificacion/{empresa}/fases/representacion/rechazar', [AdminSolicitudVerificacionController::class, 'rechazarRepresentacion']);
+
             Route::get('admin/documentos-verificacion/{documento}/preview', [AdminDocumentoVerificacionController::class, 'preview']);
+
             Route::get('admin/usuarios', [AdminUsuarioController::class, 'index']);
             Route::get('admin/usuarios/{user}', [AdminUsuarioController::class, 'show']);
             Route::patch('admin/usuarios/{user}/activar', [AdminUsuarioController::class, 'activar']);
             Route::patch('admin/usuarios/{user}/desactivar', [AdminUsuarioController::class, 'desactivar']);
             Route::patch('admin/usuarios/{user}/rol', [AdminUsuarioController::class, 'cambiarRol']);
+
             Route::get('admin/auditoria', [AdminAuditoriaController::class, 'index']);
+
             Route::get('admin/empresas', [AdminEmpresaController::class, 'index']);
             Route::get('admin/empresas/{empresa}', [AdminEmpresaController::class, 'show']);
             Route::patch('admin/empresas/{empresa}/activar', [AdminEmpresaController::class, 'activar']);
             Route::patch('admin/empresas/{empresa}/desactivar', [AdminEmpresaController::class, 'desactivar']);
+
             Route::get('admin/catalogos', [AdminCatalogoController::class, 'index']);
+
             Route::get('admin/empresas/{empresa}/modulos', [AdminEmpresaModuloController::class, 'index']);
             Route::post('admin/empresas/{empresa}/modulos/{modulo}/activar', [AdminEmpresaModuloController::class, 'activar']);
             Route::post('admin/empresas/{empresa}/modulos/{modulo}/desactivar', [AdminEmpresaModuloController::class, 'desactivar']);
+
             Route::apiResource('tipos-cliente', TipoClienteController::class)->except(['index', 'show']);
             Route::patch('tipos-cliente/{id}/activar', [TipoClienteController::class, 'activar']);
             Route::patch('tipos-cliente/{id}/desactivar', [TipoClienteController::class, 'desactivar']);
+
             Route::apiResource('tipos-localizacion-cliente', TipoLocalizacionClienteController::class)->except(['index', 'show']);
             Route::patch('tipos-localizacion-cliente/{id}/activar', [TipoLocalizacionClienteController::class, 'activar']);
             Route::patch('tipos-localizacion-cliente/{id}/desactivar', [TipoLocalizacionClienteController::class, 'desactivar']);
+
             Route::apiResource('tipos-empresa', TipoEmpresaController::class)->except(['index', 'show']);
             Route::apiResource('tipos-documento-identidad', TipoDocumentoIdentidadController::class)->except(['index', 'show']);
             Route::apiResource('tipos-evento-facturacion', TipoEventoFacturacionController::class)->except(['index', 'show']);
@@ -106,6 +122,7 @@ Route::prefix('v1')->group(function (): void {
             Route::apiResource('tipos-inventario-movimiento', TipoInventarioMovimientoController::class)->except(['index', 'show']);
             Route::apiResource('tipos-rectificacion', TipoRectificacionController::class)->except(['index', 'show']);
             Route::apiResource('tipos-registro-facturacion', TipoRegistroFacturacionController::class)->except(['index', 'show']);
+
             Route::get('admin/verificaciones-usuario', [VerificacionUsuarioController::class, 'index']);
             Route::get('admin/verificaciones-usuario/{id}', [VerificacionUsuarioController::class, 'show']);
             Route::patch('admin/verificaciones-usuario/{id}', [VerificacionUsuarioController::class, 'update']);
@@ -148,10 +165,12 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('facturas/{factura}/marcar-pagada', [FacturaController::class, 'marcarPagada']);
                 Route::post('facturas/{factura}/anular', [FacturaController::class, 'anular']);
                 Route::post('facturas/{factura}/rectificar', [FacturaController::class, 'rectificar']);
+
                 Route::get('registros-facturacion', [RegistroFacturacionController::class, 'index']);
                 Route::get('registros-facturacion/exportar', [RegistroFacturacionController::class, 'exportar']);
                 Route::get('registros-facturacion/validar-cadena', [RegistroFacturacionController::class, 'validarCadena']);
                 Route::get('registros-facturacion/{id}', [RegistroFacturacionController::class, 'show']);
+
                 Route::post('verifactu/enviar-pendientes', [VerifactuController::class, 'enviarPendientes']);
             });
 
@@ -169,9 +188,11 @@ Route::prefix('v1')->group(function (): void {
             Route::get('registros-evento/exportar', [RegistroEventoController::class, 'exportar']);
             Route::get('registros-evento-facturacion', [RegistroEventoFacturacionController::class, 'index']);
             Route::get('registros-evento-facturacion/exportar', [RegistroEventoFacturacionController::class, 'exportar']);
+
             Route::get('declaraciones-responsables-software', [DeclaracionResponsableSoftwareController::class, 'index']);
             Route::post('declaraciones-responsables-software', [DeclaracionResponsableSoftwareController::class, 'store']);
             Route::get('declaraciones-responsables-software/{id}', [DeclaracionResponsableSoftwareController::class, 'show']);
+
             Route::apiResource('tareas', TareaController::class);
         });
 
@@ -182,6 +203,7 @@ Route::prefix('v1')->group(function (): void {
         Route::apiResource('tipos-localizacion-cliente', TipoLocalizacionClienteController::class)->only(['index', 'show']);
         Route::apiResource('tipos-rectificacion', TipoRectificacionController::class)->only(['index', 'show']);
         Route::apiResource('tipos-registro-facturacion', TipoRegistroFacturacionController::class)->only(['index', 'show']);
+
         Route::get('verificaciones-usuario/me', [VerificacionUsuarioController::class, 'showMine']);
         Route::post('verificaciones-usuario', [VerificacionUsuarioController::class, 'store']);
     });

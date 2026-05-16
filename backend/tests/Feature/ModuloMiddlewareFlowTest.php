@@ -48,13 +48,14 @@ class ModuloMiddlewareFlowTest extends TestCase
             );
     }
 
-    public function test_admin_puede_acceder_aunque_no_tenga_empresa(): void
+    public function test_admin_es_bloqueado_en_rutas_crm_de_empresa(): void
     {
         $admin = $this->crearAdmin();
 
         $this->actingAs($admin, 'sanctum')
             ->getJson('/api/v1/clientes')
-            ->assertOk();
+            ->assertForbidden()
+            ->assertJsonPath('message', 'El administrador global no puede acceder al CRM de empresa.');
     }
 
     public function test_activar_modulo_permite_acceso(): void
