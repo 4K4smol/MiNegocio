@@ -101,6 +101,11 @@ Route::prefix('v1')->group(function (): void {
             Route::patch('tipos-localizacion-cliente/{id}/desactivar', [TipoLocalizacionClienteController::class, 'desactivar']);
             Route::apiResource('tipos-empresa', TipoEmpresaController::class)->except(['index', 'show']);
             Route::apiResource('tipos-documento-identidad', TipoDocumentoIdentidadController::class)->except(['index', 'show']);
+            Route::apiResource('tipos-evento-facturacion', TipoEventoFacturacionController::class)->except(['index', 'show']);
+            Route::apiResource('tipos-factura', TipoFacturaController::class)->except(['index', 'show']);
+            Route::apiResource('tipos-inventario-movimiento', TipoInventarioMovimientoController::class)->except(['index', 'show']);
+            Route::apiResource('tipos-rectificacion', TipoRectificacionController::class)->except(['index', 'show']);
+            Route::apiResource('tipos-registro-facturacion', TipoRegistroFacturacionController::class)->except(['index', 'show']);
         });
 
         Route::middleware('empresa.user')->group(function (): void {
@@ -164,16 +169,16 @@ Route::prefix('v1')->group(function (): void {
             Route::get('declaraciones-responsables-software', [DeclaracionResponsableSoftwareController::class, 'index']);
             Route::post('declaraciones-responsables-software', [DeclaracionResponsableSoftwareController::class, 'store']);
             Route::get('declaraciones-responsables-software/{id}', [DeclaracionResponsableSoftwareController::class, 'show']);
+            Route::apiResource('tareas', TareaController::class);
         });
 
-        Route::apiResource('tareas', TareaController::class);
         Route::apiResource('tipos-cliente', TipoClienteController::class)->only(['index', 'show']);
-        Route::apiResource('tipos-evento-facturacion', TipoEventoFacturacionController::class);
-        Route::apiResource('tipos-factura', TipoFacturaController::class);
-        Route::apiResource('tipos-inventario-movimiento', TipoInventarioMovimientoController::class);
+        Route::apiResource('tipos-evento-facturacion', TipoEventoFacturacionController::class)->only(['index', 'show']);
+        Route::apiResource('tipos-factura', TipoFacturaController::class)->only(['index', 'show']);
+        Route::apiResource('tipos-inventario-movimiento', TipoInventarioMovimientoController::class)->only(['index', 'show']);
         Route::apiResource('tipos-localizacion-cliente', TipoLocalizacionClienteController::class)->only(['index', 'show']);
-        Route::apiResource('tipos-rectificacion', TipoRectificacionController::class);
-        Route::apiResource('tipos-registro-facturacion', TipoRegistroFacturacionController::class);
+        Route::apiResource('tipos-rectificacion', TipoRectificacionController::class)->only(['index', 'show']);
+        Route::apiResource('tipos-registro-facturacion', TipoRegistroFacturacionController::class)->only(['index', 'show']);
         Route::apiResource('verificaciones-usuario', VerificacionUsuarioController::class);
     });
 });
