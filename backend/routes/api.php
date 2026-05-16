@@ -60,56 +60,6 @@ Route::prefix('v1')->group(function (): void {
 
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::apiResource('estados-factura', EstadoFacturaController::class);
-        Route::middleware('modulo:informes')->group(function (): void {
-            Route::apiResource('informes', InformeController::class);
-        });
-
-        Route::middleware('modulo:inventario')->group(function (): void {
-            Route::apiResource('inventario-categorias', InventarioCategoriaController::class);
-            Route::apiResource('inventario-items', InventarioItemController::class);
-            Route::apiResource('inventario-movimientos', InventarioMovimientoController::class);
-            Route::apiResource('inventario-ubicaciones', InventarioUbicacionController::class);
-            Route::apiResource('inventario-unidades-medida', InventarioUnidadMedidaController::class);
-        });
-
-        Route::middleware('modulo:calendario')->group(function (): void {
-            Route::apiResource('calendario-eventos', CalendarioEventoController::class);
-            Route::get('dashboard/calendario', [DashboardController::class, 'calendario']);
-        });
-
-        Route::get('dashboard/resumen', [DashboardController::class, 'resumen']);
-        Route::get('dashboard/proximas-ordenes', [DashboardController::class, 'proximasOrdenes']);
-
-        Route::middleware('modulo:ordenes')->group(function (): void {
-            Route::get('ordenes-trabajo', [OrdenTrabajoController::class, 'index']);
-            Route::post('ordenes-trabajo', [OrdenTrabajoController::class, 'store']);
-            Route::get('ordenes-trabajo/{orden}', [OrdenTrabajoController::class, 'show']);
-            Route::put('ordenes-trabajo/{orden}', [OrdenTrabajoController::class, 'update']);
-            Route::post('ordenes-trabajo/{orden}/completar', [OrdenTrabajoController::class, 'completar']);
-            Route::post('ordenes-trabajo/{orden}/cancelar', [OrdenTrabajoController::class, 'cancelar']);
-            Route::post('ordenes-trabajo/{orden}/generar-factura', [OrdenTrabajoController::class, 'generarFactura']);
-        });
-
-        Route::middleware('modulo:facturacion')->group(function (): void {
-            Route::get('facturas', [FacturaController::class, 'index']);
-            Route::get('facturas/{factura}', [FacturaController::class, 'show']);
-            Route::post('facturas/{factura}/marcar-pagada', [FacturaController::class, 'marcarPagada']);
-            Route::post('facturas/{factura}/anular', [FacturaController::class, 'anular']);
-            Route::post('facturas/{factura}/rectificar', [FacturaController::class, 'rectificar']);
-            Route::get('registros-facturacion', [RegistroFacturacionController::class, 'index']);
-            Route::get('registros-facturacion/exportar', [RegistroFacturacionController::class, 'exportar']);
-            Route::get('registros-facturacion/validar-cadena', [RegistroFacturacionController::class, 'validarCadena']);
-            Route::get('registros-facturacion/{id}', [RegistroFacturacionController::class, 'show']);
-            Route::post('verifactu/enviar-pendientes', [VerifactuController::class, 'enviarPendientes']);
-        });
-
-        Route::get('registros-evento', [RegistroEventoController::class, 'index']);
-        Route::get('registros-evento/exportar', [RegistroEventoController::class, 'exportar']);
-        Route::get('registros-evento-facturacion', [RegistroEventoFacturacionController::class, 'index']);
-        Route::get('registros-evento-facturacion/exportar', [RegistroEventoFacturacionController::class, 'exportar']);
-        Route::get('declaraciones-responsables-software', [DeclaracionResponsableSoftwareController::class, 'index']);
-        Route::post('declaraciones-responsables-software', [DeclaracionResponsableSoftwareController::class, 'store']);
-        Route::get('declaraciones-responsables-software/{id}', [DeclaracionResponsableSoftwareController::class, 'show']);
 
         Route::middleware('admin')->group(function (): void {
             Route::apiResource('modulos', ModuloController::class);
@@ -153,14 +103,67 @@ Route::prefix('v1')->group(function (): void {
             Route::apiResource('tipos-documento-identidad', TipoDocumentoIdentidadController::class)->except(['index', 'show']);
         });
 
-        Route::middleware('modulo:clientes')->group(function (): void {
-            Route::apiResource('clientes', ClienteController::class);
-        });
+        Route::middleware('empresa.user')->group(function (): void {
+            Route::middleware('modulo:informes')->group(function (): void {
+                Route::apiResource('informes', InformeController::class);
+            });
 
-        Route::middleware('modulo:servicios')->group(function (): void {
-            Route::apiResource('servicios', ServicioController::class);
-            Route::apiResource('servicio-precios', ServicioPrecioController::class);
-            Route::apiResource('servicio-tarifas', ServicioTarifaController::class);
+            Route::middleware('modulo:inventario')->group(function (): void {
+                Route::apiResource('inventario-categorias', InventarioCategoriaController::class);
+                Route::apiResource('inventario-items', InventarioItemController::class);
+                Route::apiResource('inventario-movimientos', InventarioMovimientoController::class);
+                Route::apiResource('inventario-ubicaciones', InventarioUbicacionController::class);
+                Route::apiResource('inventario-unidades-medida', InventarioUnidadMedidaController::class);
+            });
+
+            Route::middleware('modulo:calendario')->group(function (): void {
+                Route::apiResource('calendario-eventos', CalendarioEventoController::class);
+                Route::get('dashboard/calendario', [DashboardController::class, 'calendario']);
+            });
+
+            Route::get('dashboard/resumen', [DashboardController::class, 'resumen']);
+            Route::get('dashboard/proximas-ordenes', [DashboardController::class, 'proximasOrdenes']);
+
+            Route::middleware('modulo:ordenes')->group(function (): void {
+                Route::get('ordenes-trabajo', [OrdenTrabajoController::class, 'index']);
+                Route::post('ordenes-trabajo', [OrdenTrabajoController::class, 'store']);
+                Route::get('ordenes-trabajo/{orden}', [OrdenTrabajoController::class, 'show']);
+                Route::put('ordenes-trabajo/{orden}', [OrdenTrabajoController::class, 'update']);
+                Route::post('ordenes-trabajo/{orden}/completar', [OrdenTrabajoController::class, 'completar']);
+                Route::post('ordenes-trabajo/{orden}/cancelar', [OrdenTrabajoController::class, 'cancelar']);
+                Route::post('ordenes-trabajo/{orden}/generar-factura', [OrdenTrabajoController::class, 'generarFactura']);
+            });
+
+            Route::middleware('modulo:facturacion')->group(function (): void {
+                Route::get('facturas', [FacturaController::class, 'index']);
+                Route::get('facturas/{factura}', [FacturaController::class, 'show']);
+                Route::post('facturas/{factura}/marcar-pagada', [FacturaController::class, 'marcarPagada']);
+                Route::post('facturas/{factura}/anular', [FacturaController::class, 'anular']);
+                Route::post('facturas/{factura}/rectificar', [FacturaController::class, 'rectificar']);
+                Route::get('registros-facturacion', [RegistroFacturacionController::class, 'index']);
+                Route::get('registros-facturacion/exportar', [RegistroFacturacionController::class, 'exportar']);
+                Route::get('registros-facturacion/validar-cadena', [RegistroFacturacionController::class, 'validarCadena']);
+                Route::get('registros-facturacion/{id}', [RegistroFacturacionController::class, 'show']);
+                Route::post('verifactu/enviar-pendientes', [VerifactuController::class, 'enviarPendientes']);
+            });
+
+            Route::middleware('modulo:clientes')->group(function (): void {
+                Route::apiResource('clientes', ClienteController::class);
+            });
+
+            Route::middleware('modulo:servicios')->group(function (): void {
+                Route::apiResource('servicios', ServicioController::class);
+                Route::apiResource('servicio-precios', ServicioPrecioController::class);
+                Route::apiResource('servicio-tarifas', ServicioTarifaController::class);
+            });
+
+            Route::get('registros-evento', [RegistroEventoController::class, 'index']);
+            Route::get('registros-evento/exportar', [RegistroEventoController::class, 'exportar']);
+            Route::get('registros-evento-facturacion', [RegistroEventoFacturacionController::class, 'index']);
+            Route::get('registros-evento-facturacion/exportar', [RegistroEventoFacturacionController::class, 'exportar']);
+            Route::get('declaraciones-responsables-software', [DeclaracionResponsableSoftwareController::class, 'index']);
+            Route::post('declaraciones-responsables-software', [DeclaracionResponsableSoftwareController::class, 'store']);
+            Route::get('declaraciones-responsables-software/{id}', [DeclaracionResponsableSoftwareController::class, 'show']);
         });
 
         Route::apiResource('tareas', TareaController::class);

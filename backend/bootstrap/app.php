@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\ModuloMiddleware;
+use App\Http\Middleware\EnsureEmpresaUser;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -18,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => AdminMiddleware::class,
             'modulo' => ModuloMiddleware::class,
+            'empresa.user' => EnsureEmpresaUser::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../../shared/hooks/useAuth";
+import { hasRole } from "./roleUtils";
 
 const hasEmpresaAccess = (usuario, session) =>
     Boolean(
@@ -12,6 +13,10 @@ const hasEmpresaAccess = (usuario, session) =>
 
 export function EmpresaRoute() {
     const { usuario, session } = useAuth();
+
+    if (hasRole(usuario, session, ["admin"])) {
+        return <Navigate to="/admin" replace />;
+    }
 
     if (!hasEmpresaAccess(usuario, session)) {
         return <Navigate to="/registro" replace />;

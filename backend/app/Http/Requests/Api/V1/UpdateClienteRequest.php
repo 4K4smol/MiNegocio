@@ -11,10 +11,10 @@ class UpdateClienteRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
-        if (! $this->isAdminUser() && $this->authenticatedEmpresaId() !== null) {
-            $this->merge([
-                'empresa_id' => $this->authenticatedEmpresaId(),
-            ]);
+        $empresaId = $this->authenticatedEmpresaId();
+
+        if ($empresaId !== null) {
+            $this->merge(['empresa_id' => $empresaId]);
         }
     }
 
@@ -25,9 +25,7 @@ class UpdateClienteRequest extends FormRequest
 
     public function rules(): array
     {
-        $empresaId = $this->isAdminUser()
-            ? (int) $this->input('empresa_id')
-            : (int) ($this->authenticatedEmpresaId() ?? $this->input('empresa_id'));
+        $empresaId = (int) ($this->authenticatedEmpresaId() ?? $this->input('empresa_id'));
         $routeCliente = $this->route('cliente') ?? $this->route('id');
         $id = is_object($routeCliente) && method_exists($routeCliente, 'getKey')
             ? (int) $routeCliente->getKey()
@@ -58,11 +56,6 @@ class UpdateClienteRequest extends FormRequest
         return [
             'dni_cif.unique' => 'Ya existe un cliente con este DNI/CIF en tu empresa.',
         ];
-    }
-
-    private function isAdminUser(): bool
-    {
-        return $this->user()?->role?->nombre === 'admin';
     }
 
     private function authenticatedEmpresaId(): ?int
