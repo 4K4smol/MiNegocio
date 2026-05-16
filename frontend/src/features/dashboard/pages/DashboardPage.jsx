@@ -44,6 +44,7 @@ export function DashboardPage() {
     } = useResourceList(ordenesTrabajoService.list, ordersParams);
 
     const recentOrders = useMemo(() => getRecentCompletedOrders(allOrders), [allOrders]);
+    const isDashboardLoading = (loadingCalendar || loadingUpcoming || loadingRecent || loadingSummary) && !calendarError;
 
     useEffect(() => {
         let mounted = true;
@@ -71,6 +72,18 @@ export function DashboardPage() {
         setMonthDate((current) => new Date(current.getFullYear(), current.getMonth() + amount, 1));
     };
 
+    if (isDashboardLoading) {
+        return (
+            <section className="page dashboard-page">
+                <PageHeader
+                    description="Planifica y gestiona la actividad diaria de tu empresa."
+                    title="Dashboard"
+                />
+                <LoadingState>Cargando panel de control...</LoadingState>
+            </section>
+        );
+    }
+
     return (
         <section className="page dashboard-page">
             <PageHeader
@@ -78,16 +91,18 @@ export function DashboardPage() {
                 title="Dashboard"
             />
 
-            {loadingCalendar ? <LoadingState>Cargando calendario de órdenes...</LoadingState> : null}
-            {calendarError ? <ErrorState>{calendarError}</ErrorState> : null}
-            {!loadingCalendar ? (
+            {calendarError ? (
+                <section className="dashboard-calendar-fallback">
+                    <ErrorState>No se pudo cargar el calendario de órdenes.</ErrorState>
+                </section>
+            ) : (
                 <CalendarMonth
                     events={calendarEvents}
                     monthDate={monthDate}
                     onNextMonth={() => changeMonth(1)}
                     onPreviousMonth={() => changeMonth(-1)}
                 />
-            ) : null}
+            )}
 
             {(upcomingError || recentError) ? (
                 <ErrorState>{upcomingError || recentError}</ErrorState>

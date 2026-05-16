@@ -3,6 +3,21 @@
   width: 100%;
 }
 
+.dashboard-page .calendar-month-card,
+.dashboard-calendar-fallback {
+  min-height: 760px;
+}
+
+.dashboard-calendar-fallback {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  padding: 20px;
+}
+
 .dashboard-section {
   display: grid;
   gap: 14px;
@@ -179,6 +194,11 @@
 }
 
 @media (max-width: 760px) {
+  .dashboard-page .calendar-month-card,
+  .dashboard-calendar-fallback {
+    min-height: 420px;
+  }
+
   .dashboard-orders-grid,
   .dashboard-quick-actions,
   .dashboard-business-status {
