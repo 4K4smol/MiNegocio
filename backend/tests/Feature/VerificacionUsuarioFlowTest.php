@@ -142,7 +142,7 @@ class VerificacionUsuarioFlowTest extends TestCase
         $verificacion = $this->crearVerificacion($usuario->id);
         $admin = $this->crearAdmin();
 
-        $aprobadoId = $this->estadoVerificacionId('aprobado');
+        $aprobadoId = $this->estadoVerificacionId('aprobada');
 
         $this->actingAs($admin, 'sanctum')
             ->patchJson("/api/v1/admin/verificaciones-usuario/{$verificacion->id}", [

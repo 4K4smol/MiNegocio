@@ -1,28 +1,43 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
+use App\Models\EstadoVerificacion;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class EstadosVerificacionSeeder extends Seeder
 {
     public function run(): void
     {
-        foreach ([
-            ['nombre' => 'pendiente', 'descripcion' => 'Pendiente de revision'],
-            ['nombre' => 'en_revision', 'descripcion' => 'Verificacion en proceso de revision'],
-            ['nombre' => 'aprobada', 'descripcion' => 'Verificacion aprobada'],
-            ['nombre' => 'rechazada', 'descripcion' => 'Verificacion rechazada'],
-            ['nombre' => 'subsanacion', 'descripcion' => 'Pendiente de subsanacion documental'],
-        ] as $estado) {
-            DB::table('estados_verificacion')->updateOrInsert(
+        $estados = [
+            [
+                'nombre' => 'pendiente',
+                'descripcion' => 'Pendiente de revisión',
+            ],
+            [
+                'nombre' => 'en_revision',
+                'descripcion' => 'Verificación en proceso de revisión',
+            ],
+            [
+                'nombre' => 'aprobada',
+                'descripcion' => 'Verificación aprobada',
+            ],
+            [
+                'nombre' => 'rechazada',
+                'descripcion' => 'Verificación rechazada',
+            ],
+            [
+                'nombre' => 'subsanacion',
+                'descripcion' => 'Pendiente de subsanación documental',
+            ],
+        ];
+
+        foreach ($estados as $estado) {
+            EstadoVerificacion::query()->updateOrCreate(
                 ['nombre' => $estado['nombre']],
-                [
-                    'descripcion' => $estado['descripcion'],
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
+                ['descripcion' => $estado['descripcion']],
             );
         }
     }

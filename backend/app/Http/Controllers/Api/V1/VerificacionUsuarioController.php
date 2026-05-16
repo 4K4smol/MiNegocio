@@ -81,7 +81,7 @@ class VerificacionUsuarioController extends AbstractCrudController
 
         if (isset($data['estado_verificacion_id']) && ! array_key_exists('fecha_verificacion', $data)) {
             $aprobadoId = EstadoVerificacion::query()
-                ->where('nombre', 'aprobado')
+                ->where('nombre', 'aprobada')
                 ->value('id');
 
             if ($aprobadoId !== null && (int) $data['estado_verificacion_id'] === (int) $aprobadoId) {

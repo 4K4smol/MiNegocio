@@ -28,7 +28,7 @@ return new class extends Migration
                 ->cascadeOnUpdate();
 
             $table->string('numero_documento', 50);
-            $table->string('ruta_documento_anverso', 255);
+            $table->string('ruta_documento_anverso', 255)->nullable();
             $table->string('ruta_documento_reverso', 255)->nullable();
             $table->string('ruta_selfie', 255)->nullable();
 
