@@ -50,7 +50,7 @@ export function AdminDashboardPage() {
             ]} />
 
             <section className="admin-card quick-actions">
-                <Link className="admin-button" to="/admin/solicitudes">Revisar solicitudes</Link>
+                <Link className="admin-button" to="/admin/solicitudes-verificacion">Revisar solicitudes</Link>
                 <Link className="admin-button admin-button-ghost" to="/admin/usuarios">Ver usuarios</Link>
                 <Link className="admin-button admin-button-ghost" to="/admin/empresas">Ver empresas</Link>
                 <Link className="admin-button admin-button-ghost" to="/admin/auditoria">Ver auditoría</Link>
@@ -76,7 +76,7 @@ export function AdminDashboardPage() {
                                 <td><EstadoSolicitudBadge estado={solicitud.estado_verificacion} /></td>
                                 <td>{formatDate(solicitud.fecha_solicitud)}</td>
                                 <td>
-                                    <Link className="admin-link-action" to={`/admin/solicitudes/${solicitud.id}`}>
+                                    <Link className="admin-link-action" to={`/admin/solicitudes-verificacion/${solicitud.id}`}>
                                         Ver expediente
                                     </Link>
                                 </td>

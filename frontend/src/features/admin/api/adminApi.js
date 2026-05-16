@@ -96,31 +96,4 @@ export const adminApi = {
     desactivarTipoLocalizacionCliente: (id) => apiRequest(`tipos-localizacion-cliente/${id}/desactivar`, { method: "PATCH" }),
     getTiposEmpresa: (params) => paginated(apiRequest("tipos-empresa", { params })),
     getTiposDocumentoIdentidad: (params) => paginated(apiRequest("tipos-documento-identidad", { params })),
-
-    // Compatibilidad con el servicio legacy mientras se retiran pantallas antiguas.
-    getSolicitudes: (params) => apiRequest("admin/solicitudes", { params }),
-    getSolicitud: (id) => apiRequest(`admin/solicitudes/${id}`),
-    getEmpresas: (params) => apiRequest("admin/empresas", { params }),
-    getEmpresa: (id) => apiRequest(`admin/empresas/${id}`),
-    getCatalogos: () => apiRequest("admin/catalogos"),
-    getDocumentoUrl: (id) => buildApiUrl(`admin/documentos/${id}/descargar`),
-};
-
-export const downloadAdminDocumento = async (id, filename = "documento") => {
-    const response = await fetch(adminApi.getDocumentoUrl(id), {
-        headers: {
-            Accept: "application/octet-stream",
-            Authorization: `Bearer ${getToken()}`,
-        },
-    });
-
-    if (!response.ok) throw new Error("No se ha podido descargar el documento.");
-
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
 };

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CalendarMonth } from "../../calendario/components/CalendarMonth";
 import { getMonthRange } from "../../calendario/components/calendarUtils";
 import { calendarioService } from "../../calendario/services/calendarioService";
@@ -6,8 +6,10 @@ import { ordenesTrabajoService } from "../../ordenesTrabajo/services/ordenesTrab
 import { ErrorState } from "../../../shared/components/ErrorState";
 import { LoadingState } from "../../../shared/components/LoadingState";
 import { PageHeader } from "../../../shared/components/PageHeader";
+import { unwrapApiData } from "../../../shared/utils/apiResponse";
 import { useResourceList } from "../../../shared/hooks/useResourceList";
 import { dashboardService } from "../services/dashboardService";
+import { BusinessStatusCards } from "../components/BusinessStatusCards";
 import { DashboardQuickActions } from "../components/DashboardQuickActions";
 import { RecentOrdersCard } from "../components/RecentOrdersCard";
 import { UpcomingOrdersCard } from "../components/UpcomingOrdersCard";
@@ -16,6 +18,9 @@ import "../styles/dashboard.css";
 
 export function DashboardPage() {
     const [monthDate, setMonthDate] = useState(() => new Date());
+    const [businessSummary, setBusinessSummary] = useState({});
+    const [loadingSummary, setLoadingSummary] = useState(true);
+    const [summaryError, setSummaryError] = useState("");
     const calendarParams = useMemo(() => getMonthRange(monthDate), [monthDate]);
     const upcomingParams = useMemo(() => ({ limite: 5 }), []);
     const ordersParams = useMemo(() => ({ per_page: 50 }), []);
@@ -39,6 +44,28 @@ export function DashboardPage() {
     } = useResourceList(ordenesTrabajoService.list, ordersParams);
 
     const recentOrders = useMemo(() => getRecentCompletedOrders(allOrders), [allOrders]);
+
+    useEffect(() => {
+        let mounted = true;
+
+        dashboardService.resumen()
+            .then((response) => {
+                if (mounted) setBusinessSummary(unwrapApiData(response) || {});
+            })
+            .catch((currentError) => {
+                if (mounted) {
+                    setSummaryError(currentError?.message || "No se ha podido cargar el resumen del negocio.");
+                    setBusinessSummary({});
+                }
+            })
+            .finally(() => {
+                if (mounted) setLoadingSummary(false);
+            });
+
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     const changeMonth = (amount) => {
         setMonthDate((current) => new Date(current.getFullYear(), current.getMonth() + amount, 1));
@@ -80,6 +107,8 @@ export function DashboardPage() {
                 )}
             </section>
 
+            {summaryError ? <ErrorState>{summaryError}</ErrorState> : null}
+            <BusinessStatusCards loading={loadingSummary} summary={businessSummary} />
             <DashboardQuickActions />
         </section>
     );

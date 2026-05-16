@@ -11,7 +11,7 @@ export const empresaNavigation = [
 
 export const adminNavigation = [
     { label: "Dashboard", to: "/admin", icon: appIcons.dashboard },
-    { label: "Solicitudes", to: "/admin/solicitudes", icon: appIcons.validar },
+    { label: "Solicitudes", to: "/admin/solicitudes-verificacion", icon: appIcons.validar },
     { label: "Usuarios", to: "/admin/usuarios", icon: appIcons.usuarios },
     { label: "Empresas", to: "/admin/empresas", icon: appIcons.empresa },
     { label: "Auditoría", to: "/admin/auditoria", icon: appIcons.auditoria },

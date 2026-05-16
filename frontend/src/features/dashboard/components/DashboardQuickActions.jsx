@@ -4,34 +4,35 @@ import { appIcons } from "../../../config/appIcons";
 
 const quickActions = [
     {
-        title: "Clientes",
-        description: "Gestiona tus clientes y sus datos.",
-        to: "/app/clientes",
+        title: "Crear cliente",
+        description: "Registra un nuevo cliente y deja sus datos listos para operar.",
+        to: "/app/clientes/nuevo",
         icon: appIcons.clientes,
     },
     {
-        title: "Servicios",
-        description: "Configura los servicios de tu empresa.",
-        to: "/app/servicios",
-        icon: appIcons.servicios,
-    },
-    {
-        title: "Inventario",
-        description: "Controla productos, materiales y stock.",
-        to: "/app/inventario",
-        icon: appIcons.inventario,
-    },
-    {
-        title: "Órdenes",
-        description: "Planifica y revisa los trabajos.",
-        to: "/app/ordenes-trabajo",
+        title: "Crear orden de trabajo",
+        description: "Programa una intervención, asigna datos y prepara el seguimiento.",
+        to: "/app/ordenes-trabajo/nueva",
         icon: appIcons.ordenes,
     },
     {
-        title: "Facturación",
-        description: "Consulta y gestiona tus facturas.",
+        title: "Crear factura",
+        description: "Accede a facturación para emitir desde una orden completada.",
+        // Cambiar a la ruta de creación directa cuando exista en React Router.
         to: "/app/facturas",
         icon: appIcons.facturas,
+    },
+    {
+        title: "Añadir servicio",
+        description: "Da de alta un servicio para reutilizarlo en órdenes y facturas.",
+        to: "/app/servicios/nuevo",
+        icon: appIcons.servicios,
+    },
+    {
+        title: "Añadir producto",
+        description: "Incorpora un artículo o material al control de inventario.",
+        to: "/app/inventario/nuevo",
+        icon: appIcons.inventario,
     },
 ];
 
@@ -39,7 +40,7 @@ export function DashboardQuickActions() {
     return (
         <section className="dashboard-section">
             <header className="dashboard-section-header">
-                <h2>Accesos rápidos</h2>
+                <h2>Acciones rápidas</h2>
             </header>
             <div className="dashboard-quick-actions">
                 {quickActions.map((action) => (

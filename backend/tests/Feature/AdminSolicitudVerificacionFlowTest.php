@@ -217,6 +217,42 @@ class AdminSolicitudVerificacionFlowTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_rutas_legacy_de_solicitudes_admin_no_existen(): void
+    {
+        [, , $solicitud] = $this->crearSolicitud('B10000013', 'sociedad');
+        $admin = $this->crearAdmin();
+
+        foreach ([
+            '/api/v1/admin/solicitudes',
+            "/api/v1/admin/solicitudes/{$solicitud->id}",
+            '/api/v1/admin/solicitudes-registro',
+            "/api/v1/admin/solicitudes-registro/{$solicitud->id}",
+            "/api/v1/admin/documentos/{$solicitud->id}/descargar",
+            "/api/v1/admin/documentos-verificacion/{$solicitud->id}/ver",
+        ] as $url) {
+            $this->actingAs($admin, 'sanctum')
+                ->getJson($url)
+                ->assertNotFound();
+        }
+
+        foreach ([
+            "/api/v1/admin/solicitudes/{$solicitud->id}/aprobar-identidad",
+            "/api/v1/admin/solicitudes/{$solicitud->id}/rechazar-identidad",
+            "/api/v1/admin/solicitudes/{$solicitud->id}/aprobar-empresa",
+            "/api/v1/admin/solicitudes/{$solicitud->id}/rechazar-empresa",
+            "/api/v1/admin/solicitudes/{$solicitud->id}/aprobar-representacion",
+            "/api/v1/admin/solicitudes/{$solicitud->id}/rechazar-representacion",
+            "/api/v1/admin/solicitudes/{$solicitud->id}/aprobar-total",
+            "/api/v1/admin/solicitudes/{$solicitud->id}/rechazar-total",
+            "/api/v1/admin/solicitudes-registro/{$solicitud->id}/aprobar",
+            "/api/v1/admin/solicitudes-registro/{$solicitud->id}/rechazar",
+        ] as $url) {
+            $this->actingAs($admin, 'sanctum')
+                ->postJson($url)
+                ->assertNotFound();
+        }
+    }
+
     /**
      * @return array{0: User, 1: Empresa, 2: SolicitudVerificacion}
      */
