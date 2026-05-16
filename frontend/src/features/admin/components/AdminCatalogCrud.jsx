@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { FormModal } from "../../../shared/components/FormModal";
 import { AdminActionsMenu } from "./AdminActionsMenu";
 import { AdminConfirmModal } from "./AdminConfirmModal";
 import { AdminDataTable } from "./AdminDataTable";
@@ -23,66 +24,45 @@ const valueForField = (value, field) => {
     return String(value ?? "").trim() || null;
 };
 
-function CatalogFormModal({ config, mode, value, error, loading, onChange, onClose, onSubmit }) {
-    if (!mode) return null;
-
+function CatalogFormFields({ config, disabled, value, onChange }) {
     return (
-        <div className="admin-modal-backdrop" role="presentation">
-            <form className="admin-modal config-modal" onSubmit={onSubmit}>
-                <header>
-                    <div>
-                        <span className="admin-kicker">{config.title}</span>
-                        <h3>{mode === "create" ? `Nuevo ${config.singular}` : `Editar ${config.singular}`}</h3>
-                    </div>
-                    <button type="button" className="admin-icon-button admin-button-ghost" onClick={onClose} aria-label="Cerrar" disabled={loading}>
-                        X
-                    </button>
-                </header>
-                <div className="config-form-grid">
-                    {config.fields.map((field) => (
-                        <label key={field.name} className={field.wide ? "is-wide" : field.type === "checkbox" ? "config-checkbox" : undefined}>
-                            {field.type === "checkbox" ? (
-                                <>
-                                    <input
-                                        type="checkbox"
-                                        checked={Boolean(value[field.name])}
-                                        onChange={(event) => onChange({ ...value, [field.name]: event.target.checked })}
-                                    />
-                                    <span>{field.label}</span>
-                                </>
+        <div className="config-form-grid">
+            {config.fields.map((field) => (
+                <label key={field.name} className={field.wide ? "is-wide" : field.type === "checkbox" ? "config-checkbox" : undefined}>
+                    {field.type === "checkbox" ? (
+                        <>
+                            <input
+                                checked={Boolean(value[field.name])}
+                                disabled={disabled}
+                                type="checkbox"
+                                onChange={(event) => onChange({ ...value, [field.name]: event.target.checked })}
+                            />
+                            <span>{field.label}</span>
+                        </>
+                    ) : (
+                        <>
+                            <span>{field.label}</span>
+                            {field.type === "textarea" ? (
+                                <textarea
+                                    disabled={disabled}
+                                    required={field.required}
+                                    value={value[field.name] ?? ""}
+                                    onChange={(event) => onChange({ ...value, [field.name]: event.target.value })}
+                                />
                             ) : (
-                                <>
-                                    <span>{field.label}</span>
-                                    {field.type === "textarea" ? (
-                                        <textarea
-                                            value={value[field.name] ?? ""}
-                                            onChange={(event) => onChange({ ...value, [field.name]: event.target.value })}
-                                            required={field.required}
-                                        />
-                                    ) : (
-                                        <input
-                                            type={field.type || "text"}
-                                            min={field.min}
-                                            value={value[field.name] ?? ""}
-                                            onChange={(event) => onChange({ ...value, [field.name]: event.target.value })}
-                                            required={field.required}
-                                        />
-                                    )}
-                                </>
+                                <input
+                                    disabled={disabled}
+                                    min={field.min}
+                                    required={field.required}
+                                    type={field.type || "text"}
+                                    value={value[field.name] ?? ""}
+                                    onChange={(event) => onChange({ ...value, [field.name]: event.target.value })}
+                                />
                             )}
-                        </label>
-                    ))}
-                </div>
-                {error ? <ErrorState>{error}</ErrorState> : null}
-                <footer>
-                    <button type="button" className="admin-button admin-button-ghost" onClick={onClose} disabled={loading}>
-                        Cancelar
-                    </button>
-                    <button type="submit" className="admin-button" disabled={loading}>
-                        {loading ? "Guardando..." : "Guardar"}
-                    </button>
-                </footer>
-            </form>
+                        </>
+                    )}
+                </label>
+            ))}
         </div>
     );
 }
@@ -227,16 +207,27 @@ export function AdminCatalogCrud({ config, onSuccess }) {
                 ))}
             </AdminDataTable>
 
-            <CatalogFormModal
-                config={config}
-                mode={formMode}
-                value={formValue}
+            <FormModal
+                cancelClassName="admin-button admin-button-ghost"
                 error={formError}
                 loading={saving}
-                onChange={setFormValue}
+                mode={formMode || "create"}
+                open={Boolean(formMode)}
+                size="lg"
+                submitClassName="admin-button"
+                submitLabel="Guardar"
+                subtitle={config.title}
+                title={formMode === "create" ? `Nuevo ${config.singular}` : `Editar ${config.singular}`}
                 onClose={closeForm}
                 onSubmit={submitForm}
-            />
+            >
+                <CatalogFormFields
+                    config={config}
+                    disabled={saving}
+                    value={formValue}
+                    onChange={setFormValue}
+                />
+            </FormModal>
             <AdminConfirmModal
                 open={Boolean(confirm)}
                 title={confirm?.title}

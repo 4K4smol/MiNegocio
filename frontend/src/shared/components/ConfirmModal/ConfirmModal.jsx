@@ -1,3 +1,5 @@
+import { Modal } from "../ui/Modal";
+
 const joinClasses = (...classes) => classes.filter(Boolean).join(" ");
 
 export function ConfirmModal({
@@ -12,8 +14,6 @@ export function ConfirmModal({
     title,
     tone = "danger",
 }) {
-    if (!open) return null;
-
     const confirmClassName = joinClasses(
         "button",
         tone === "danger" ? "button-danger" : "",
@@ -22,24 +22,28 @@ export function ConfirmModal({
     );
 
     return (
-        <div className="modal-backdrop confirm-modal-backdrop" role="presentation">
-            <section className="modal confirm-modal" role="dialog" aria-modal="true" aria-label={title}>
-                <header className="modal-header">
-                    <div>
-                        <span className="eyebrow">Confirmación</span>
-                        <h2>{title}</h2>
-                    </div>
-                </header>
-                {description ? <p>{description}</p> : null}
-                <footer className="modal-footer">
+        <Modal
+            className="confirm-modal"
+            closeDisabled={loading}
+            closeOnBackdrop={!loading}
+            footer={(
+                <>
                     <button className="button button-ghost" disabled={loading} type="button" onClick={onCancel}>
                         {cancelLabel}
                     </button>
                     <button className={confirmClassName} disabled={loading} type="button" onClick={onConfirm}>
                         {loading ? loadingLabel : confirmLabel}
                     </button>
-                </footer>
-            </section>
-        </div>
+                </>
+            )}
+            open={open}
+            showCloseButton={false}
+            size="sm"
+            subtitle="Confirmacion"
+            title={title}
+            onClose={onCancel}
+        >
+            {description ? <p>{description}</p> : null}
+        </Modal>
     );
 }

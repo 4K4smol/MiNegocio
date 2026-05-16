@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ErrorState } from "../../../shared/components/ErrorState";
+import { FormModal } from "../../../shared/components/FormModal";
 import { LoadingState } from "../../../shared/components/LoadingState";
 import { PageHeader } from "../../../shared/components/PageHeader";
 import { unwrapApiCollection, unwrapApiData } from "../../../shared/utils/apiResponse";
 import { ClienteForm } from "../components/ClienteForm";
 import { clientesService } from "../services/clientesService";
-
-const validationErrors = (error) => error?.errors || error?.payload?.errors || {};
+import { clientePayloadFromForm, validationErrors } from "../utils/clienteForm";
 
 export function ClienteEditPage() {
     const { clienteId } = useParams();
@@ -16,7 +15,8 @@ export function ClienteEditPage() {
     const [tiposCliente, setTiposCliente] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState("");
+    const [loadError, setLoadError] = useState("");
+    const [formError, setFormError] = useState("");
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
@@ -32,7 +32,7 @@ export function ClienteEditPage() {
                 setTiposCliente(unwrapApiCollection(tiposResponse));
             })
             .catch((currentError) => {
-                if (mounted) setError(currentError?.message || "No se ha podido cargar el cliente.");
+                if (mounted) setLoadError(currentError?.message || "No se ha podido cargar el cliente.");
             })
             .finally(() => {
                 if (mounted) setLoading(false);
@@ -43,17 +43,20 @@ export function ClienteEditPage() {
         };
     }, [clienteId]);
 
-    const handleUpdateCliente = async (payload) => {
+    const closePage = () => navigate(`/app/clientes/${clienteId}`);
+
+    const handleUpdateCliente = async (event) => {
+        event.preventDefault();
         setIsSubmitting(true);
-        setError("");
+        setFormError("");
         setErrors({});
 
         try {
-            await clientesService.update(clienteId, payload);
+            await clientesService.update(clienteId, clientePayloadFromForm(event.currentTarget));
             navigate(`/app/clientes/${clienteId}`);
         } catch (currentError) {
             setErrors(validationErrors(currentError));
-            setError(currentError?.message || "No se ha podido actualizar el cliente.");
+            setFormError(currentError?.message || "No se ha podido actualizar el cliente.");
         } finally {
             setIsSubmitting(false);
         }
@@ -65,19 +68,28 @@ export function ClienteEditPage() {
                 description="Actualiza los datos comerciales y de contacto del cliente."
                 title="Editar cliente"
             />
-            {error ? <ErrorState>{error}</ErrorState> : null}
-            {loading ? (
-                <LoadingState>Cargando cliente...</LoadingState>
-            ) : (
-                <ClienteForm
-                    errors={errors}
-                    initialValues={cliente || {}}
-                    isSubmitting={isSubmitting}
-                    submitLabel="Actualizar cliente"
-                    tiposCliente={tiposCliente}
-                    onSubmit={handleUpdateCliente}
-                />
-            )}
+            <FormModal
+                error={formError || loadError}
+                loading={isSubmitting}
+                mode="edit"
+                open
+                submitDisabled={loading || Boolean(loadError)}
+                submitLabel="Guardar cambios"
+                title="Editar cliente"
+                onClose={closePage}
+                onSubmit={handleUpdateCliente}
+            >
+                {loading ? (
+                    <LoadingState>Cargando cliente...</LoadingState>
+                ) : (
+                    <ClienteForm
+                        disabled={isSubmitting || Boolean(loadError)}
+                        errors={errors}
+                        initialValues={cliente || {}}
+                        tiposCliente={tiposCliente}
+                    />
+                )}
+            </FormModal>
         </section>
     );
 }

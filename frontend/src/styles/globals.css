@@ -1154,6 +1154,7 @@ input {
 }
 
 .form-checkbox input {
+  min-height: 0;
   width: auto;
 }
 
@@ -1329,9 +1330,31 @@ input {
   background: #ffffff;
   border-radius: 8px;
   box-shadow: 0 24px 60px rgba(17, 24, 39, 0.22);
+  max-height: calc(100vh - 40px);
   max-width: 620px;
+  overflow: auto;
   padding: 22px;
   width: min(100%, 620px);
+}
+
+.modal--sm {
+  max-width: 460px;
+  width: min(100%, 460px);
+}
+
+.modal--md {
+  max-width: 620px;
+  width: min(100%, 620px);
+}
+
+.modal--lg {
+  max-width: 820px;
+  width: min(100%, 820px);
+}
+
+.modal--xl {
+  max-width: 1040px;
+  width: min(100%, 1040px);
 }
 
 .modal-header {
@@ -1345,10 +1368,15 @@ input {
   margin: 0;
 }
 
+.modal-body {
+  margin-top: 18px;
+}
+
 .modal-footer {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
+  margin-top: 18px;
 }
 
 .confirm-modal {
@@ -1364,6 +1392,50 @@ input {
 .modal-close {
   color: #1e3a8a;
   margin-top: 0;
+}
+
+.form-modal {
+  display: grid;
+  gap: 16px;
+}
+
+.form-modal label,
+.form-field {
+  color: #334e68;
+  display: grid;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.form-modal input,
+.form-modal select,
+.form-modal textarea {
+  border: 1px solid #bcccdc;
+  border-radius: 6px;
+  color: var(--color-text);
+  min-height: 42px;
+  padding: 10px 12px;
+}
+
+.form-modal input:focus,
+.form-modal select:focus,
+.form-modal textarea:focus {
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.12);
+  outline: none;
+}
+
+.form-modal textarea {
+  resize: vertical;
+}
+
+.form-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #991b1b;
+  font-weight: 700;
+  padding: 12px;
 }
 
 .pagination {

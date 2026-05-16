@@ -1,3 +1,5 @@
+import { FormModal } from "../../../shared/components/FormModal";
+
 const TITLES = {
     aprobar: "Aprobar solicitud",
     rechazar: "Rechazar solicitud",
@@ -27,27 +29,41 @@ export function AdminDecisionModal({ type, contextLabel, value, selectedDocument
     const requiresMotivo = !["aprobar", "aprobar_fase"].includes(type);
     const canSubmit = !loading && (!requiresMotivo || value.trim().length >= 5);
     const title = contextLabel ? `${TITLES[type]}: ${contextLabel}` : TITLES[type];
+    const submitClassName = `admin-button ${
+        type === "rechazar" || type === "rechazar_fase"
+            ? "admin-button-danger"
+            : type === "subsanacion"
+                ? "admin-button-warning"
+                : "admin-button-success"
+    }`;
 
     return (
-        <div className="admin-modal-backdrop" role="presentation">
-            <form className="admin-modal decision-modal" onSubmit={onSubmit}>
-                <header>
-                    <div>
-                        <span className="admin-kicker">Decision administrativa</span>
-                        <h3>{title}</h3>
-                    </div>
-                    <button type="button" className="admin-icon-button admin-button-ghost" onClick={onClose} aria-label="Cerrar">
-                        X
-                    </button>
-                </header>
+        <FormModal
+            cancelClassName="admin-button admin-button-ghost"
+            error={error}
+            loading={loading}
+            loadingLabel="Procesando..."
+            mode="edit"
+            open={Boolean(type)}
+            size="lg"
+            submitClassName={submitClassName}
+            submitDisabled={!canSubmit}
+            submitLabel={TITLES[type]}
+            subtitle="Decision administrativa"
+            title={title}
+            onClose={onClose}
+            onSubmit={onSubmit}
+        >
+            <div className="decision-modal">
                 <p>{DESCRIPTIONS[type]}</p>
                 <label>
                     <span>{requiresMotivo ? "Motivo obligatorio" : "Observaciones"}</span>
                     <textarea
-                        value={value}
-                        onChange={(event) => onChange(event.target.value)}
+                        disabled={loading}
                         placeholder={requiresMotivo ? "Describe el motivo de la decision" : "Documentacion correcta."}
                         required={requiresMotivo}
+                        value={value}
+                        onChange={(event) => onChange(event.target.value)}
                     />
                 </label>
                 {type === "subsanacion" ? (
@@ -57,8 +73,9 @@ export function AdminDecisionModal({ type, contextLabel, value, selectedDocument
                             {OPTIONS.map(([id, label]) => (
                                 <label key={id}>
                                     <input
-                                        type="checkbox"
                                         checked={selectedDocuments.includes(id)}
+                                        disabled={loading}
+                                        type="checkbox"
                                         onChange={() => onToggleDocument(id)}
                                     />
                                     <span>{label}</span>
@@ -67,20 +84,7 @@ export function AdminDecisionModal({ type, contextLabel, value, selectedDocument
                         </div>
                     </fieldset>
                 ) : null}
-                {error ? <div className="form-alert">{error}</div> : null}
-                <footer>
-                    <button type="button" className="admin-button admin-button-ghost" onClick={onClose} disabled={loading}>
-                        Cancelar
-                    </button>
-                    <button
-                        type="submit"
-                        className={`admin-button ${type === "rechazar" || type === "rechazar_fase" ? "admin-button-danger" : type === "subsanacion" ? "admin-button-warning" : "admin-button-success"}`}
-                        disabled={!canSubmit}
-                    >
-                        {loading ? "Procesando..." : TITLES[type]}
-                    </button>
-                </footer>
-            </form>
-        </div>
+            </div>
+        </FormModal>
     );
 }

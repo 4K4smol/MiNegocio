@@ -847,6 +847,11 @@
   margin: 6px 0 0;
 }
 
+.decision-modal {
+  display: grid;
+  gap: 16px;
+}
+
 .decision-modal p {
   color: var(--color-muted);
   margin: 0;

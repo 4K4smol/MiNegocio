@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Modal } from "../../../shared/components/ui/Modal";
 import { useAuth } from "../../../shared/hooks/useAuth";
 import { adminApi } from "../api/adminApi";
 import { AdminActionsMenu } from "../components/AdminActionsMenu";
@@ -141,27 +142,16 @@ export function UsuariosAdminPage() {
                 onConfirm={() => execute("actualizar el usuario", confirm.action)}
             />
             {selected ? (
-                <div className="admin-modal-backdrop" role="presentation">
-                    <section className="admin-modal" role="dialog" aria-modal="true" aria-label="Detalle de usuario">
-                        <header>
-                            <div>
-                                <span className="admin-kicker">Usuario</span>
-                                <h3>{fullName(selected)}</h3>
-                            </div>
-                            <button type="button" className="admin-icon-button admin-button-ghost" onClick={() => setSelected(null)} aria-label="Cerrar">
-                                X
-                            </button>
-                        </header>
-                        <dl className="admin-data-list">
-                            <div><dt>Email</dt><dd>{selected.email}</dd></div>
-                            <div><dt>Teléfono</dt><dd>{selected.telefono || "No indicado"}</dd></div>
-                            <div><dt>Rol</dt><dd>{selected.role?.nombre || "Sin rol"}</dd></div>
-                            <div><dt>Empresa</dt><dd>{selected.empresa?.nombre_fiscal || "Sin empresa"}</dd></div>
-                            <div><dt>Estado</dt><dd>{selected.activo ? "Activo" : "No activo"}</dd></div>
-                            <div><dt>Alta</dt><dd>{formatDate(selected.created_at)}</dd></div>
-                        </dl>
-                    </section>
-                </div>
+                <Modal open size="lg" subtitle="Usuario" title={fullName(selected)} onClose={() => setSelected(null)}>
+                    <dl className="admin-data-list">
+                        <div><dt>Email</dt><dd>{selected.email}</dd></div>
+                        <div><dt>Teléfono</dt><dd>{selected.telefono || "No indicado"}</dd></div>
+                        <div><dt>Rol</dt><dd>{selected.role?.nombre || "Sin rol"}</dd></div>
+                        <div><dt>Empresa</dt><dd>{selected.empresa?.nombre_fiscal || "Sin empresa"}</dd></div>
+                        <div><dt>Estado</dt><dd>{selected.activo ? "Activo" : "No activo"}</dd></div>
+                        <div><dt>Alta</dt><dd>{formatDate(selected.created_at)}</dd></div>
+                    </dl>
+                </Modal>
             ) : null}
         </section>
     );

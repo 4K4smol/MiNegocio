@@ -1,11 +1,9 @@
 import { DataTable } from "../../../shared/components/DataTable";
 import { EmptyState } from "../../../shared/components/EmptyState";
 import { RowActionsMenu } from "../../../shared/components/RowActionsMenu";
+import { getClienteDisplayName } from "../utils/clienteForm";
 
-const getDisplayName = (cliente) =>
-    cliente.razon_social || [cliente.nombre, cliente.apellidos].filter(Boolean).join(" ");
-
-export function ClientesTable({ clientes = [] }) {
+export function ClientesTable({ clientes = [], onEdit }) {
     return (
         <DataTable
             columns={["Nombre", "DNI/CIF", "Tipo", "Email", "Teléfono", "Estado", "Acciones"]}
@@ -21,7 +19,7 @@ export function ClientesTable({ clientes = [] }) {
             {clientes.map((cliente) => (
                 <tr key={cliente.id}>
                     <td>
-                        <strong>{getDisplayName(cliente)}</strong>
+                        <strong>{getClienteDisplayName(cliente)}</strong>
                         {cliente.persona_contacto ? <small>{cliente.persona_contacto}</small> : null}
                     </td>
                     <td>{cliente.dni_cif}</td>
@@ -39,7 +37,8 @@ export function ClientesTable({ clientes = [] }) {
                                 },
                                 {
                                     label: "Editar",
-                                    to: `/app/clientes/${cliente.id}/editar`,
+                                    onClick: onEdit ? () => onEdit(cliente) : undefined,
+                                    to: onEdit ? undefined : `/app/clientes/${cliente.id}/editar`,
                                 },
                             ]}
                         />

@@ -1,8 +1,3 @@
-const emptyToNull = (value) => {
-    const trimmed = String(value ?? "").trim();
-    return trimmed === "" ? null : trimmed;
-};
-
 const fieldError = (errors, name) => {
     const value = errors?.[name];
     if (!value) return null;
@@ -10,39 +5,20 @@ const fieldError = (errors, name) => {
 };
 
 export function ClienteForm({
+    disabled = false,
     errors = {},
     initialValues = {},
-    isSubmitting = false,
-    onSubmit,
-    submitLabel = "Guardar cliente",
     tiposCliente = [],
 }) {
-    // TODO: añadir localización principal cuando exista endpoint CRUD para localizaciones de cliente.
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        const formData = new FormData(event.currentTarget);
-
-        onSubmit?.({
-            tipo_cliente_id: Number(formData.get("tipo_cliente_id")),
-            nombre: emptyToNull(formData.get("nombre")),
-            apellidos: emptyToNull(formData.get("apellidos")),
-            razon_social: emptyToNull(formData.get("razon_social")),
-            dni_cif: emptyToNull(formData.get("dni_cif")),
-            telefono: emptyToNull(formData.get("telefono")),
-            email: emptyToNull(formData.get("email")),
-            persona_contacto: emptyToNull(formData.get("persona_contacto")),
-            notas: emptyToNull(formData.get("notas")),
-            activo: formData.get("activo") === "on",
-        });
-    };
-
+    // TODO: anadir localizacion principal cuando exista endpoint CRUD para localizaciones de cliente.
     return (
-        <form className="form cliente-form" onSubmit={handleSubmit}>
+        <div className="cliente-form form-grid">
             <label>
                 Tipo de cliente
                 <select
-                    name="tipo_cliente_id"
                     defaultValue={initialValues.tipo_cliente_id || ""}
+                    disabled={disabled}
+                    name="tipo_cliente_id"
                     required
                 >
                     <option value="">Selecciona un tipo</option>
@@ -57,66 +33,61 @@ export function ClienteForm({
 
             <label>
                 Nombre
-                <input name="nombre" defaultValue={initialValues.nombre || ""} required />
+                <input defaultValue={initialValues.nombre || ""} disabled={disabled} name="nombre" required />
                 {fieldError(errors, "nombre") ? <small className="field-error">{fieldError(errors, "nombre")}</small> : null}
             </label>
 
             <label>
                 Apellidos
-                <input name="apellidos" defaultValue={initialValues.apellidos || ""} />
+                <input defaultValue={initialValues.apellidos || ""} disabled={disabled} name="apellidos" />
                 {fieldError(errors, "apellidos") ? <small className="field-error">{fieldError(errors, "apellidos")}</small> : null}
             </label>
 
             <label>
-                Razón social
-                <input name="razon_social" defaultValue={initialValues.razon_social || ""} />
+                Razon social
+                <input defaultValue={initialValues.razon_social || ""} disabled={disabled} name="razon_social" />
                 {fieldError(errors, "razon_social") ? <small className="field-error">{fieldError(errors, "razon_social")}</small> : null}
             </label>
 
             <label>
                 DNI/CIF
-                <input name="dni_cif" defaultValue={initialValues.dni_cif || ""} required />
+                <input defaultValue={initialValues.dni_cif || ""} disabled={disabled} name="dni_cif" required />
                 {fieldError(errors, "dni_cif") ? <small className="field-error">{fieldError(errors, "dni_cif")}</small> : null}
             </label>
 
             <label>
-                Teléfono
-                <input name="telefono" defaultValue={initialValues.telefono || ""} />
+                Telefono
+                <input defaultValue={initialValues.telefono || ""} disabled={disabled} name="telefono" />
                 {fieldError(errors, "telefono") ? <small className="field-error">{fieldError(errors, "telefono")}</small> : null}
             </label>
 
             <label>
                 Email
-                <input name="email" type="email" defaultValue={initialValues.email || ""} />
+                <input defaultValue={initialValues.email || ""} disabled={disabled} name="email" type="email" />
                 {fieldError(errors, "email") ? <small className="field-error">{fieldError(errors, "email")}</small> : null}
             </label>
 
             <label>
                 Persona de contacto
-                <input name="persona_contacto" defaultValue={initialValues.persona_contacto || ""} />
+                <input defaultValue={initialValues.persona_contacto || ""} disabled={disabled} name="persona_contacto" />
                 {fieldError(errors, "persona_contacto") ? <small className="field-error">{fieldError(errors, "persona_contacto")}</small> : null}
             </label>
 
             <label className="is-wide">
                 Notas
-                <textarea name="notas" defaultValue={initialValues.notas || ""} rows={4} />
+                <textarea defaultValue={initialValues.notas || ""} disabled={disabled} name="notas" rows={4} />
                 {fieldError(errors, "notas") ? <small className="field-error">{fieldError(errors, "notas")}</small> : null}
             </label>
 
             <label className="form-checkbox is-wide">
                 <input
+                    defaultChecked={initialValues.activo ?? true}
+                    disabled={disabled}
                     name="activo"
                     type="checkbox"
-                    defaultChecked={initialValues.activo ?? true}
                 />
                 Cliente activo
             </label>
-
-            <div className="form-actions is-wide">
-                <button className="button" type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Guardando..." : submitLabel}
-                </button>
-            </div>
-        </form>
+        </div>
     );
 }
