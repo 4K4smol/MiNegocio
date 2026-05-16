@@ -86,6 +86,7 @@ export function ClienteEditPage() {
                         disabled={isSubmitting || Boolean(loadError)}
                         errors={errors}
                         initialValues={cliente || {}}
+                        key={cliente?.id || "edit"}
                         tiposCliente={tiposCliente}
                     />
                 )}

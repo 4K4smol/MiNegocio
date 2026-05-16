@@ -1,8 +1,12 @@
+import { useState } from "react";
+
 const fieldError = (errors, name) => {
     const value = errors?.[name];
     if (!value) return null;
     return Array.isArray(value) ? value[0] : value;
 };
+
+const normalizeCode = (value) => String(value || "").toLowerCase();
 
 export function ClienteForm({
     disabled = false,
@@ -10,16 +14,26 @@ export function ClienteForm({
     initialValues = {},
     tiposCliente = [],
 }) {
+    const [selectedTipoClienteId, setSelectedTipoClienteId] = useState(String(initialValues.tipo_cliente_id || ""));
+    const selectedTipoCliente = tiposCliente.find((tipo) => String(tipo.id) === selectedTipoClienteId);
+    const selectedTipoCodigo = normalizeCode(selectedTipoCliente?.codigo);
+    const isParticular = selectedTipoCodigo === "particular";
+    const isEmpresa = selectedTipoCodigo === "empresa";
+    const showCommonFields = !selectedTipoCodigo;
+
     // TODO: anadir localizacion principal cuando exista endpoint CRUD para localizaciones de cliente.
     return (
         <div className="cliente-form form-grid">
+            <input name="tipo_cliente_codigo" readOnly type="hidden" value={selectedTipoCodigo} />
+
             <label>
                 Tipo de cliente
                 <select
-                    defaultValue={initialValues.tipo_cliente_id || ""}
                     disabled={disabled}
                     name="tipo_cliente_id"
                     required
+                    value={selectedTipoClienteId}
+                    onChange={(event) => setSelectedTipoClienteId(event.target.value)}
                 >
                     <option value="">Selecciona un tipo</option>
                     {tiposCliente.map((tipo) => (
@@ -31,29 +45,55 @@ export function ClienteForm({
                 {fieldError(errors, "tipo_cliente_id") ? <small className="field-error">{fieldError(errors, "tipo_cliente_id")}</small> : null}
             </label>
 
-            <label>
-                Nombre
-                <input defaultValue={initialValues.nombre || ""} disabled={disabled} name="nombre" required />
-                {fieldError(errors, "nombre") ? <small className="field-error">{fieldError(errors, "nombre")}</small> : null}
-            </label>
+            {(isParticular || showCommonFields) ? (
+                <>
+                    <label>
+                        Nombre
+                        <input defaultValue={initialValues.nombre || ""} disabled={disabled} name="nombre" required />
+                        {fieldError(errors, "nombre") ? <small className="field-error">{fieldError(errors, "nombre")}</small> : null}
+                    </label>
 
-            <label>
-                Apellidos
-                <input defaultValue={initialValues.apellidos || ""} disabled={disabled} name="apellidos" />
-                {fieldError(errors, "apellidos") ? <small className="field-error">{fieldError(errors, "apellidos")}</small> : null}
-            </label>
+                    <label>
+                        Apellidos
+                        <input defaultValue={initialValues.apellidos || ""} disabled={disabled} name="apellidos" />
+                        {fieldError(errors, "apellidos") ? <small className="field-error">{fieldError(errors, "apellidos")}</small> : null}
+                    </label>
 
-            <label>
-                Razon social
-                <input defaultValue={initialValues.razon_social || ""} disabled={disabled} name="razon_social" />
-                {fieldError(errors, "razon_social") ? <small className="field-error">{fieldError(errors, "razon_social")}</small> : null}
-            </label>
+                    <label>
+                        DNI/NIE
+                        <input defaultValue={initialValues.dni_cif || ""} disabled={disabled} name="dni_cif" required />
+                        {fieldError(errors, "dni_cif") ? <small className="field-error">{fieldError(errors, "dni_cif")}</small> : null}
+                    </label>
+                </>
+            ) : null}
 
-            <label>
-                DNI/CIF
-                <input defaultValue={initialValues.dni_cif || ""} disabled={disabled} name="dni_cif" required />
-                {fieldError(errors, "dni_cif") ? <small className="field-error">{fieldError(errors, "dni_cif")}</small> : null}
-            </label>
+            {isEmpresa ? (
+                <>
+                    <label>
+                        Razon social
+                        <input defaultValue={initialValues.razon_social || ""} disabled={disabled} name="razon_social" required />
+                        {fieldError(errors, "razon_social") ? <small className="field-error">{fieldError(errors, "razon_social")}</small> : null}
+                    </label>
+
+                    <label>
+                        Nombre comercial / alias
+                        <input defaultValue={initialValues.nombre || ""} disabled={disabled} name="nombre" required />
+                        {fieldError(errors, "nombre") ? <small className="field-error">{fieldError(errors, "nombre")}</small> : null}
+                    </label>
+
+                    <label>
+                        CIF
+                        <input defaultValue={initialValues.dni_cif || ""} disabled={disabled} name="dni_cif" required />
+                        {fieldError(errors, "dni_cif") ? <small className="field-error">{fieldError(errors, "dni_cif")}</small> : null}
+                    </label>
+
+                    <label>
+                        Persona de contacto
+                        <input defaultValue={initialValues.persona_contacto || ""} disabled={disabled} name="persona_contacto" />
+                        {fieldError(errors, "persona_contacto") ? <small className="field-error">{fieldError(errors, "persona_contacto")}</small> : null}
+                    </label>
+                </>
+            ) : null}
 
             <label>
                 Telefono
@@ -65,12 +105,6 @@ export function ClienteForm({
                 Email
                 <input defaultValue={initialValues.email || ""} disabled={disabled} name="email" type="email" />
                 {fieldError(errors, "email") ? <small className="field-error">{fieldError(errors, "email")}</small> : null}
-            </label>
-
-            <label>
-                Persona de contacto
-                <input defaultValue={initialValues.persona_contacto || ""} disabled={disabled} name="persona_contacto" />
-                {fieldError(errors, "persona_contacto") ? <small className="field-error">{fieldError(errors, "persona_contacto")}</small> : null}
             </label>
 
             <label className="is-wide">

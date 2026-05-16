@@ -30,7 +30,15 @@ class ClienteController extends AbstractCrudController
 
     public function store(StoreClienteRequest $request)
     {
-        $cliente = Cliente::query()->create($this->fillEmpresaIdFromUser($request->validated(), $request));
+        $data = $this->fillEmpresaIdFromUser($request->validated(), $request);
+
+        if (empty($data['empresa_id'])) {
+            return $this->validationError([
+                'empresa_id' => ['No se ha podido determinar la empresa asociada al usuario.'],
+            ]);
+        }
+
+        $cliente = Cliente::query()->create($data);
 
         return $this->created(ClienteResource::make($cliente->load('tipoCliente'))->resolve());
     }
@@ -43,7 +51,13 @@ class ClienteController extends AbstractCrudController
             return $this->notFound();
         }
 
-        $cliente->fill($this->fillEmpresaIdFromUser($request->validated(), $request));
+        $data = $this->fillEmpresaIdFromUser($request->validated(), $request);
+
+        if (empty($data['empresa_id'])) {
+            $data['empresa_id'] = $cliente->empresa_id;
+        }
+
+        $cliente->fill($data);
         $cliente->save();
 
         return $this->updated(ClienteResource::make($cliente->load('tipoCliente'))->resolve());

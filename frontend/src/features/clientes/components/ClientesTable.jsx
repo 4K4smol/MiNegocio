@@ -1,17 +1,24 @@
 import { DataTable } from "../../../shared/components/DataTable";
 import { EmptyState } from "../../../shared/components/EmptyState";
 import { RowActionsMenu } from "../../../shared/components/RowActionsMenu";
+import { Badge } from "../../../shared/components/ui/Badge";
 import { getClienteDisplayName } from "../utils/clienteForm";
 
-export function ClientesTable({ clientes = [], onEdit }) {
+export function ClientesTable({
+    clientes = [],
+    emptyDescription = "Cuando registres clientes del negocio apareceran en este listado.",
+    emptyTitle = "No hay clientes cargados todavia",
+    onEdit,
+    onView,
+}) {
     return (
         <DataTable
-            columns={["Nombre", "DNI/CIF", "Tipo", "Email", "Teléfono", "Estado", "Acciones"]}
+            columns={["Nombre", "DNI/CIF", "Tipo", "Email", "Telefono", "Estado", "Acciones"]}
             empty={
                 !clientes.length ? (
                     <EmptyState
-                        title="No hay clientes cargados todavía"
-                        description="Cuando registres clientes del negocio aparecerán en este listado."
+                        title={emptyTitle}
+                        description={emptyDescription}
                     />
                 ) : null
             }
@@ -26,13 +33,18 @@ export function ClientesTable({ clientes = [], onEdit }) {
                     <td>{cliente.tipo_cliente?.nombre || "No indicado"}</td>
                     <td>{cliente.email || "No indicado"}</td>
                     <td>{cliente.telefono || "No indicado"}</td>
-                    <td>{cliente.activo ? "Activo" : "Inactivo"}</td>
+                    <td>
+                        <Badge tone={cliente.activo ? "success" : "neutral"}>
+                            {cliente.activo ? "Activo" : "Inactivo"}
+                        </Badge>
+                    </td>
                     <td>
                         <RowActionsMenu
                             actions={[
                                 {
                                     label: "Ver",
-                                    to: `/app/clientes/${cliente.id}`,
+                                    onClick: onView ? () => onView(cliente) : undefined,
+                                    to: onView ? undefined : `/app/clientes/${cliente.id}`,
                                     variant: "primary",
                                 },
                                 {

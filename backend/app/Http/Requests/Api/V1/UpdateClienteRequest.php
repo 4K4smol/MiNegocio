@@ -11,11 +11,9 @@ class UpdateClienteRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
-        $user = $this->user();
-
-        if ($user?->role?->nombre !== 'admin') {
+        if (! $this->isAdminUser() && $this->authenticatedEmpresaId() !== null) {
             $this->merge([
-                'empresa_id' => $user?->empresa_id,
+                'empresa_id' => $this->authenticatedEmpresaId(),
             ]);
         }
     }
@@ -27,7 +25,9 @@ class UpdateClienteRequest extends FormRequest
 
     public function rules(): array
     {
-        $empresaId = (int) $this->input('empresa_id');
+        $empresaId = $this->isAdminUser()
+            ? (int) $this->input('empresa_id')
+            : (int) ($this->authenticatedEmpresaId() ?? $this->input('empresa_id'));
         $routeCliente = $this->route('cliente') ?? $this->route('id');
         $id = is_object($routeCliente) && method_exists($routeCliente, 'getKey')
             ? (int) $routeCliente->getKey()
@@ -49,7 +49,7 @@ class UpdateClienteRequest extends FormRequest
             'persona_contacto' => ['nullable', 'string', 'max:255'],
             'notas' => ['nullable', 'string'],
             'activo' => ['sometimes', 'boolean'],
-            'empresa_id' => ['sometimes', 'integer', 'exists:empresas,id'],
+            'empresa_id' => ['sometimes', 'nullable', 'integer', 'exists:empresas,id'],
         ];
     }
 
@@ -58,5 +58,17 @@ class UpdateClienteRequest extends FormRequest
         return [
             'dni_cif.unique' => 'Ya existe un cliente con este DNI/CIF en tu empresa.',
         ];
+    }
+
+    private function isAdminUser(): bool
+    {
+        return $this->user()?->role?->nombre === 'admin';
+    }
+
+    private function authenticatedEmpresaId(): ?int
+    {
+        $empresaId = $this->user()?->empresa_id;
+
+        return $empresaId === null ? null : (int) $empresaId;
     }
 }

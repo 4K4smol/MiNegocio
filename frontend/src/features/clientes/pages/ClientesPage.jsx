@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppIcon } from "../../../components/ui/AppIcon";
 import { appIcons } from "../../../config/appIcons";
 import { ErrorState } from "../../../shared/components/ErrorState";
@@ -6,6 +6,7 @@ import { FormModal } from "../../../shared/components/FormModal";
 import { LoadingState } from "../../../shared/components/LoadingState";
 import { PageHeader } from "../../../shared/components/PageHeader";
 import { unwrapApiCollection } from "../../../shared/utils/apiResponse";
+import { ClienteDetailModal } from "../components/ClienteDetailModal";
 import { ClienteForm } from "../components/ClienteForm";
 import { ClientesTable } from "../components/ClientesTable";
 import { clientesService } from "../services/clientesService";
@@ -23,6 +24,9 @@ export function ClientesPage() {
     const [formErrors, setFormErrors] = useState({});
     const [formMode, setFormMode] = useState(null);
     const [selectedCliente, setSelectedCliente] = useState(null);
+    const [selectedClienteForView, setSelectedClienteForView] = useState(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [statusFilter, setStatusFilter] = useState("todos");
 
     const loadClientes = useCallback(async () => {
         setLoading(true);
@@ -53,6 +57,30 @@ export function ClientesPage() {
         loadTiposCliente();
     }, [loadClientes, loadTiposCliente]);
 
+    const filteredClientes = useMemo(() => {
+        const query = searchTerm.trim().toLowerCase();
+
+        return clientes.filter((cliente) => {
+            const matchesSearch = !query || [
+                cliente.nombre,
+                cliente.apellidos,
+                cliente.razon_social,
+                cliente.dni_cif,
+                cliente.email,
+                cliente.telefono,
+            ].some((value) => String(value || "").toLowerCase().includes(query));
+
+            const matchesStatus =
+                statusFilter === "todos"
+                || (statusFilter === "activos" && cliente.activo)
+                || (statusFilter === "inactivos" && !cliente.activo);
+
+            return matchesSearch && matchesStatus;
+        });
+    }, [clientes, searchTerm, statusFilter]);
+
+    const hasActiveFilters = Boolean(searchTerm.trim()) || statusFilter !== "todos";
+
     const resetFormState = () => {
         setFormError("");
         setFormErrors({});
@@ -60,14 +88,24 @@ export function ClientesPage() {
 
     const openCreate = () => {
         setSelectedCliente(null);
+        setSelectedClienteForView(null);
         setFormMode("create");
         resetFormState();
     };
 
     const openEdit = (cliente) => {
         setSelectedCliente(cliente);
+        setSelectedClienteForView(null);
         setFormMode("edit");
         resetFormState();
+    };
+
+    const openView = (cliente) => {
+        setSelectedClienteForView(cliente);
+    };
+
+    const closeView = () => {
+        setSelectedClienteForView(null);
     };
 
     const closeForm = () => {
@@ -114,7 +152,29 @@ export function ClientesPage() {
                 title="Clientes"
             />
             {error ? <ErrorState>{error}</ErrorState> : null}
-            {loading ? <LoadingState>Cargando clientes...</LoadingState> : <ClientesTable clientes={clientes} onEdit={openEdit} />}
+            <section className="filters-bar clientes-filters" aria-label="Filtros de clientes">
+                <input
+                    placeholder="Buscar por nombre, razon social o DNI/CIF"
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                />
+                <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+                    <option value="todos">Todos</option>
+                    <option value="activos">Activos</option>
+                    <option value="inactivos">Inactivos</option>
+                </select>
+            </section>
+            {loading ? (
+                <LoadingState>Cargando clientes...</LoadingState>
+            ) : (
+                <ClientesTable
+                    clientes={filteredClientes}
+                    emptyDescription={hasActiveFilters ? "Ajusta los filtros o modifica la busqueda para ver mas resultados." : undefined}
+                    emptyTitle={hasActiveFilters ? "No hay clientes que coincidan con la busqueda." : undefined}
+                    onEdit={openEdit}
+                    onView={openView}
+                />
+            )}
 
             <FormModal
                 error={formError || tiposError}
@@ -134,10 +194,16 @@ export function ClientesPage() {
                         disabled={saving || Boolean(tiposError)}
                         errors={formErrors}
                         initialValues={selectedCliente || {}}
+                        key={`${formMode || "create"}-${selectedCliente?.id || "new"}`}
                         tiposCliente={tiposCliente}
                     />
                 )}
             </FormModal>
+            <ClienteDetailModal
+                cliente={selectedClienteForView}
+                onClose={closeView}
+                onEdit={openEdit}
+            />
         </section>
     );
 }

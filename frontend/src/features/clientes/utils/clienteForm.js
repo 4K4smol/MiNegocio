@@ -6,16 +6,19 @@ const emptyToNull = (value) => {
 export const clientePayloadFromForm = (form) => {
     const formData = new FormData(form);
     const tipoClienteId = formData.get("tipo_cliente_id");
+    const tipoClienteCodigo = String(formData.get("tipo_cliente_codigo") || "").toLowerCase();
+    const isParticular = tipoClienteCodigo === "particular";
+    const isEmpresa = tipoClienteCodigo === "empresa";
 
     return {
         tipo_cliente_id: tipoClienteId ? Number(tipoClienteId) : null,
         nombre: emptyToNull(formData.get("nombre")),
-        apellidos: emptyToNull(formData.get("apellidos")),
-        razon_social: emptyToNull(formData.get("razon_social")),
+        apellidos: isEmpresa ? null : emptyToNull(formData.get("apellidos")),
+        razon_social: isParticular ? null : emptyToNull(formData.get("razon_social")),
         dni_cif: emptyToNull(formData.get("dni_cif")),
         telefono: emptyToNull(formData.get("telefono")),
         email: emptyToNull(formData.get("email")),
-        persona_contacto: emptyToNull(formData.get("persona_contacto")),
+        persona_contacto: isParticular ? null : emptyToNull(formData.get("persona_contacto")),
         notas: emptyToNull(formData.get("notas")),
         activo: formData.get("activo") === "on",
     };

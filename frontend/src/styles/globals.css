@@ -1315,6 +1315,32 @@ input {
   gap: 10px;
 }
 
+.filters-bar {
+  background: #ffffff;
+  border: 1px solid #dce4ea;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(240px, 1fr) minmax(150px, 220px);
+  padding: 14px;
+}
+
+.filters-bar input,
+.filters-bar select {
+  border: 1px solid #bcccdc;
+  border-radius: 6px;
+  min-height: 42px;
+  padding: 10px 12px;
+}
+
+.filters-bar input:focus,
+.filters-bar select:focus {
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.12);
+  outline: none;
+}
+
 .modal-backdrop {
   align-items: center;
   background: rgba(17, 24, 39, 0.42);
@@ -1529,9 +1555,14 @@ input {
   }
 
   .modal-footer,
+  .filters-bar,
   .pagination {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .filters-bar {
+    grid-template-columns: 1fr;
   }
 
   .hero-copy h1 {

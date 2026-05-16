@@ -76,7 +76,12 @@ export function ClienteCreatePage() {
                 {loadingTipos ? (
                     <LoadingState>Cargando tipos de cliente...</LoadingState>
                 ) : (
-                    <ClienteForm disabled={isSubmitting || Boolean(tiposError)} errors={errors} tiposCliente={tiposCliente} />
+                    <ClienteForm
+                        disabled={isSubmitting || Boolean(tiposError)}
+                        errors={errors}
+                        key="create"
+                        tiposCliente={tiposCliente}
+                    />
                 )}
             </FormModal>
         </section>

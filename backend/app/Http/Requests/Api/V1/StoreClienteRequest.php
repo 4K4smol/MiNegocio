@@ -11,11 +11,9 @@ class StoreClienteRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
-        $user = $this->user();
-
-        if ($user?->role?->nombre !== 'admin') {
+        if (! $this->isAdminUser() && $this->authenticatedEmpresaId() !== null) {
             $this->merge([
-                'empresa_id' => $user?->empresa_id,
+                'empresa_id' => $this->authenticatedEmpresaId(),
             ]);
         }
     }
@@ -27,7 +25,9 @@ class StoreClienteRequest extends FormRequest
 
     public function rules(): array
     {
-        $empresaId = (int) $this->input('empresa_id');
+        $empresaId = $this->isAdminUser()
+            ? (int) $this->input('empresa_id')
+            : (int) ($this->authenticatedEmpresaId() ?? $this->input('empresa_id'));
 
         return [
             'tipo_cliente_id' => ['required', 'integer', 'exists:tipos_cliente,id'],
@@ -39,7 +39,7 @@ class StoreClienteRequest extends FormRequest
             'persona_contacto' => ['nullable', 'string', 'max:255'],
             'notas' => ['nullable', 'string'],
             'activo' => ['sometimes', 'boolean'],
-            'empresa_id' => ['required', 'integer', 'exists:empresas,id'],
+            'empresa_id' => ['sometimes', 'nullable', 'integer', 'exists:empresas,id'],
             'dni_cif' => [
                 'required',
                 'string',
@@ -54,5 +54,17 @@ class StoreClienteRequest extends FormRequest
         return [
             'dni_cif.unique' => 'Ya existe un cliente con este DNI/CIF en tu empresa.',
         ];
+    }
+
+    private function isAdminUser(): bool
+    {
+        return $this->user()?->role?->nombre === 'admin';
+    }
+
+    private function authenticatedEmpresaId(): ?int
+    {
+        $empresaId = $this->user()?->empresa_id;
+
+        return $empresaId === null ? null : (int) $empresaId;
     }
 }
