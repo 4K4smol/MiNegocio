@@ -18,7 +18,6 @@ class TipoTarifaServicioResource extends JsonResource
             'descripcion' => $this->descripcion,
             'activo' => (bool) $this->activo,
             'orden' => $this->orden,
-            'es_sistema' => (bool) $this->es_sistema,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

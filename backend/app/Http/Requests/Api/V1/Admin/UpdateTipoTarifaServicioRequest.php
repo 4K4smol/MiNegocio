@@ -24,7 +24,6 @@ class UpdateTipoTarifaServicioRequest extends FormRequest
             'descripcion' => ['nullable', 'string', 'max:255'],
             'activo' => ['sometimes', 'boolean'],
             'orden' => ['sometimes', 'integer', 'min:0'],
-            'es_sistema' => ['sometimes', 'boolean'],
         ];
     }
 }

@@ -34,7 +34,6 @@ return new class extends Migration
             $table->string('descripcion', 255)->nullable();
             $table->boolean('activo')->default(true);
             $table->unsignedInteger('orden')->default(0);
-            $table->boolean('es_sistema')->default(false);
             $table->timestamps();
 
             $table->index(['activo', 'orden']);

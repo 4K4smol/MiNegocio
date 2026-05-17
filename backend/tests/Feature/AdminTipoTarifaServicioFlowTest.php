@@ -32,7 +32,6 @@ class AdminTipoTarifaServicioFlowTest extends TestCase
                 'descripcion' => 'Tarifa premium',
                 'orden' => 20,
                 'activo' => true,
-                'es_sistema' => false,
             ])
             ->assertCreated()
             ->assertJsonPath('data.codigo', 'premium')

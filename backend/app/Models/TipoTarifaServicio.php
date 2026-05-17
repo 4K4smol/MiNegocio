@@ -15,13 +15,11 @@ class TipoTarifaServicio extends Model
         'descripcion',
         'activo',
         'orden',
-        'es_sistema',
     ];
 
     protected $casts = [
         'activo' => 'boolean',
         'orden' => 'integer',
-        'es_sistema' => 'boolean',
     ];
 
     public function precios(): HasMany

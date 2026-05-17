@@ -158,11 +158,6 @@ export function ConfiguracionGlobalPage() {
                 textColumn("nombre", "Nombre"),
                 textColumn("descripcion", "Descripcion"),
                 textColumn("orden", "Orden"),
-                {
-                    key: "es_sistema",
-                    label: "Sistema",
-                    render: (item) => item.es_sistema ? <strong>Si</strong> : "No",
-                },
                 catalogStatusColumn,
             ],
             fields: [
@@ -171,7 +166,6 @@ export function ConfiguracionGlobalPage() {
                 { name: "descripcion", label: "Descripcion", type: "textarea", wide: true },
                 { name: "orden", label: "Orden", type: "number", min: 0, defaultValue: 0 },
                 { name: "activo", label: "Activo", type: "checkbox", defaultValue: true },
-                { name: "es_sistema", label: "Tipo de sistema", type: "checkbox", defaultValue: false },
             ],
         },
     }), []);
