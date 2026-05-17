@@ -107,10 +107,13 @@ export function ServicioTarifasTab() {
         <section className="module-section">
             <div className="section-toolbar">
                 <div>
-                    <h2>Tarifas</h2>
-                    <p>Define tarifas para aplicar precios distintos a tus servicios.</p>
+                    <h2>Tarifas — configuracion avanzada</h2>
+                    <p>
+                        MiNegocio crea automaticamente las tarifas base (Estandar, Urgente, Especial, Fin de semana) cuando tu empresa queda activada.
+                        Aqui puedes ver y gestionar esas tarifas. No es necesario crear tarifas nuevas para empezar a usar los servicios.
+                    </p>
                 </div>
-                <button className="button" type="button" onClick={openCreate}>
+                <button className="button button-ghost" type="button" onClick={openCreate}>
                     Nueva tarifa
                 </button>
             </div>
@@ -125,7 +128,7 @@ export function ServicioTarifasTab() {
                         !tarifas.length ? (
                             <EmptyState
                                 title="No hay tarifas"
-                                description="Crea tarifas para definir precios por servicio."
+                                description="Las tarifas base se crean automaticamente cuando la empresa es aprobada. Si no ves ninguna, contacta con soporte."
                             />
                         ) : null
                     }

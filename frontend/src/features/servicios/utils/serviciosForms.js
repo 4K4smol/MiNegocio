@@ -38,7 +38,10 @@ export const servicioPayloadFromForm = (form) => {
         unidad_servicio: emptyToNull(formData.get("unidad_servicio")),
         duracion_estimada_min: numberOrNull(formData.get("duracion_estimada_min")),
         activo: formData.get("activo") === "on",
-        meta: metaFromForm(formData),
+        precio_base: numberOrNull(formData.get("precio_base")),
+        iva_porcentaje: numberOrNull(formData.get("iva_porcentaje")),
+        retencion_porcentaje: numberOrNull(formData.get("retencion_porcentaje")),
+        moneda: emptyToNull(formData.get("moneda")) || "EUR",
     };
 };
 

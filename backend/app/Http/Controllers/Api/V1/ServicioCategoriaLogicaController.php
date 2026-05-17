@@ -15,7 +15,7 @@ class ServicioCategoriaLogicaController extends ApiController
         $categorias = Servicio::query()
             ->select('tipo_negocio as nombre')
             ->selectRaw('COUNT(*) as total_servicios')
-            ->selectRaw('SUM(CASE WHEN activo = 1 THEN 1 ELSE 0 END) as servicios_activos')
+            ->selectRaw('SUM(CASE WHEN activo IS TRUE THEN 1 ELSE 0 END) as servicios_activos')
             ->where('empresa_id', $request->user()->empresa_id)
             ->whereNotNull('tipo_negocio')
             ->where('tipo_negocio', '<>', '')

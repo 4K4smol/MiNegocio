@@ -9,11 +9,16 @@ use App\Models\Empresa;
 use App\Models\EstadoVerificacion;
 use App\Models\SolicitudVerificacion;
 use App\Models\User;
+use App\Services\Servicios\TarifasEmpresaService;
 use App\Support\VerificacionRegistroRules;
 use Illuminate\Support\Facades\DB;
 
 class SolicitudVerificacionAdminService
 {
+    public function __construct(private readonly TarifasEmpresaService $tarifasService)
+    {
+    }
+
     public const ESTADO_PENDIENTE = 'pendiente';
     public const ESTADO_EN_REVISION = 'en_revision';
     public const ESTADO_SUBSANACION = 'subsanacion';
@@ -54,6 +59,8 @@ class SolicitudVerificacionAdminService
 
             $solicitud->user()->update(['activo' => true]);
             $solicitud->empresa()->update(['activa' => true]);
+
+            $this->tarifasService->asegurarTarifasBaseParaEmpresa($empresa->id);
 
             $solicitud->user?->verificacion()->update([
                 'estado_verificacion_id' => $aprobadaId,

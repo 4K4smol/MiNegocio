@@ -126,8 +126,8 @@ export function ServiciosTab() {
         <section className="module-section">
             <div className="section-toolbar">
                 <div>
-                    <h2>Servicios</h2>
-                    <p>Gestiona el catalogo de servicios y sus precios por tarifa.</p>
+                    <h2>Mis servicios</h2>
+                    <p>Crea un servicio y pon cuanto cuesta. Los precios avanzados (urgente, especial, fin de semana) los puedes configurar despues.</p>
                 </div>
                 <button className="button" type="button" onClick={openCreate}>
                     Nuevo servicio
@@ -154,12 +154,12 @@ export function ServiciosTab() {
                 <LoadingState>Cargando servicios...</LoadingState>
             ) : (
                 <DataTable
-                    columns={["Servicio", "Codigo", "Categoria", "Unidad", "Duracion", "Estado", "Acciones"]}
+                    columns={["Servicio", "Categoria", "Unidad", "Duracion", "Precios", "Estado", "Acciones"]}
                     empty={
                         !servicios.length ? (
                             <EmptyState
-                                title="No hay servicios"
-                                description="Crea servicios para poder usarlos despues en ordenes y facturacion."
+                                title="No hay servicios todavia"
+                                description='Pulsa "Nuevo servicio" para crear tu primer servicio con su precio.'
                             />
                         ) : null
                     }
@@ -170,13 +170,14 @@ export function ServiciosTab() {
                                 <strong>{servicio.nombre}</strong>
                                 {servicio.descripcion ? <small>{servicio.descripcion}</small> : null}
                             </td>
-                            <td>{servicio.codigo || "Sin codigo"}</td>
                             <td>{servicio.tipo_negocio || "Sin categoria"}</td>
                             <td>{servicio.unidad_servicio}</td>
                             <td>{servicio.duracion_estimada_min ? `${servicio.duracion_estimada_min} min` : "No indicada"}</td>
                             <td>
+                                <span>{servicio.precios_count ?? 0} tarifa{servicio.precios_count !== 1 ? "s" : ""}</span>
+                            </td>
+                            <td>
                                 <StatusBadge status={servicio.activo ? "activo" : "inactivo"} />
-                                <small>{servicio.precios_count ?? 0} precios</small>
                             </td>
                             <td>
                                 <RowActionsMenu

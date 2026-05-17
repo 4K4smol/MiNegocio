@@ -11,7 +11,7 @@ export function ServiciosPage() {
     return (
         <section className="page">
             <PageHeader
-                description="Gestiona el catalogo de servicios, categorias logicas, tarifas y precios de tu empresa."
+                description="Crea los servicios que ofrece tu empresa y define sus precios. Las tarifas (Estandar, Urgente, Especial, Fin de semana) ya estan creadas automaticamente."
                 title="Servicios"
             />
 
