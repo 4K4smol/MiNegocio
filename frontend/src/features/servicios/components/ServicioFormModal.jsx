@@ -2,7 +2,6 @@ import { FormModal } from "../../../shared/components/FormModal";
 import { fieldError } from "../utils/serviciosForms";
 
 export function ServicioFormModal({
-    categorias = [],
     disabled = false,
     errors = {},
     error,
@@ -34,19 +33,13 @@ export function ServicioFormModal({
                 </label>
 
                 <label>
-                    Categoria
+                    Tipo o area del servicio
                     <input
                         defaultValue={servicio?.tipo_negocio || ""}
                         disabled={disabled}
-                        list="servicio-categorias-options"
                         name="tipo_negocio"
-                        placeholder="Limpieza"
+                        placeholder="Limpieza, mantenimiento, reparacion..."
                     />
-                    <datalist id="servicio-categorias-options">
-                        {categorias.map((categoria) => (
-                            <option key={categoria.nombre} value={categoria.nombre} />
-                        ))}
-                    </datalist>
                     {fieldError(errors, "tipo_negocio") ? <small className="field-error">{fieldError(errors, "tipo_negocio")}</small> : null}
                 </label>
 

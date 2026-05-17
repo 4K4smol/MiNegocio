@@ -15,7 +15,6 @@ export const endpoints = {
     tiposTarifaServicio: "tipos-tarifa-servicio",
     adminTiposTarifaServicio: "admin/tipos-tarifa-servicio",
     servicioPrecios: "servicio-precios",
-    servicioCategoriasLogicas: "servicios-categorias-logicas",
     ordenesTrabajo: "ordenes-trabajo",
     calendarioEventos: "calendario-eventos",
     dashboardCalendario: "dashboard/calendario",

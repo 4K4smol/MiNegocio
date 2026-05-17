@@ -190,67 +190,6 @@ class ServiciosEmpresaFlowTest extends TestCase
         ]);
     }
 
-    public function test_categorias_logicas_funciona_sin_servicios(): void
-    {
-        [$user] = $this->crearUsuarioEmpresa('B32000019');
-
-        $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/servicios-categorias-logicas')
-            ->assertOk()
-            ->assertJsonPath('data', []);
-    }
-
-    public function test_categorias_logicas_solo_devuelven_tipo_negocio_de_la_empresa(): void
-    {
-        [$user, $empresa] = $this->crearUsuarioEmpresa('B32000020');
-        [, $otraEmpresa] = $this->crearUsuarioEmpresa('B32000021');
-        $this->crearServicio($empresa->id, 'Limpieza');
-        $this->crearServicio($otraEmpresa->id, 'Oculta');
-
-        $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/servicios-categorias-logicas')
-            ->assertOk()
-            ->assertJsonFragment(['nombre' => 'Limpieza'])
-            ->assertJsonMissing(['nombre' => 'Oculta']);
-    }
-
-    public function test_renombrar_fusionar_y_vaciar_categoria_solo_afecta_empresa_autenticada(): void
-    {
-        [$user, $empresa] = $this->crearUsuarioEmpresa('B32000022');
-        [, $otraEmpresa] = $this->crearUsuarioEmpresa('B32000023');
-        $propio = $this->crearServicio($empresa->id, 'Cristales');
-        $otroPropio = $this->crearServicio($empresa->id, 'Limpieza', 'SERV2');
-        $ajeno = $this->crearServicio($otraEmpresa->id, 'Cristales');
-
-        $this->actingAs($user, 'sanctum')
-            ->patchJson('/api/v1/servicios-categorias-logicas/renombrar', [
-                'actual' => 'Cristales',
-                'nuevo' => 'Cristales premium',
-            ])
-            ->assertOk();
-
-        $this->assertDatabaseHas('servicios', ['id' => $propio->id, 'tipo_negocio' => 'Cristales premium']);
-        $this->assertDatabaseHas('servicios', ['id' => $ajeno->id, 'tipo_negocio' => 'Cristales']);
-
-        $this->actingAs($user, 'sanctum')
-            ->patchJson('/api/v1/servicios-categorias-logicas/fusionar', [
-                'origen' => 'Cristales premium',
-                'destino' => 'Limpieza',
-            ])
-            ->assertOk();
-
-        $this->assertDatabaseHas('servicios', ['id' => $propio->id, 'tipo_negocio' => 'Limpieza']);
-        $this->assertDatabaseHas('servicios', ['id' => $otroPropio->id, 'tipo_negocio' => 'Limpieza']);
-
-        $this->actingAs($user, 'sanctum')
-            ->patchJson('/api/v1/servicios-categorias-logicas/vaciar', ['categoria' => 'Limpieza'])
-            ->assertOk();
-
-        $this->assertDatabaseHas('servicios', ['id' => $propio->id, 'tipo_negocio' => null]);
-        $this->assertDatabaseHas('servicios', ['id' => $otroPropio->id, 'tipo_negocio' => null]);
-        $this->assertDatabaseHas('servicios', ['id' => $ajeno->id, 'tipo_negocio' => 'Cristales']);
-    }
-
     public function test_rutas_requieren_modulo_servicios_activo(): void
     {
         [$user] = $this->crearUsuarioEmpresa('B32000024', false);
@@ -258,6 +197,22 @@ class ServiciosEmpresaFlowTest extends TestCase
         $this->actingAs($user, 'sanctum')
             ->getJson('/api/v1/servicios')
             ->assertForbidden();
+    }
+
+    public function test_rutas_de_categorias_logicas_no_existen(): void
+    {
+        [$user] = $this->crearUsuarioEmpresa('B32000025');
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/v1/servicios-categorias-logicas')
+            ->assertNotFound();
+
+        $this->actingAs($user, 'sanctum')
+            ->patchJson('/api/v1/servicios-categorias-logicas/renombrar', [
+                'actual' => 'Limpieza',
+                'nuevo' => 'Mantenimiento',
+            ])
+            ->assertNotFound();
     }
 
     /**

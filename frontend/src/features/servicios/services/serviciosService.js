@@ -19,22 +19,3 @@ export const servicioPreciosService = {
             body: payload,
         }),
 };
-
-export const servicioCategoriasLogicasService = {
-    list: () => apiRequest(endpoints.servicioCategoriasLogicas),
-    renombrar: (payload) =>
-        apiRequest(`${endpoints.servicioCategoriasLogicas}/renombrar`, {
-            method: "PATCH",
-            body: payload,
-        }),
-    fusionar: (payload) =>
-        apiRequest(`${endpoints.servicioCategoriasLogicas}/fusionar`, {
-            method: "PATCH",
-            body: payload,
-        }),
-    vaciar: (payload) =>
-        apiRequest(`${endpoints.servicioCategoriasLogicas}/vaciar`, {
-            method: "PATCH",
-            body: payload,
-        }),
-};

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ConfirmModal } from "../../../shared/components/ConfirmModal";
 import { DataTable } from "../../../shared/components/DataTable";
 import { EmptyState } from "../../../shared/components/EmptyState";
@@ -8,19 +8,17 @@ import { RowActionsMenu } from "../../../shared/components/RowActionsMenu";
 import { StatusBadge } from "../../../shared/components/StatusBadge";
 import { unwrapApiCollection } from "../../../shared/utils/apiResponse";
 import { servicioPayloadFromForm, validationErrors } from "../utils/serviciosForms";
-import { servicioCategoriasLogicasService, serviciosService, tiposTarifaServicioService } from "../services/serviciosService";
+import { serviciosService, tiposTarifaServicioService } from "../services/serviciosService";
 import { ServicioFormModal } from "./ServicioFormModal";
 import { ServicioPreciosModal } from "./ServicioPreciosModal";
 
 export function ServiciosTab() {
     const [servicios, setServicios] = useState([]);
-    const [categorias, setCategorias] = useState([]);
     const [tiposTarifa, setTiposTarifa] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [search, setSearch] = useState("");
     const [activo, setActivo] = useState("todos");
-    const [tipoNegocio, setTipoNegocio] = useState("todos");
     const [saving, setSaving] = useState(false);
     const [formMode, setFormMode] = useState(null);
     const [selectedServicio, setSelectedServicio] = useState(null);
@@ -37,22 +35,19 @@ export function ServiciosTab() {
                 per_page: 100,
                 search: search.trim() || undefined,
                 activo: activo === "todos" ? undefined : activo === "activos",
-                tipo_negocio: tipoNegocio === "todos" ? undefined : tipoNegocio,
             };
-            const [serviciosResponse, categoriasResponse, tarifasResponse] = await Promise.all([
+            const [serviciosResponse, tarifasResponse] = await Promise.all([
                 serviciosService.list(params),
-                servicioCategoriasLogicasService.list(),
                 tiposTarifaServicioService.list(),
             ]);
             setServicios(unwrapApiCollection(serviciosResponse));
-            setCategorias(unwrapApiCollection(categoriasResponse));
             setTiposTarifa(unwrapApiCollection(tarifasResponse));
         } catch (currentError) {
             setError(currentError?.message || "No se han podido cargar los servicios.");
         } finally {
             setLoading(false);
         }
-    }, [activo, search, tipoNegocio]);
+    }, [activo, search]);
 
     useEffect(() => {
         loadData();
@@ -120,8 +115,6 @@ export function ServiciosTab() {
         }
     };
 
-    const categoriaOptions = useMemo(() => categorias.map((categoria) => categoria.nombre), [categorias]);
-
     return (
         <section className="module-section">
             <div className="section-toolbar">
@@ -136,12 +129,6 @@ export function ServiciosTab() {
 
             <section className="filters-bar services-filters" aria-label="Filtros de servicios">
                 <input placeholder="Buscar por nombre, codigo o descripcion" value={search} onChange={(event) => setSearch(event.target.value)} />
-                <select value={tipoNegocio} onChange={(event) => setTipoNegocio(event.target.value)}>
-                    <option value="todos">Todas las categorias</option>
-                    {categoriaOptions.map((categoria) => (
-                        <option key={categoria} value={categoria}>{categoria}</option>
-                    ))}
-                </select>
                 <select value={activo} onChange={(event) => setActivo(event.target.value)}>
                     <option value="todos">Todos</option>
                     <option value="activos">Activos</option>
@@ -154,7 +141,7 @@ export function ServiciosTab() {
                 <LoadingState>Cargando servicios...</LoadingState>
             ) : (
                 <DataTable
-                    columns={["Servicio", "Categoria", "Precios", "Unidad", "Duracion", "Estado", "Acciones"]}
+                    columns={["Servicio", "Tipo/area", "Precios", "Unidad", "Duracion", "Estado", "Acciones"]}
                     empty={
                         !servicios.length ? (
                             <EmptyState
@@ -170,7 +157,7 @@ export function ServiciosTab() {
                                 <strong>{servicio.nombre}</strong>
                                 {servicio.descripcion ? <small>{servicio.descripcion}</small> : null}
                             </td>
-                            <td>{servicio.tipo_negocio || "Sin categoria"}</td>
+                            <td>{servicio.tipo_negocio || "No indicado"}</td>
                             <td>
                                 <strong>{servicio.precios_count ?? 0}</strong>
                                 <small>configurados</small>
@@ -203,7 +190,6 @@ export function ServiciosTab() {
             )}
 
             <ServicioFormModal
-                categorias={categorias}
                 disabled={saving}
                 error={formError}
                 errors={formErrors}

@@ -30,7 +30,6 @@ use App\Http\Controllers\Api\V1\RegistroEventoController;
 use App\Http\Controllers\Api\V1\RegistroEventoFacturacionController;
 use App\Http\Controllers\Api\V1\RegistroFacturacionController;
 use App\Http\Controllers\Api\V1\RoleController;
-use App\Http\Controllers\Api\V1\ServicioCategoriaLogicaController;
 use App\Http\Controllers\Api\V1\ServicioController;
 use App\Http\Controllers\Api\V1\ServicioPrecioController;
 use App\Http\Controllers\Api\V1\TareaController;
@@ -188,10 +187,6 @@ Route::prefix('v1')->group(function (): void {
             });
 
             Route::middleware('modulo:servicios')->group(function (): void {
-                Route::get('servicios-categorias-logicas', [ServicioCategoriaLogicaController::class, 'index']);
-                Route::patch('servicios-categorias-logicas/renombrar', [ServicioCategoriaLogicaController::class, 'renombrar']);
-                Route::patch('servicios-categorias-logicas/fusionar', [ServicioCategoriaLogicaController::class, 'fusionar']);
-                Route::patch('servicios-categorias-logicas/vaciar', [ServicioCategoriaLogicaController::class, 'vaciar']);
                 Route::patch('servicios/{id}/activar', [ServicioController::class, 'activar']);
                 Route::patch('servicios/{id}/desactivar', [ServicioController::class, 'desactivar']);
                 Route::get('servicios/{servicio}/precios', [ServicioPrecioController::class, 'indexByServicio']);

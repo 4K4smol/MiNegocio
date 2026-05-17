@@ -1,13 +1,7 @@
-import { useState } from "react";
 import { PageHeader } from "../../../shared/components/PageHeader";
-import { CategoriasServiciosTab } from "../components/CategoriasServiciosTab";
 import { ServiciosTab } from "../components/ServiciosTab";
-import { ServiciosTabs } from "../components/ServiciosTabs";
-import { TiposTarifaServicioTab } from "../components/TiposTarifaServicioTab";
 
 export function ServiciosPage() {
-    const [activeTab, setActiveTab] = useState("servicios");
-
     return (
         <section className="page">
             <PageHeader
@@ -15,11 +9,7 @@ export function ServiciosPage() {
                 title="Servicios"
             />
 
-            <ServiciosTabs activeTab={activeTab} onChange={setActiveTab} />
-
-            {activeTab === "servicios" ? <ServiciosTab /> : null}
-            {activeTab === "categorias" ? <CategoriasServiciosTab /> : null}
-            {activeTab === "tarifas" ? <TiposTarifaServicioTab /> : null}
+            <ServiciosTab />
         </section>
     );
 }
