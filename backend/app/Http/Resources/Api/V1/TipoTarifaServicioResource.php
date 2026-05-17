@@ -7,18 +7,18 @@ namespace App\Http\Resources\Api\V1;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ServicioTarifaResource extends JsonResource
+class TipoTarifaServicioResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
-            'empresa_id' => $this->empresa_id,
             'codigo' => $this->codigo,
             'nombre' => $this->nombre,
             'descripcion' => $this->descripcion,
-            'es_default' => $this->es_default,
-            'activo' => $this->activo,
+            'activo' => (bool) $this->activo,
+            'orden' => $this->orden,
+            'es_sistema' => (bool) $this->es_sistema,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

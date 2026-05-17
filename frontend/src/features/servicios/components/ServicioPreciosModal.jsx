@@ -2,20 +2,21 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ConfirmModal } from "../../../shared/components/ConfirmModal";
 import { ErrorState } from "../../../shared/components/ErrorState";
 import { LoadingState } from "../../../shared/components/LoadingState";
+import { RowActionsMenu } from "../../../shared/components/RowActionsMenu";
 import { Modal } from "../../../shared/components/ui/Modal";
 import { unwrapApiCollection } from "../../../shared/utils/apiResponse";
 import { servicioPrecioPayloadFromForm, validationErrors } from "../utils/serviciosForms";
 import { servicioPreciosService } from "../services/serviciosService";
 import { ServicioPrecioFormModal } from "./ServicioPrecioFormModal";
 
-export function ServicioPreciosModal({ onClose, onChanged, open, servicio, tarifas = [] }) {
+export function ServicioPreciosModal({ onClose, onChanged, open, servicio, tiposTarifa = [] }) {
     const [precios, setPrecios] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [saving, setSaving] = useState(false);
     const [formMode, setFormMode] = useState(null);
     const [selectedPrecio, setSelectedPrecio] = useState(null);
-    const [selectedTarifaId, setSelectedTarifaId] = useState(null);
+    const [selectedTipoTarifaId, setSelectedTipoTarifaId] = useState(null);
     const [formError, setFormError] = useState("");
     const [formErrors, setFormErrors] = useState({});
     const [precioToDelete, setPrecioToDelete] = useState(null);
@@ -37,10 +38,10 @@ export function ServicioPreciosModal({ onClose, onChanged, open, servicio, tarif
         if (open) loadPrecios();
     }, [open, loadPrecios]);
 
-    const preciosPorTarifa = useMemo(() => {
+    const preciosPorTipoTarifa = useMemo(() => {
         const map = {};
         for (const precio of precios) {
-            map[precio.servicio_tarifa_id] = precio;
+            map[precio.tipo_tarifa_servicio_id] = precio;
         }
         return map;
     }, [precios]);
@@ -54,20 +55,20 @@ export function ServicioPreciosModal({ onClose, onChanged, open, servicio, tarif
         if (saving) return;
         setFormMode(null);
         setSelectedPrecio(null);
-        setSelectedTarifaId(null);
+        setSelectedTipoTarifaId(null);
         resetForm();
     };
 
-    const openAddPrecio = (tarifaId) => {
+    const openAddPrecio = (tipoTarifaId) => {
         setSelectedPrecio(null);
-        setSelectedTarifaId(tarifaId);
+        setSelectedTipoTarifaId(tipoTarifaId);
         setFormMode("create");
         resetForm();
     };
 
     const openEditPrecio = (precio) => {
         setSelectedPrecio(precio);
-        setSelectedTarifaId(null);
+        setSelectedTipoTarifaId(null);
         setFormMode("edit");
         resetForm();
     };
@@ -86,7 +87,7 @@ export function ServicioPreciosModal({ onClose, onChanged, open, servicio, tarif
             }
             setFormMode(null);
             setSelectedPrecio(null);
-            setSelectedTarifaId(null);
+            setSelectedTipoTarifaId(null);
             resetForm();
             await loadPrecios();
             onChanged?.();
@@ -113,8 +114,8 @@ export function ServicioPreciosModal({ onClose, onChanged, open, servicio, tarif
         }
     };
 
-    const tarifaParaFormulario = selectedTarifaId
-        ? tarifas.find((t) => t.id === selectedTarifaId) || null
+    const tipoTarifaParaFormulario = selectedTipoTarifaId
+        ? tiposTarifa.find((t) => t.id === selectedTipoTarifaId) || null
         : null;
 
     return (
@@ -128,10 +129,13 @@ export function ServicioPreciosModal({ onClose, onChanged, open, servicio, tarif
                 open={open}
                 size="xl"
                 subtitle={servicio?.codigo || "Servicio"}
-                title={`Precios — ${servicio?.nombre || ""}`}
+                title={`Precios - ${servicio?.nombre || ""}`}
                 onClose={onClose}
             >
                 {error ? <ErrorState>{error}</ErrorState> : null}
+                <p className="field-help">
+                    Los tipos de tarifa son definidos por MiNegocio. Aqui puedes indicar cuanto cuesta este servicio para cada tipo: Estandar, Urgente, Festivo o Nocturno.
+                </p>
 
                 {loading ? (
                     <LoadingState>Cargando precios...</LoadingState>
@@ -139,7 +143,7 @@ export function ServicioPreciosModal({ onClose, onChanged, open, servicio, tarif
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>Tarifa</th>
+                                <th>Tipo de tarifa</th>
                                 <th>Precio</th>
                                 <th>IVA</th>
                                 <th>Retencion</th>
@@ -148,13 +152,13 @@ export function ServicioPreciosModal({ onClose, onChanged, open, servicio, tarif
                             </tr>
                         </thead>
                         <tbody>
-                            {tarifas.map((tarifa) => {
-                                const precio = preciosPorTarifa[tarifa.id];
+                            {tiposTarifa.map((tipoTarifa) => {
+                                const precio = preciosPorTipoTarifa[tipoTarifa.id];
                                 return (
-                                    <tr key={tarifa.id}>
+                                    <tr key={tipoTarifa.id}>
                                         <td>
-                                            <strong>{tarifa.nombre}</strong>
-                                            {tarifa.es_default ? <small>Predeterminada</small> : null}
+                                            <strong>{tipoTarifa.nombre}</strong>
+                                            <small>{tipoTarifa.descripcion || "Tipo global"}</small>
                                         </td>
                                         {precio ? (
                                             <>
@@ -166,14 +170,12 @@ export function ServicioPreciosModal({ onClose, onChanged, open, servicio, tarif
                                                     <small>Hasta: {precio.vigente_hasta || "Abierto"}</small>
                                                 </td>
                                                 <td>
-                                                    <div className="row-actions">
-                                                        <button className="button button-sm" type="button" onClick={() => openEditPrecio(precio)}>
-                                                            Editar
-                                                        </button>
-                                                        <button className="button button-sm button-danger" type="button" onClick={() => setPrecioToDelete(precio)}>
-                                                            Quitar
-                                                        </button>
-                                                    </div>
+                                                    <RowActionsMenu
+                                                        actions={[
+                                                            { label: "Editar", onClick: () => openEditPrecio(precio) },
+                                                            { label: "Quitar", variant: "danger", onClick: () => setPrecioToDelete(precio) },
+                                                        ]}
+                                                    />
                                                 </td>
                                             </>
                                         ) : (
@@ -182,9 +184,9 @@ export function ServicioPreciosModal({ onClose, onChanged, open, servicio, tarif
                                                     <span className="text-muted">Sin configurar</span>
                                                 </td>
                                                 <td>
-                                                    <button className="button button-sm" type="button" onClick={() => openAddPrecio(tarifa.id)}>
-                                                        Anadir precio
-                                                    </button>
+                                                    <RowActionsMenu
+                                                        actions={[{ label: "Anadir precio", onClick: () => openAddPrecio(tipoTarifa.id) }]}
+                                                    />
                                                 </td>
                                             </>
                                         )}
@@ -204,8 +206,8 @@ export function ServicioPreciosModal({ onClose, onChanged, open, servicio, tarif
                 mode={formMode || "create"}
                 open={Boolean(formMode)}
                 precio={selectedPrecio}
-                tarifaPreseleccionada={tarifaParaFormulario}
-                tarifas={tarifas}
+                tipoTarifaPreseleccionado={tipoTarifaParaFormulario}
+                tiposTarifa={tiposTarifa}
                 onClose={closeForm}
                 onSubmit={handleSubmit}
             />

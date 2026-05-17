@@ -86,7 +86,7 @@ class ServicioPrecioController extends AbstractCrudController
 
         $data = $request->validated();
         $data['servicio_id'] = $data['servicio_id'] ?? $record->servicio_id;
-        $data['servicio_tarifa_id'] = $data['servicio_tarifa_id'] ?? $record->servicio_tarifa_id;
+        $data['tipo_tarifa_servicio_id'] = $data['tipo_tarifa_servicio_id'] ?? $record->tipo_tarifa_servicio_id;
         $data['vigente_desde'] = $data['vigente_desde'] ?? $record->vigente_desde;
 
         DB::transaction(function () use ($record, $data): void {
@@ -106,7 +106,7 @@ class ServicioPrecioController extends AbstractCrudController
     {
         ServicioPrecio::query()
             ->where('servicio_id', $data['servicio_id'])
-            ->where('servicio_tarifa_id', $data['servicio_tarifa_id'])
+            ->where('tipo_tarifa_servicio_id', $data['tipo_tarifa_servicio_id'])
             ->whereNull('vigente_hasta')
             ->where('vigente_desde', '<', $data['vigente_desde'])
             ->when($ignoreId !== null, fn (Builder $query) => $query->whereKeyNot($ignoreId))
@@ -117,7 +117,7 @@ class ServicioPrecioController extends AbstractCrudController
     {
         return ServicioPrecio::query()
             ->where('servicio_id', $data['servicio_id'])
-            ->where('servicio_tarifa_id', $data['servicio_tarifa_id'])
+            ->where('tipo_tarifa_servicio_id', $data['tipo_tarifa_servicio_id'])
             ->whereDate('vigente_desde', $data['vigente_desde'])
             ->when($ignoreId !== null, fn (Builder $query) => $query->whereKeyNot($ignoreId))
             ->exists();

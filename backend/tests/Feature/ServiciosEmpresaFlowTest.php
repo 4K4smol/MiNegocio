@@ -7,7 +7,7 @@ namespace Tests\Feature;
 use App\Models\Empresa;
 use App\Models\Servicio;
 use App\Models\ServicioPrecio;
-use App\Models\ServicioTarifa;
+use App\Models\TipoTarifaServicio;
 use App\Models\User;
 use App\Services\ModuloService;
 use Database\Seeders\DatabaseSeeder;
@@ -75,72 +75,61 @@ class ServiciosEmpresaFlowTest extends TestCase
             ->assertNotFound();
     }
 
-    public function test_empresa_lista_solo_tarifas_propias(): void
+    public function test_empresa_puede_listar_tipos_globales_activos(): void
     {
-        [$user, $empresa] = $this->crearUsuarioEmpresa('B32000007');
-        [, $otraEmpresa] = $this->crearUsuarioEmpresa('B32000008');
-        $this->crearTarifa($empresa->id, 'STD');
-        $this->crearTarifa($otraEmpresa->id, 'OTRA');
+        [$user] = $this->crearUsuarioEmpresa('B32000007');
+        $inactivo = TipoTarifaServicio::query()->where('codigo', 'nocturno')->firstOrFail();
+        $inactivo->update(['activo' => false]);
 
         $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/servicio-tarifas')
+            ->getJson('/api/v1/tipos-tarifa-servicio')
             ->assertOk()
-            ->assertJsonFragment(['codigo' => 'STD'])
-            ->assertJsonMissing(['codigo' => 'OTRA']);
+            ->assertJsonFragment(['codigo' => 'estandar'])
+            ->assertJsonMissing(['codigo' => 'nocturno']);
     }
 
-    public function test_solo_una_tarifa_default_por_empresa(): void
-    {
-        [$user, $empresa] = $this->crearUsuarioEmpresa('B32000009');
-
-        $primera = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/servicio-tarifas', [
-                'codigo' => 'STD',
-                'nombre' => 'Estandar',
-                'es_default' => true,
-            ])
-            ->assertCreated()
-            ->json('data.id');
-
-        $segunda = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/servicio-tarifas', [
-                'codigo' => 'URG',
-                'nombre' => 'Urgente',
-                'es_default' => true,
-            ])
-            ->assertCreated()
-            ->json('data.id');
-
-        $this->assertDatabaseHas('servicio_tarifas', ['id' => $primera, 'empresa_id' => $empresa->id, 'es_default' => false]);
-        $this->assertDatabaseHas('servicio_tarifas', ['id' => $segunda, 'empresa_id' => $empresa->id, 'es_default' => true]);
-    }
-
-    public function test_empresa_crea_precio_para_su_servicio_y_tarifa(): void
+    public function test_empresa_crea_precio_para_su_servicio_y_tipo_global(): void
     {
         [$user, $empresa] = $this->crearUsuarioEmpresa('B32000010');
         $servicio = $this->crearServicio($empresa->id, 'Limpieza');
-        $tarifa = $this->crearTarifa($empresa->id, 'STD');
+        $tipoTarifa = $this->tipoTarifa('estandar');
 
         $this->actingAs($user, 'sanctum')
             ->postJson("/api/v1/servicios/{$servicio->id}/precios", [
-                'servicio_tarifa_id' => $tarifa->id,
+                'tipo_tarifa_servicio_id' => $tipoTarifa->id,
                 'precio_base' => 30,
                 'vigente_desde' => '2026-01-01',
             ])
             ->assertCreated()
-            ->assertJsonPath('data.servicio_id', $servicio->id);
+            ->assertJsonPath('data.servicio_id', $servicio->id)
+            ->assertJsonPath('data.tipo_tarifa_servicio_id', $tipoTarifa->id);
     }
 
-    public function test_empresa_no_puede_crear_precio_con_tarifa_de_otra_empresa(): void
+    public function test_empresa_no_puede_crear_precio_para_servicio_de_otra_empresa(): void
     {
-        [$user, $empresa] = $this->crearUsuarioEmpresa('B32000011');
+        [$user] = $this->crearUsuarioEmpresa('B32000011');
         [, $otraEmpresa] = $this->crearUsuarioEmpresa('B32000012');
+        $servicioAjeno = $this->crearServicio($otraEmpresa->id, 'Ajena');
+        $tipoTarifa = $this->tipoTarifa('estandar');
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/v1/servicios/{$servicioAjeno->id}/precios", [
+                'tipo_tarifa_servicio_id' => $tipoTarifa->id,
+                'precio_base' => 30,
+            ])
+            ->assertStatus(422);
+    }
+
+    public function test_empresa_no_puede_usar_tipo_tarifa_inactivo(): void
+    {
+        [$user, $empresa] = $this->crearUsuarioEmpresa('B32000013');
         $servicio = $this->crearServicio($empresa->id, 'Limpieza');
-        $tarifaAjena = $this->crearTarifa($otraEmpresa->id, 'AJN');
+        $tipoTarifa = $this->tipoTarifa('nocturno');
+        $tipoTarifa->update(['activo' => false]);
 
         $this->actingAs($user, 'sanctum')
             ->postJson("/api/v1/servicios/{$servicio->id}/precios", [
-                'servicio_tarifa_id' => $tarifaAjena->id,
+                'tipo_tarifa_servicio_id' => $tipoTarifa->id,
                 'precio_base' => 30,
             ])
             ->assertStatus(422);
@@ -148,21 +137,73 @@ class ServiciosEmpresaFlowTest extends TestCase
 
     public function test_empresa_no_puede_editar_precio_de_otra_empresa(): void
     {
-        [$user] = $this->crearUsuarioEmpresa('B32000013');
-        [, $otraEmpresa] = $this->crearUsuarioEmpresa('B32000014');
+        [$user] = $this->crearUsuarioEmpresa('B32000014');
+        [, $otraEmpresa] = $this->crearUsuarioEmpresa('B32000015');
         $servicioAjeno = $this->crearServicio($otraEmpresa->id, 'Ajena');
-        $tarifaAjena = $this->crearTarifa($otraEmpresa->id, 'AJN');
-        $precioAjeno = $this->crearPrecio($servicioAjeno->id, $tarifaAjena->id);
+        $precioAjeno = $this->crearPrecio($servicioAjeno->id, $this->tipoTarifa('estandar')->id);
 
         $this->actingAs($user, 'sanctum')
             ->putJson("/api/v1/servicio-precios/{$precioAjeno->id}", ['precio_base' => 99])
             ->assertNotFound();
     }
 
+    public function test_dos_empresas_usan_mismo_tipo_global_con_precios_distintos(): void
+    {
+        [$userA, $empresaA] = $this->crearUsuarioEmpresa('B32000016');
+        [$userB, $empresaB] = $this->crearUsuarioEmpresa('B32000017');
+        $tipo = $this->tipoTarifa('estandar');
+        $servicioA = $this->crearServicio($empresaA->id, 'Limpieza', 'SERVA');
+        $servicioB = $this->crearServicio($empresaB->id, 'Limpieza', 'SERVB');
+
+        $this->actingAs($userA, 'sanctum')->postJson("/api/v1/servicios/{$servicioA->id}/precios", [
+            'tipo_tarifa_servicio_id' => $tipo->id,
+            'precio_base' => 30,
+        ])->assertCreated();
+
+        $this->actingAs($userB, 'sanctum')->postJson("/api/v1/servicios/{$servicioB->id}/precios", [
+            'tipo_tarifa_servicio_id' => $tipo->id,
+            'precio_base' => 50,
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('servicio_precios', ['servicio_id' => $servicioA->id, 'tipo_tarifa_servicio_id' => $tipo->id, 'precio_base' => 30]);
+        $this->assertDatabaseHas('servicio_precios', ['servicio_id' => $servicioB->id, 'tipo_tarifa_servicio_id' => $tipo->id, 'precio_base' => 50]);
+    }
+
+    public function test_nuevo_precio_cierra_precio_vigente_anterior(): void
+    {
+        [$user, $empresa] = $this->crearUsuarioEmpresa('B32000018');
+        $servicio = $this->crearServicio($empresa->id, 'Limpieza');
+        $tipo = $this->tipoTarifa('estandar');
+        $precioAnterior = $this->crearPrecio($servicio->id, $tipo->id, 30, '2026-01-01 00:00:00');
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/v1/servicios/{$servicio->id}/precios", [
+                'tipo_tarifa_servicio_id' => $tipo->id,
+                'precio_base' => 40,
+                'vigente_desde' => '2026-02-01',
+            ])
+            ->assertCreated();
+
+        $this->assertDatabaseHas('servicio_precios', [
+            'id' => $precioAnterior->id,
+            'vigente_hasta' => '2026-02-01',
+        ]);
+    }
+
+    public function test_categorias_logicas_funciona_sin_servicios(): void
+    {
+        [$user] = $this->crearUsuarioEmpresa('B32000019');
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/v1/servicios-categorias-logicas')
+            ->assertOk()
+            ->assertJsonPath('data', []);
+    }
+
     public function test_categorias_logicas_solo_devuelven_tipo_negocio_de_la_empresa(): void
     {
-        [$user, $empresa] = $this->crearUsuarioEmpresa('B32000015');
-        [, $otraEmpresa] = $this->crearUsuarioEmpresa('B32000016');
+        [$user, $empresa] = $this->crearUsuarioEmpresa('B32000020');
+        [, $otraEmpresa] = $this->crearUsuarioEmpresa('B32000021');
         $this->crearServicio($empresa->id, 'Limpieza');
         $this->crearServicio($otraEmpresa->id, 'Oculta');
 
@@ -175,8 +216,8 @@ class ServiciosEmpresaFlowTest extends TestCase
 
     public function test_renombrar_fusionar_y_vaciar_categoria_solo_afecta_empresa_autenticada(): void
     {
-        [$user, $empresa] = $this->crearUsuarioEmpresa('B32000017');
-        [, $otraEmpresa] = $this->crearUsuarioEmpresa('B32000018');
+        [$user, $empresa] = $this->crearUsuarioEmpresa('B32000022');
+        [, $otraEmpresa] = $this->crearUsuarioEmpresa('B32000023');
         $propio = $this->crearServicio($empresa->id, 'Cristales');
         $otroPropio = $this->crearServicio($empresa->id, 'Limpieza', 'SERV2');
         $ajeno = $this->crearServicio($otraEmpresa->id, 'Cristales');
@@ -212,7 +253,7 @@ class ServiciosEmpresaFlowTest extends TestCase
 
     public function test_rutas_requieren_modulo_servicios_activo(): void
     {
-        [$user] = $this->crearUsuarioEmpresa('B32000019', false);
+        [$user] = $this->crearUsuarioEmpresa('B32000024', false);
 
         $this->actingAs($user, 'sanctum')
             ->getJson('/api/v1/servicios')
@@ -259,25 +300,20 @@ class ServiciosEmpresaFlowTest extends TestCase
         ]);
     }
 
-    private function crearTarifa(int $empresaId, string $codigo): ServicioTarifa
+    private function tipoTarifa(string $codigo): TipoTarifaServicio
     {
-        return ServicioTarifa::query()->create([
-            'empresa_id' => $empresaId,
-            'codigo' => $codigo,
-            'nombre' => 'Tarifa '.$codigo,
-            'activo' => true,
-        ]);
+        return TipoTarifaServicio::query()->where('codigo', $codigo)->firstOrFail();
     }
 
-    private function crearPrecio(int $servicioId, int $tarifaId): ServicioPrecio
+    private function crearPrecio(int $servicioId, int $tipoTarifaId, int $precio = 30, string $vigenteDesde = '2026-01-01 00:00:00'): ServicioPrecio
     {
         return ServicioPrecio::query()->create([
             'servicio_id' => $servicioId,
-            'servicio_tarifa_id' => $tarifaId,
-            'precio_base' => 30,
+            'tipo_tarifa_servicio_id' => $tipoTarifaId,
+            'precio_base' => $precio,
             'iva_porcentaje' => 21,
             'moneda' => 'EUR',
-            'vigente_desde' => '2026-01-01 00:00:00',
+            'vigente_desde' => $vigenteDesde,
         ]);
     }
 }

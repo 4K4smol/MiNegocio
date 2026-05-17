@@ -8,14 +8,14 @@ import { RowActionsMenu } from "../../../shared/components/RowActionsMenu";
 import { StatusBadge } from "../../../shared/components/StatusBadge";
 import { unwrapApiCollection } from "../../../shared/utils/apiResponse";
 import { servicioPayloadFromForm, validationErrors } from "../utils/serviciosForms";
-import { servicioCategoriasLogicasService, serviciosService, servicioTarifasService } from "../services/serviciosService";
+import { servicioCategoriasLogicasService, serviciosService, tiposTarifaServicioService } from "../services/serviciosService";
 import { ServicioFormModal } from "./ServicioFormModal";
 import { ServicioPreciosModal } from "./ServicioPreciosModal";
 
 export function ServiciosTab() {
     const [servicios, setServicios] = useState([]);
     const [categorias, setCategorias] = useState([]);
-    const [tarifas, setTarifas] = useState([]);
+    const [tiposTarifa, setTiposTarifa] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [search, setSearch] = useState("");
@@ -42,11 +42,11 @@ export function ServiciosTab() {
             const [serviciosResponse, categoriasResponse, tarifasResponse] = await Promise.all([
                 serviciosService.list(params),
                 servicioCategoriasLogicasService.list(),
-                servicioTarifasService.list({ per_page: 100 }),
+                tiposTarifaServicioService.list(),
             ]);
             setServicios(unwrapApiCollection(serviciosResponse));
             setCategorias(unwrapApiCollection(categoriasResponse));
-            setTarifas(unwrapApiCollection(tarifasResponse));
+            setTiposTarifa(unwrapApiCollection(tarifasResponse));
         } catch (currentError) {
             setError(currentError?.message || "No se han podido cargar los servicios.");
         } finally {
@@ -127,7 +127,7 @@ export function ServiciosTab() {
             <div className="section-toolbar">
                 <div>
                     <h2>Mis servicios</h2>
-                    <p>Crea un servicio y pon cuanto cuesta. Los precios avanzados (urgente, especial, fin de semana) los puedes configurar despues.</p>
+                    <p>Crea servicios propios y define precios usando los tipos de tarifa globales de MiNegocio.</p>
                 </div>
                 <button className="button" type="button" onClick={openCreate}>
                     Nuevo servicio
@@ -154,12 +154,12 @@ export function ServiciosTab() {
                 <LoadingState>Cargando servicios...</LoadingState>
             ) : (
                 <DataTable
-                    columns={["Servicio", "Categoria", "Unidad", "Duracion", "Precios", "Estado", "Acciones"]}
+                    columns={["Servicio", "Categoria", "Precios", "Unidad", "Duracion", "Estado", "Acciones"]}
                     empty={
                         !servicios.length ? (
                             <EmptyState
                                 title="No hay servicios todavia"
-                                description='Pulsa "Nuevo servicio" para crear tu primer servicio con su precio.'
+                                description='Pulsa "Nuevo servicio" para crear tu primer servicio y despues configura sus precios.'
                             />
                         ) : null
                     }
@@ -171,11 +171,12 @@ export function ServiciosTab() {
                                 {servicio.descripcion ? <small>{servicio.descripcion}</small> : null}
                             </td>
                             <td>{servicio.tipo_negocio || "Sin categoria"}</td>
-                            <td>{servicio.unidad_servicio}</td>
-                            <td>{servicio.duracion_estimada_min ? `${servicio.duracion_estimada_min} min` : "No indicada"}</td>
                             <td>
-                                <span>{servicio.precios_count ?? 0} tarifa{servicio.precios_count !== 1 ? "s" : ""}</span>
+                                <strong>{servicio.precios_count ?? 0}</strong>
+                                <small>configurados</small>
                             </td>
+                            <td>{servicio.unidad_servicio}</td>
+                            <td>{servicio.duracion_estimada_min ? `${servicio.duracion_estimada_min} min` : "—"}</td>
                             <td>
                                 <StatusBadge status={servicio.activo ? "activo" : "inactivo"} />
                             </td>
@@ -183,7 +184,11 @@ export function ServiciosTab() {
                                 <RowActionsMenu
                                     actions={[
                                         { label: "Editar", onClick: () => openEdit(servicio) },
-                                        { label: "Gestionar precios", onClick: () => setPreciosServicio(servicio), variant: "primary" },
+                                        {
+                                            label: "Gestionar precios",
+                                            onClick: () => setPreciosServicio(servicio),
+                                            variant: "primary",
+                                        },
                                         {
                                             label: servicio.activo ? "Desactivar" : "Activar",
                                             variant: servicio.activo ? "danger" : "primary",
@@ -214,7 +219,7 @@ export function ServiciosTab() {
             <ServicioPreciosModal
                 open={Boolean(preciosServicio)}
                 servicio={preciosServicio}
-                tarifas={tarifas}
+                tiposTarifa={tiposTarifa}
                 onChanged={loadData}
                 onClose={() => setPreciosServicio(null)}
             />

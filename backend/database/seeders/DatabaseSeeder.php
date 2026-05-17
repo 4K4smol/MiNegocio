@@ -39,6 +39,7 @@ class DatabaseSeeder extends Seeder
             PaginasWebContactosSeeder::class,
             InformesSeeder::class,
             CalendarioEventosSeeder::class,
+            TipoTarifaServicioSeeder::class,
         ]);
     }
 }

@@ -11,7 +11,7 @@ class ServicioPrecio extends Model
 
     protected $fillable = [
         'servicio_id',
-        'servicio_tarifa_id',
+        'tipo_tarifa_servicio_id',
         'precio_base',
         'iva_porcentaje',
         'retencion_porcentaje',
@@ -37,6 +37,11 @@ class ServicioPrecio extends Model
 
     public function tarifa(): BelongsTo
     {
-        return $this->belongsTo(ServicioTarifa::class, 'servicio_tarifa_id');
+        return $this->belongsTo(TipoTarifaServicio::class, 'tipo_tarifa_servicio_id');
+    }
+
+    public function tipoTarifaServicio(): BelongsTo
+    {
+        return $this->belongsTo(TipoTarifaServicio::class, 'tipo_tarifa_servicio_id');
     }
 }

@@ -6,11 +6,8 @@ export const serviciosService = {
     desactivar: (id) => apiRequest(`${endpoints.servicios}/${id}/desactivar`, { method: "PATCH" }),
 };
 
-export const servicioTarifasService = {
-    ...createCrudApi(endpoints.servicioTarifas),
-    activar: (id) => apiRequest(`${endpoints.servicioTarifas}/${id}/activar`, { method: "PATCH" }),
-    desactivar: (id) => apiRequest(`${endpoints.servicioTarifas}/${id}/desactivar`, { method: "PATCH" }),
-    marcarDefault: (id) => apiRequest(`${endpoints.servicioTarifas}/${id}/default`, { method: "PATCH" }),
+export const tiposTarifaServicioService = {
+    list: () => apiRequest(endpoints.tiposTarifaServicio),
 };
 
 export const servicioPreciosService = {

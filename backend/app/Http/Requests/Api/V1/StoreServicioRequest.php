@@ -35,11 +35,6 @@ class StoreServicioRequest extends FormRequest
             'duracion_estimada_min' => ['nullable', 'integer', 'min:0'],
             'activo' => ['sometimes', 'boolean'],
             'meta' => ['nullable', 'array'],
-            'precio_base' => ['nullable', 'numeric', 'min:0'],
-            'iva_porcentaje' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'retencion_porcentaje' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'moneda' => ['nullable', 'string', 'size:3'],
-            'vigente_desde' => ['nullable', 'date'],
         ];
     }
 }

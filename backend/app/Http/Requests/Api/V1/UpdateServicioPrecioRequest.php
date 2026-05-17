@@ -20,7 +20,7 @@ class UpdateServicioPrecioRequest extends FormRequest
 
         return [
             'servicio_id' => ['sometimes', 'required', 'integer', Rule::exists('servicios', 'id')->where(fn ($query) => $query->where('empresa_id', $empresaId))],
-            'servicio_tarifa_id' => ['sometimes', 'required', 'integer', Rule::exists('servicio_tarifas', 'id')->where(fn ($query) => $query->where('empresa_id', $empresaId))],
+            'tipo_tarifa_servicio_id' => ['sometimes', 'required', 'integer', Rule::exists('tipos_tarifa_servicio', 'id')->where(fn ($query) => $query->where('activo', true))],
             'precio_base' => ['sometimes', 'required', 'numeric', 'min:0'],
             'iva_porcentaje' => ['sometimes', 'required', 'numeric', 'min:0', 'max:100'],
             'retencion_porcentaje' => ['nullable', 'numeric', 'min:0', 'max:100'],

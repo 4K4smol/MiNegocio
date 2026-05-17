@@ -66,11 +66,6 @@ class Empresa extends Model
         return $this->hasMany(Servicio::class, 'empresa_id');
     }
 
-    public function servicioTarifas(): HasMany
-    {
-        return $this->hasMany(ServicioTarifa::class, 'empresa_id');
-    }
-
     public function ordenesTrabajo(): HasMany
     {
         return $this->hasMany(OrdenTrabajo::class, 'empresa_id');

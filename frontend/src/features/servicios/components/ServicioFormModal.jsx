@@ -81,54 +81,6 @@ export function ServicioFormModal({
                     {fieldError(errors, "duracion_estimada_min") ? <small className="field-error">{fieldError(errors, "duracion_estimada_min")}</small> : null}
                 </label>
 
-                {!isEdit ? (
-                    <>
-                        <label>
-                            Precio base (€)
-                            <input
-                                defaultValue=""
-                                disabled={disabled}
-                                min="0"
-                                name="precio_base"
-                                placeholder="30.00"
-                                step="0.01"
-                                type="number"
-                            />
-                            {fieldError(errors, "precio_base") ? <small className="field-error">{fieldError(errors, "precio_base")}</small> : null}
-                            <small className="field-hint">Se asignara a la tarifa Estandar. Podras configurar otros precios despues.</small>
-                        </label>
-
-                        <label>
-                            IVA (%)
-                            <input
-                                defaultValue="21"
-                                disabled={disabled}
-                                max="100"
-                                min="0"
-                                name="iva_porcentaje"
-                                step="0.01"
-                                type="number"
-                            />
-                            {fieldError(errors, "iva_porcentaje") ? <small className="field-error">{fieldError(errors, "iva_porcentaje")}</small> : null}
-                        </label>
-
-                        <label>
-                            Retencion (%) — opcional
-                            <input
-                                defaultValue=""
-                                disabled={disabled}
-                                max="100"
-                                min="0"
-                                name="retencion_porcentaje"
-                                placeholder="0"
-                                step="0.01"
-                                type="number"
-                            />
-                            {fieldError(errors, "retencion_porcentaje") ? <small className="field-error">{fieldError(errors, "retencion_porcentaje")}</small> : null}
-                        </label>
-                    </>
-                ) : null}
-
                 <label className="form-checkbox is-wide">
                     <input defaultChecked={servicio?.activo ?? true} disabled={disabled} name="activo" type="checkbox" />
                     Servicio activo

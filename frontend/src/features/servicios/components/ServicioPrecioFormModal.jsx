@@ -16,10 +16,10 @@ export function ServicioPrecioFormModal({
     onSubmit,
     open,
     precio,
-    tarifaPreseleccionada = null,
-    tarifas = [],
+    tipoTarifaPreseleccionado = null,
+    tiposTarifa = [],
 }) {
-    const tarifaDefaultValue = precio?.servicio_tarifa_id || tarifaPreseleccionada?.id || "";
+    const tarifaDefaultValue = precio?.tipo_tarifa_servicio_id || tipoTarifaPreseleccionado?.id || "";
 
     return (
         <FormModal
@@ -28,26 +28,30 @@ export function ServicioPrecioFormModal({
             mode={mode}
             open={open}
             submitLabel={mode === "edit" ? "Guardar precio" : "Anadir precio"}
-            title={tarifaPreseleccionada ? `Precio — ${tarifaPreseleccionada.nombre}` : (mode === "edit" ? "Editar precio" : "Nuevo precio")}
+            title={tipoTarifaPreseleccionado ? `Precio - ${tipoTarifaPreseleccionado.nombre}` : (mode === "edit" ? "Editar precio" : "Nuevo precio")}
             onClose={onClose}
             onSubmit={onSubmit}
         >
             <div className="form-grid">
-                <label>
-                    Tarifa
-                    <select defaultValue={tarifaDefaultValue} disabled={disabled || Boolean(tarifaPreseleccionada)} name="servicio_tarifa_id" required>
-                        <option value="">Selecciona una tarifa</option>
-                        {tarifas.map((tarifa) => (
-                            <option key={tarifa.id} value={tarifa.id}>
-                                {tarifa.nombre}
-                            </option>
-                        ))}
-                    </select>
-                    {fieldError(errors, "servicio_tarifa_id") ? <small className="field-error">{fieldError(errors, "servicio_tarifa_id")}</small> : null}
-                </label>
+                {tipoTarifaPreseleccionado ? (
+                    <input type="hidden" name="tipo_tarifa_servicio_id" value={tipoTarifaPreseleccionado.id} />
+                ) : (
+                    <label>
+                        Tipo de tarifa
+                        <select defaultValue={tarifaDefaultValue} disabled={disabled} name="tipo_tarifa_servicio_id" required>
+                            <option value="">Selecciona un tipo de tarifa</option>
+                            {tiposTarifa.map((tarifa) => (
+                                <option key={tarifa.id} value={tarifa.id}>
+                                    {tarifa.nombre}
+                                </option>
+                            ))}
+                        </select>
+                        {fieldError(errors, "tipo_tarifa_servicio_id") ? <small className="field-error">{fieldError(errors, "tipo_tarifa_servicio_id")}</small> : null}
+                    </label>
+                )}
 
                 <label>
-                    Precio base (€)
+                    Precio base (EUR)
                     <input defaultValue={precio?.precio_base ?? ""} disabled={disabled} min="0" name="precio_base" placeholder="0.00" required step="0.01" type="number" />
                     {fieldError(errors, "precio_base") ? <small className="field-error">{fieldError(errors, "precio_base")}</small> : null}
                 </label>

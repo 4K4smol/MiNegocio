@@ -1,7 +1,7 @@
 const TABS = [
     { id: "servicios", label: "Servicios" },
     { id: "categorias", label: "Categorias" },
-    { id: "tarifas", label: "Tarifas" },
+    { id: "tarifas", label: "Tipos de tarifa" },
 ];
 
 export function ServiciosTabs({ activeTab, onChange }) {

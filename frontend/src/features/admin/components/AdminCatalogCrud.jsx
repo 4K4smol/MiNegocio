@@ -67,7 +67,7 @@ function CatalogFormFields({ config, disabled, value, onChange }) {
     );
 }
 
-export function AdminCatalogCrud({ config, onSuccess }) {
+export function AdminCatalogCrud({ config, onSuccess, extraItemActions, footerActions }) {
     const [items, setItems] = useState([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
@@ -200,6 +200,7 @@ export function AdminCatalogCrud({ config, onSuccess }) {
                                             successMessage: `${config.singular} actualizado correctamente.`,
                                         }),
                                     },
+                                    ...(extraItemActions ? extraItemActions(item, { setConfirm }) : []),
                                 ]}
                             />
                         </td>
@@ -236,6 +237,7 @@ export function AdminCatalogCrud({ config, onSuccess }) {
                 onCancel={() => setConfirm(null)}
                 onConfirm={executeConfirm}
             />
+            {footerActions ? <div className="config-footer-actions">{footerActions({ reload: load })}</div> : null}
         </section>
     );
 }

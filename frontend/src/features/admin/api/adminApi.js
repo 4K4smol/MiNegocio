@@ -96,4 +96,10 @@ export const adminApi = {
     desactivarTipoLocalizacionCliente: (id) => apiRequest(`tipos-localizacion-cliente/${id}/desactivar`, { method: "PATCH" }),
     getTiposEmpresa: (params) => paginated(apiRequest("tipos-empresa", { params })),
     getTiposDocumentoIdentidad: (params) => paginated(apiRequest("tipos-documento-identidad", { params })),
+
+    getAdminTiposTarifaServicio: () => apiRequest("admin/tipos-tarifa-servicio").then(unwrap),
+    crearAdminTipoTarifaServicio: (data) => apiRequest("admin/tipos-tarifa-servicio", { method: "POST", body: data }).then(unwrap),
+    actualizarAdminTipoTarifaServicio: (id, data) => apiRequest(`admin/tipos-tarifa-servicio/${id}`, { method: "PUT", body: data }).then(unwrap),
+    activarAdminTipoTarifaServicio: (id) => apiRequest(`admin/tipos-tarifa-servicio/${id}/activar`, { method: "PATCH" }).then(unwrap),
+    desactivarAdminTipoTarifaServicio: (id) => apiRequest(`admin/tipos-tarifa-servicio/${id}/desactivar`, { method: "PATCH" }).then(unwrap),
 };

@@ -38,22 +38,6 @@ export const servicioPayloadFromForm = (form) => {
         unidad_servicio: emptyToNull(formData.get("unidad_servicio")),
         duracion_estimada_min: numberOrNull(formData.get("duracion_estimada_min")),
         activo: formData.get("activo") === "on",
-        precio_base: numberOrNull(formData.get("precio_base")),
-        iva_porcentaje: numberOrNull(formData.get("iva_porcentaje")),
-        retencion_porcentaje: numberOrNull(formData.get("retencion_porcentaje")),
-        moneda: emptyToNull(formData.get("moneda")) || "EUR",
-    };
-};
-
-export const servicioTarifaPayloadFromForm = (form) => {
-    const formData = new FormData(form);
-
-    return {
-        codigo: emptyToNull(formData.get("codigo")),
-        nombre: emptyToNull(formData.get("nombre")),
-        descripcion: emptyToNull(formData.get("descripcion")),
-        es_default: formData.get("es_default") === "on",
-        activo: formData.get("activo") === "on",
     };
 };
 
@@ -61,7 +45,7 @@ export const servicioPrecioPayloadFromForm = (form) => {
     const formData = new FormData(form);
 
     return {
-        servicio_tarifa_id: numberOrNull(formData.get("servicio_tarifa_id")),
+        tipo_tarifa_servicio_id: numberOrNull(formData.get("tipo_tarifa_servicio_id")),
         precio_base: numberOrNull(formData.get("precio_base")),
         iva_porcentaje: numberOrNull(formData.get("iva_porcentaje")),
         retencion_porcentaje: numberOrNull(formData.get("retencion_porcentaje")),

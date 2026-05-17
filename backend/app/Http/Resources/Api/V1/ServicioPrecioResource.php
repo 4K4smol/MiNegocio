@@ -14,7 +14,7 @@ class ServicioPrecioResource extends JsonResource
         return [
             'id' => $this->id,
             'servicio_id' => $this->servicio_id,
-            'servicio_tarifa_id' => $this->servicio_tarifa_id,
+            'tipo_tarifa_servicio_id' => $this->tipo_tarifa_servicio_id,
             'precio_base' => $this->precio_base,
             'iva_porcentaje' => $this->iva_porcentaje,
             'retencion_porcentaje' => $this->retencion_porcentaje,
@@ -24,7 +24,8 @@ class ServicioPrecioResource extends JsonResource
             'meta' => $this->meta,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'tarifa' => ServicioTarifaResource::make($this->whenLoaded('tarifa')),
+            'tarifa' => TipoTarifaServicioResource::make($this->whenLoaded('tarifa')),
+            'tipo_tarifa_servicio' => TipoTarifaServicioResource::make($this->whenLoaded('tipoTarifaServicio')),
             'servicio' => ServicioResource::make($this->whenLoaded('servicio')),
         ];
     }

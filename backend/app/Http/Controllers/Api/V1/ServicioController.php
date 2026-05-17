@@ -8,8 +8,6 @@ use App\Http\Requests\Api\V1\StoreServicioRequest;
 use App\Http\Requests\Api\V1\UpdateServicioRequest;
 use App\Http\Resources\Api\V1\ServicioResource;
 use App\Models\Servicio;
-use App\Models\ServicioPrecio;
-use App\Services\Servicios\TarifasEmpresaService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -57,27 +55,11 @@ class ServicioController extends AbstractCrudController
             return $this->validationError(['empresa_id' => ['No se ha podido determinar la empresa asociada al usuario.']]);
         }
 
-        $precioBase = $data['precio_base'] ?? null;
-        $servicioData = collect($data)
-            ->except(['precio_base', 'iva_porcentaje', 'retencion_porcentaje', 'moneda', 'vigente_desde'])
-            ->all();
+        $servicio = Servicio::query()->create($data);
 
-        $servicio = Servicio::query()->create($servicioData);
-
-        if ($precioBase !== null) {
-            $tarifa = app(TarifasEmpresaService::class)->obtenerTarifaDefault((int) $data['empresa_id']);
-            ServicioPrecio::query()->create([
-                'servicio_id' => $servicio->id,
-                'servicio_tarifa_id' => $tarifa->id,
-                'precio_base' => $precioBase,
-                'iva_porcentaje' => $data['iva_porcentaje'] ?? 21,
-                'retencion_porcentaje' => $data['retencion_porcentaje'] ?? null,
-                'moneda' => $data['moneda'] ?? 'EUR',
-                'vigente_desde' => $data['vigente_desde'] ?? now()->toDateTimeString(),
-            ]);
-        }
-
-        return $this->created(ServicioResource::make($servicio->loadCount('precios'))->resolve());
+        return $this->created(
+            ServicioResource::make($servicio->fresh()->loadCount('precios'))->resolve()
+        );
     }
 
     public function update(UpdateServicioRequest $request, int $id): JsonResponse
@@ -91,7 +73,9 @@ class ServicioController extends AbstractCrudController
         $servicio->fill($this->fillEmpresaIdFromUser($request->validated(), $request));
         $servicio->save();
 
-        return $this->updated(ServicioResource::make($servicio->loadCount('precios'))->resolve());
+        return $this->updated(
+            ServicioResource::make($servicio->fresh()->loadCount('precios'))->resolve()
+        );
     }
 
     public function activar(Request $request, int $id): JsonResponse
@@ -115,6 +99,8 @@ class ServicioController extends AbstractCrudController
         $servicio->activo = $activo;
         $servicio->save();
 
-        return $this->updated(ServicioResource::make($servicio->loadCount('precios'))->resolve());
+        return $this->updated(
+            ServicioResource::make($servicio->fresh()->loadCount('precios'))->resolve()
+        );
     }
 }

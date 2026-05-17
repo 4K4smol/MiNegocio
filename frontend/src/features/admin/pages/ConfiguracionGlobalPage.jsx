@@ -16,6 +16,7 @@ const TABS = [
     ["tipos_documento_identidad", "Tipos de documento"],
     ["roles", "Roles"],
     ["estados_verificacion", "Estados de verificacion"],
+    ["tipos_tarifa_servicio", "Tipos de tarifa de servicio"],
 ];
 
 const textColumn = (key, label) => ({
@@ -141,6 +142,37 @@ export function ConfiguracionGlobalPage() {
                 catalogStatusColumn,
             ],
             fields: commonCatalogFields,
+        },
+        tipos_tarifa_servicio: {
+            title: "Tipos de tarifa de servicio",
+            singular: "tipo de tarifa",
+            description: "Gestiona los tipos de tarifa globales que podran usar las empresas al definir precios de servicios.",
+            listFunction: adminApi.getAdminTiposTarifaServicio,
+            createFunction: adminApi.crearAdminTipoTarifaServicio,
+            updateFunction: adminApi.actualizarAdminTipoTarifaServicio,
+            activateFunction: adminApi.activarAdminTipoTarifaServicio,
+            deactivateFunction: adminApi.desactivarAdminTipoTarifaServicio,
+            searchKeys: ["codigo", "nombre", "descripcion"],
+            columns: [
+                textColumn("codigo", "Codigo"),
+                textColumn("nombre", "Nombre"),
+                textColumn("descripcion", "Descripcion"),
+                textColumn("orden", "Orden"),
+                {
+                    key: "es_sistema",
+                    label: "Sistema",
+                    render: (item) => item.es_sistema ? <strong>Si</strong> : "No",
+                },
+                catalogStatusColumn,
+            ],
+            fields: [
+                { name: "codigo", label: "Codigo", required: true },
+                { name: "nombre", label: "Nombre", required: true },
+                { name: "descripcion", label: "Descripcion", type: "textarea", wide: true },
+                { name: "orden", label: "Orden", type: "number", min: 0, defaultValue: 0 },
+                { name: "activo", label: "Activo", type: "checkbox", defaultValue: true },
+                { name: "es_sistema", label: "Tipo de sistema", type: "checkbox", defaultValue: false },
+            ],
         },
     }), []);
 

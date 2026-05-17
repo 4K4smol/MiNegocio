@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\Admin\AdminUsuarioController;
 use App\Http\Controllers\Api\V1\Admin\DocumentoVerificacionController as AdminDocumentoVerificacionController;
 use App\Http\Controllers\Api\V1\Admin\EmpresaController as AdminEmpresaController;
 use App\Http\Controllers\Api\V1\Admin\SolicitudVerificacionController as AdminSolicitudVerificacionController;
+use App\Http\Controllers\Api\V1\Admin\TipoTarifaServicioController as AdminTipoTarifaServicioController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CalendarioEventoController;
 use App\Http\Controllers\Api\V1\ClienteController;
@@ -32,8 +33,8 @@ use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\ServicioCategoriaLogicaController;
 use App\Http\Controllers\Api\V1\ServicioController;
 use App\Http\Controllers\Api\V1\ServicioPrecioController;
-use App\Http\Controllers\Api\V1\ServicioTarifaController;
 use App\Http\Controllers\Api\V1\TareaController;
+use App\Http\Controllers\Api\V1\TipoTarifaServicioController;
 use App\Http\Controllers\Api\V1\TipoClienteController;
 use App\Http\Controllers\Api\V1\TipoDocumentoIdentidadController;
 use App\Http\Controllers\Api\V1\TipoEmpresaController;
@@ -127,6 +128,13 @@ Route::prefix('v1')->group(function (): void {
             Route::get('admin/verificaciones-usuario', [VerificacionUsuarioController::class, 'index']);
             Route::get('admin/verificaciones-usuario/{id}', [VerificacionUsuarioController::class, 'show']);
             Route::patch('admin/verificaciones-usuario/{id}', [VerificacionUsuarioController::class, 'update']);
+
+            Route::get('admin/tipos-tarifa-servicio', [AdminTipoTarifaServicioController::class, 'index']);
+            Route::get('admin/tipos-tarifa-servicio/{id}', [AdminTipoTarifaServicioController::class, 'show']);
+            Route::post('admin/tipos-tarifa-servicio', [AdminTipoTarifaServicioController::class, 'store']);
+            Route::put('admin/tipos-tarifa-servicio/{id}', [AdminTipoTarifaServicioController::class, 'update']);
+            Route::patch('admin/tipos-tarifa-servicio/{id}/activar', [AdminTipoTarifaServicioController::class, 'activar']);
+            Route::patch('admin/tipos-tarifa-servicio/{id}/desactivar', [AdminTipoTarifaServicioController::class, 'desactivar']);
         });
 
         Route::middleware('empresa.user')->group(function (): void {
@@ -188,12 +196,9 @@ Route::prefix('v1')->group(function (): void {
                 Route::patch('servicios/{id}/desactivar', [ServicioController::class, 'desactivar']);
                 Route::get('servicios/{servicio}/precios', [ServicioPrecioController::class, 'indexByServicio']);
                 Route::post('servicios/{servicio}/precios', [ServicioPrecioController::class, 'storeForServicio']);
-                Route::patch('servicio-tarifas/{id}/activar', [ServicioTarifaController::class, 'activar']);
-                Route::patch('servicio-tarifas/{id}/desactivar', [ServicioTarifaController::class, 'desactivar']);
-                Route::patch('servicio-tarifas/{id}/default', [ServicioTarifaController::class, 'marcarDefault']);
+                Route::get('tipos-tarifa-servicio', [TipoTarifaServicioController::class, 'index']);
                 Route::apiResource('servicios', ServicioController::class);
                 Route::apiResource('servicio-precios', ServicioPrecioController::class);
-                Route::apiResource('servicio-tarifas', ServicioTarifaController::class);
             });
 
             Route::get('registros-evento', [RegistroEventoController::class, 'index']);
