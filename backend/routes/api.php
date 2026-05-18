@@ -19,7 +19,6 @@ use App\Http\Controllers\Api\V1\DeclaracionResponsableSoftwareController;
 use App\Http\Controllers\Api\V1\EstadoFacturaController;
 use App\Http\Controllers\Api\V1\FacturaController;
 use App\Http\Controllers\Api\V1\InformeController;
-use App\Http\Controllers\Api\V1\InventarioCategoriaController;
 use App\Http\Controllers\Api\V1\InventarioItemController;
 use App\Http\Controllers\Api\V1\InventarioMovimientoController;
 use App\Http\Controllers\Api\V1\InventarioUbicacionController;
@@ -121,6 +120,9 @@ Route::prefix('v1')->group(function (): void {
             Route::apiResource('tipos-evento-facturacion', TipoEventoFacturacionController::class)->except(['index', 'show']);
             Route::apiResource('tipos-factura', TipoFacturaController::class)->except(['index', 'show']);
             Route::apiResource('tipos-inventario-movimiento', TipoInventarioMovimientoController::class)->except(['index', 'show']);
+            Route::apiResource('inventario-unidades-medida', InventarioUnidadMedidaController::class)->except(['index', 'show']);
+            Route::apiResource('admin/inventario-items', InventarioItemController::class)->only(['index', 'show', 'store', 'update']);
+            Route::apiResource('admin/inventario-movimientos', InventarioMovimientoController::class)->only(['index', 'show', 'store']);
             Route::apiResource('tipos-rectificacion', TipoRectificacionController::class)->except(['index', 'show']);
             Route::apiResource('tipos-registro-facturacion', TipoRegistroFacturacionController::class)->except(['index', 'show']);
 
@@ -142,11 +144,9 @@ Route::prefix('v1')->group(function (): void {
             });
 
             Route::middleware('modulo:inventario')->group(function (): void {
-                Route::apiResource('inventario-categorias', InventarioCategoriaController::class);
                 Route::apiResource('inventario-items', InventarioItemController::class);
-                Route::apiResource('inventario-movimientos', InventarioMovimientoController::class);
+                Route::apiResource('inventario-movimientos', InventarioMovimientoController::class)->only(['index', 'show', 'store']);
                 Route::apiResource('inventario-ubicaciones', InventarioUbicacionController::class);
-                Route::apiResource('inventario-unidades-medida', InventarioUnidadMedidaController::class);
             });
 
             Route::middleware('modulo:calendario')->group(function (): void {
@@ -212,6 +212,7 @@ Route::prefix('v1')->group(function (): void {
         Route::apiResource('tipos-evento-facturacion', TipoEventoFacturacionController::class)->only(['index', 'show']);
         Route::apiResource('tipos-factura', TipoFacturaController::class)->only(['index', 'show']);
         Route::apiResource('tipos-inventario-movimiento', TipoInventarioMovimientoController::class)->only(['index', 'show']);
+        Route::apiResource('inventario-unidades-medida', InventarioUnidadMedidaController::class)->only(['index', 'show']);
         Route::apiResource('tipos-localizacion-cliente', TipoLocalizacionClienteController::class)->only(['index', 'show']);
         Route::apiResource('tipos-rectificacion', TipoRectificacionController::class)->only(['index', 'show']);
         Route::apiResource('tipos-registro-facturacion', TipoRegistroFacturacionController::class)->only(['index', 'show']);

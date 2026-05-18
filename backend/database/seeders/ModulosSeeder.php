@@ -55,7 +55,7 @@ class ModulosSeeder extends Seeder
             [
                 'codigo' => 'inventario',
                 'nombre' => 'Inventario',
-                'descripcion' => 'Control de productos, categorias, ubicaciones y movimientos.',
+                'descripcion' => 'Control de productos, ubicaciones y movimientos.',
                 'activo' => true,
                 'orden_visual' => 6,
                 'icono' => 'boxes',

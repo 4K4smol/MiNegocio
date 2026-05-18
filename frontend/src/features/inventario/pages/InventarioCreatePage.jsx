@@ -1,10 +1,5 @@
-import { PlaceholderPage } from "../../../shared/components/PlaceholderPage";
+import { Navigate } from "react-router-dom";
 
 export function InventarioCreatePage() {
-    return (
-        <PlaceholderPage
-            title="Nuevo ítem de inventario"
-            description="Formulario preparado para conectar con inventarioService.create."
-        />
-    );
+    return <Navigate replace to="/app/inventario" />;
 }

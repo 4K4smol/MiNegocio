@@ -11,7 +11,6 @@ return new class extends Migration {
             $table->id();
 
             $table->foreignId('empresa_id')->constrained('empresas')->cascadeOnDelete();
-            $table->foreignId('categoria_id')->constrained('inventario_categorias')->restrictOnDelete();
             $table->foreignId('unidad_medida_id')->constrained('inventario_unidades_medida')->restrictOnDelete();
             $table->foreignId('ubicacion_id')->nullable()->constrained('inventario_ubicaciones')->nullOnDelete();
 

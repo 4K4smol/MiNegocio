@@ -15,7 +15,6 @@ class InventarioItem extends Model
 
     protected $fillable = [
         'empresa_id',
-        'categoria_id',
         'unidad_medida_id',
         'ubicacion_id',
         'nombre',
@@ -38,11 +37,6 @@ class InventarioItem extends Model
     public function empresa(): BelongsTo
     {
         return $this->belongsTo(Empresa::class);
-    }
-
-    public function categoria(): BelongsTo
-    {
-        return $this->belongsTo(InventarioCategoria::class, 'categoria_id');
     }
 
     public function unidadMedida(): BelongsTo

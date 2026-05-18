@@ -17,6 +17,8 @@ const TABS = [
     ["roles", "Roles"],
     ["estados_verificacion", "Estados de verificacion"],
     ["tipos_tarifa_servicio", "Tipos de tarifa de servicio"],
+    ["inventario_unidades_medida", "Unidades de inventario"],
+    ["tipos_inventario_movimiento", "Tipos de movimiento"],
 ];
 
 const textColumn = (key, label) => ({
@@ -167,6 +169,40 @@ export function ConfiguracionGlobalPage() {
                 { name: "orden", label: "Orden", type: "number", min: 0, defaultValue: 0 },
                 { name: "activo", label: "Activo", type: "checkbox", defaultValue: true },
             ],
+        },
+        inventario_unidades_medida: {
+            title: "Unidades de inventario",
+            singular: "unidad de medida",
+            description: "Gestiona las unidades globales disponibles para los items de inventario.",
+            listFunction: adminApi.getInventarioUnidadesMedida,
+            createFunction: adminApi.crearInventarioUnidadMedida,
+            updateFunction: adminApi.actualizarInventarioUnidadMedida,
+            searchKeys: ["codigo", "nombre"],
+            columns: [
+                textColumn("codigo", "Codigo"),
+                textColumn("nombre", "Nombre"),
+            ],
+            fields: [
+                { name: "codigo", label: "Codigo", required: true },
+                { name: "nombre", label: "Nombre", required: true },
+            ],
+        },
+        tipos_inventario_movimiento: {
+            title: "Tipos de movimiento",
+            singular: "tipo de movimiento",
+            description: "Gestiona los tipos globales usados al registrar entradas, salidas, ajustes y traslados.",
+            listFunction: adminApi.getTiposInventarioMovimiento,
+            createFunction: adminApi.crearTipoInventarioMovimiento,
+            updateFunction: adminApi.actualizarTipoInventarioMovimiento,
+            searchKeys: ["codigo", "nombre", "descripcion"],
+            columns: [
+                textColumn("codigo", "Codigo"),
+                textColumn("nombre", "Nombre"),
+                textColumn("descripcion", "Descripcion"),
+                textColumn("orden", "Orden"),
+                catalogStatusColumn,
+            ],
+            fields: commonCatalogFields,
         },
     }), []);
 

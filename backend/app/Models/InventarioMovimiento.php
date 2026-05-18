@@ -55,8 +55,13 @@ class InventarioMovimiento extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function tipoMovieminto(): BelongsTo
+    public function tipoMovimiento(): BelongsTo
     {
         return $this->belongsTo(TipoInventarioMovimiento::class, 'tipo_movimiento_id');
+    }
+
+    public function tipoMovieminto(): BelongsTo
+    {
+        return $this->tipoMovimiento();
     }
 }
