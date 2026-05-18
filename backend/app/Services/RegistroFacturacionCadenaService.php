@@ -23,7 +23,7 @@ class RegistroFacturacionCadenaService
 
         foreach ($registros as $indice => $registro) {
             if ($indice === 0) {
-                if (! $registro->primer_registro_cadena) {
+                if (!$registro->primer_registro_cadena) {
                     $errores[] = $this->error($registro, 'El primer registro debe tener primer_registro_cadena=true.');
                 }
 

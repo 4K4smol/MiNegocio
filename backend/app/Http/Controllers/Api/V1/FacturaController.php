@@ -63,7 +63,7 @@ class FacturaController extends AbstractCrudController
             ->whereKey($factura)
             ->first();
 
-        if (! $item) {
+        if (!$item) {
             return $this->notFound();
         }
 
@@ -80,7 +80,7 @@ class FacturaController extends AbstractCrudController
     public function update(UpdateFacturaRequest $request, int $id): JsonResponse
     {
         $factura = $this->findRecord($request, $id);
-        if (! $factura instanceof Factura) {
+        if (!$factura instanceof Factura) {
             return $this->notFound();
         }
 
@@ -92,7 +92,7 @@ class FacturaController extends AbstractCrudController
     public function destroy(Request $request, int $id): JsonResponse
     {
         $factura = $this->findRecord($request, $id);
-        if (! $factura instanceof Factura) {
+        if (!$factura instanceof Factura) {
             return $this->notFound();
         }
 
@@ -109,7 +109,7 @@ class FacturaController extends AbstractCrudController
 
     public function emitir(EmitirFacturaRequest $request, Factura $factura): JsonResponse
     {
-        if (! $this->findRecord($request, $factura->id)) {
+        if (!$this->findRecord($request, $factura->id)) {
             return $this->forbidden();
         }
 
@@ -120,7 +120,7 @@ class FacturaController extends AbstractCrudController
 
     public function marcarPagada(Request $request, Factura $factura): JsonResponse
     {
-        if (! $this->findRecord($request, $factura->id)) {
+        if (!$this->findRecord($request, $factura->id)) {
             return $this->forbidden();
         }
 
@@ -138,7 +138,7 @@ class FacturaController extends AbstractCrudController
 
     public function registrarCobro(StoreFacturaCobroRequest $request, Factura $factura): JsonResponse
     {
-        if (! $this->findRecord($request, $factura->id)) {
+        if (!$this->findRecord($request, $factura->id)) {
             return $this->forbidden();
         }
 
@@ -149,40 +149,40 @@ class FacturaController extends AbstractCrudController
 
     public function anular(Request $request, Factura $factura): JsonResponse
     {
-        if (! $this->findRecord($request, $factura->id)) {
+        if (!$this->findRecord($request, $factura->id)) {
             return $this->forbidden();
         }
 
         $factura->loadMissing(['estadoFactura', 'registrosFacturacion']);
 
         $estadoAnulada = EstadoFactura::query()->where('codigo', 'anulada')->first();
-        if (! $estadoAnulada) {
+        if (!$estadoAnulada) {
             throw new RuntimeException('No existe el estado de factura "anulada". Ejecuta los seeders de estados de factura.');
         }
 
-        $codigoEstado = $factura->estadoFactura?->codigo;
+        $codigo_estado = $factura->estadoFactura?->codigo;
 
-        if ($codigoEstado === 'borrador') {
+        if ($codigo_estado === 'borrador') {
             throw new RuntimeException('No se puede anular una factura en borrador. Elimínala directamente.');
         }
 
-        if ($codigoEstado === 'anulada') {
+        if ($codigo_estado === 'anulada') {
             throw new RuntimeException('La factura ya esta anulada.');
         }
 
-        if ($codigoEstado === 'rectificada') {
+        if ($codigo_estado === 'rectificada') {
             throw new RuntimeException('No se puede anular una factura que ya ha sido rectificada.');
         }
 
-        if (! in_array($codigoEstado, ['emitida', 'pagada', 'pagada_parcial'], true)) {
+        if (!in_array($codigo_estado, ['emitida', 'pagada', 'pagada_parcial'], true)) {
             throw new RuntimeException('Solo se pueden anular facturas emitidas o pagadas.');
         }
 
-        $tieneAlta = $factura->registrosFacturacion()
+        $tiene_alta = $factura->registrosFacturacion()
             ->whereHas('tipoRegistroFacturacion', fn ($q) => $q->where('codigo', 'alta'))
             ->exists();
 
-        if (! $tieneAlta) {
+        if (!$tiene_alta) {
             throw new RuntimeException('Solo se pueden anular facturas emitidas con registro de facturacion de alta.');
         }
 
@@ -227,7 +227,7 @@ class FacturaController extends AbstractCrudController
 
     public function rectificar(Request $request, Factura $factura): JsonResponse
     {
-        if (! $this->findRecord($request, $factura->id)) {
+        if (!$this->findRecord($request, $factura->id)) {
             return $this->forbidden();
         }
 
@@ -242,7 +242,7 @@ class FacturaController extends AbstractCrudController
 
     public function historial(Request $request, Factura $factura): JsonResponse
     {
-        if (! $this->findRecord($request, $factura->id)) {
+        if (!$this->findRecord($request, $factura->id)) {
             return $this->forbidden();
         }
 
@@ -254,7 +254,7 @@ class FacturaController extends AbstractCrudController
 
     public function registrosFacturacion(Request $request, Factura $factura): JsonResponse
     {
-        if (! $this->findRecord($request, $factura->id)) {
+        if (!$this->findRecord($request, $factura->id)) {
             return $this->forbidden();
         }
 

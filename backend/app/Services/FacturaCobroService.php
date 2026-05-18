@@ -73,7 +73,7 @@ class FacturaCobroService
         $codigo = $totalCobrado + 0.0001 >= $totalFactura ? 'pagada' : 'pagada_parcial';
         $estado = EstadoFactura::query()->where('codigo', $codigo)->first();
 
-        if (! $estado) {
+        if (!$estado) {
             throw new RuntimeException('No existe el estado de factura "' . $codigo . '". Ejecuta los seeders.');
         }
 

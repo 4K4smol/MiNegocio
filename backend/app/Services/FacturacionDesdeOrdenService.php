@@ -135,7 +135,7 @@ class FacturacionDesdeOrdenService
     {
         $esAdmin = strtolower((string) $user->role?->nombre) === self::ROL_ADMIN;
 
-        if (! $esAdmin && (int) $orden->empresa_id !== (int) $user->empresa_id) {
+        if (!$esAdmin && (int) $orden->empresa_id !== (int) $user->empresa_id) {
             throw new RuntimeException('No puedes facturar órdenes de otra empresa.');
         }
 
@@ -147,7 +147,7 @@ class FacturacionDesdeOrdenService
             throw new RuntimeException('La orden ya tiene una factura asociada.');
         }
 
-        if (! $orden->empresa || ! $orden->cliente) {
+        if (!$orden->empresa || !$orden->cliente) {
             throw new RuntimeException('La orden no tiene empresa o cliente asociado para generar snapshot fiscal.');
         }
     }
@@ -171,7 +171,7 @@ class FacturacionDesdeOrdenService
             ->where('codigo', self::TIPO_FACTURA_ORDINARIA)
             ->first();
 
-        if (! $tipo) {
+        if (!$tipo) {
             throw new RuntimeException('No existe el tipo de factura "ordinaria". Ejecuta los seeders de tipos de factura.');
         }
 
@@ -184,13 +184,13 @@ class FacturacionDesdeOrdenService
             ->where('codigo', self::ESTADO_FACTURA_EMITIDA)
             ->first();
 
-        if (! $estado) {
+        if (!$estado) {
             $estado = EstadoFactura::query()
                 ->where('codigo', self::ESTADO_FACTURA_BORRADOR)
                 ->first();
         }
 
-        if (! $estado) {
+        if (!$estado) {
             throw new RuntimeException('No existe un estado de factura válido ("emitida" o "borrador"). Ejecuta los seeders de estados de factura.');
         }
 
@@ -296,7 +296,7 @@ class FacturacionDesdeOrdenService
             ->whereRaw('LOWER(codigo) = ?', [self::ESTADO_ORDEN_FACTURADA])
             ->first();
 
-        if (! $estadoFacturada) {
+        if (!$estadoFacturada) {
             throw new RuntimeException('No existe el estado de orden "facturada". Ejecuta los seeders de estados de orden.');
         }
 

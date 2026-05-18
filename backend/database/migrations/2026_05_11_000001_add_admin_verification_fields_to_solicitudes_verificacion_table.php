@@ -8,19 +8,19 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('solicitudes_verificacion', function (Blueprint $table): void {
-            if (! Schema::hasColumn('solicitudes_verificacion', 'estado_identidad')) {
+            if (!Schema::hasColumn('solicitudes_verificacion', 'estado_identidad')) {
                 $table->string('estado_identidad', 40)->default('pendiente')->after('estado_verificacion_id');
             }
 
-            if (! Schema::hasColumn('solicitudes_verificacion', 'estado_empresa')) {
+            if (!Schema::hasColumn('solicitudes_verificacion', 'estado_empresa')) {
                 $table->string('estado_empresa', 40)->default('pendiente')->after('estado_identidad');
             }
 
-            if (! Schema::hasColumn('solicitudes_verificacion', 'estado_representacion')) {
+            if (!Schema::hasColumn('solicitudes_verificacion', 'estado_representacion')) {
                 $table->string('estado_representacion', 40)->nullable()->after('estado_empresa');
             }
 
-            if (! Schema::hasColumn('solicitudes_verificacion', 'motivo_rechazo')) {
+            if (!Schema::hasColumn('solicitudes_verificacion', 'motivo_rechazo')) {
                 $table->text('motivo_rechazo')->nullable()->after('observaciones');
             }
         });

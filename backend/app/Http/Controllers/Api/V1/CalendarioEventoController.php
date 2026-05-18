@@ -56,7 +56,7 @@ class CalendarioEventoController extends AbstractCrudController
             ->whereKey($calendarioEvento)
             ->first();
 
-        if (! $item) {
+        if (!$item) {
             return $this->notFound();
         }
 
@@ -73,7 +73,7 @@ class CalendarioEventoController extends AbstractCrudController
     public function update(UpdateCalendarioEventoRequest $request, int $calendarioEvento): JsonResponse
     {
         $eventoActual = $this->findRecord($request, $calendarioEvento);
-        if (! $eventoActual instanceof CalendarioEvento) {
+        if (!$eventoActual instanceof CalendarioEvento) {
             return $this->forbidden();
         }
 
@@ -85,7 +85,7 @@ class CalendarioEventoController extends AbstractCrudController
     public function destroy(Request $request, int $calendarioEvento): JsonResponse
     {
         $evento = $this->findRecord($request, $calendarioEvento);
-        if (! $evento) {
+        if (!$evento) {
             return $this->notFound();
         }
 

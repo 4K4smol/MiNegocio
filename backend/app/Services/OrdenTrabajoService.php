@@ -88,7 +88,7 @@ class OrdenTrabajoService
             ]);
             $orden->save();
 
-            if (isset($data['lineas']) && ! in_array($orden->estado?->codigo, ['completada', 'facturada'], true)) {
+            if (isset($data['lineas']) && !in_array($orden->estado?->codigo, ['completada', 'facturada'], true)) {
                 $orden->lineas()->delete();
                 $totales = $this->crearLineas($orden, $data['lineas'], (int) $orden->empresa_id);
                 $orden->update($totales);
@@ -220,7 +220,7 @@ class OrdenTrabajoService
         $codigo = $this->fechaProgramadaInicio($data) ? 'programada' : 'pendiente';
         $estado = OrdenTrabajoEstado::query()->where('codigo', $codigo)->first();
 
-        if (! $estado) {
+        if (!$estado) {
             throw new RuntimeException('No existe el estado inicial "' . $codigo . '". Ejecuta los seeders de estados de orden.');
         }
 
@@ -244,11 +244,11 @@ class OrdenTrabajoService
     {
         $query = $servicio->precios()->with('tipoTarifaServicio');
 
-        if (! empty($linea['servicio_precio_id'])) {
+        if (!empty($linea['servicio_precio_id'])) {
             return (clone $query)->whereKey((int) $linea['servicio_precio_id'])->first();
         }
 
-        if (! empty($linea['tipo_tarifa_servicio_id'])) {
+        if (!empty($linea['tipo_tarifa_servicio_id'])) {
             return (clone $query)
                 ->where('tipo_tarifa_servicio_id', (int) $linea['tipo_tarifa_servicio_id'])
                 ->first();

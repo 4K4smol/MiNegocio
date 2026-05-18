@@ -34,7 +34,7 @@ class DeclaracionResponsableSoftwareController extends ApiController
         $query = DeclaracionResponsableSoftware::query()->whereKey($id);
         $declaracion = $query->first();
 
-        if (! $declaracion) {
+        if (!$declaracion) {
             return $this->notFound();
         }
 

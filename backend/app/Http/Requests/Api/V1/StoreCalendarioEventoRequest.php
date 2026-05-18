@@ -47,7 +47,7 @@ class StoreCalendarioEventoRequest extends FormRequest
                     ->where('empresa_id', $user->empresa_id)
                     ->exists();
 
-                if (! $clienteOk) {
+                if (!$clienteOk) {
                     $validator->errors()->add('cliente_id', 'El cliente no pertenece a la empresa autenticada.');
                 }
             }
@@ -58,7 +58,7 @@ class StoreCalendarioEventoRequest extends FormRequest
                     ->where('empresa_id', $user->empresa_id)
                     ->exists();
 
-                if (! $ordenOk) {
+                if (!$ordenOk) {
                     $validator->errors()->add('orden_trabajo_id', 'La orden de trabajo no pertenece a la empresa autenticada.');
                 }
             }

@@ -41,7 +41,7 @@ class VerifactuSimuladoClient implements VerifactuClientInterface
                         ->lockForUpdate()
                         ->firstOrFail();
 
-                    if ($registro->enviado_aeat_at !== null || ! in_array($registro->estado_remision, [null, 'pendiente'], true)) {
+                    if ($registro->enviado_aeat_at !== null || !in_array($registro->estado_remision, [null, 'pendiente'], true)) {
                         return;
                     }
 
@@ -103,7 +103,7 @@ class VerifactuSimuladoClient implements VerifactuClientInterface
                     ->lockForUpdate()
                     ->first();
 
-                if (! $registro) {
+                if (!$registro) {
                     return;
                 }
 

@@ -8,7 +8,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('inventario_ubicaciones', function (Blueprint $table): void {
-            if (! Schema::hasColumn('inventario_ubicaciones', 'observaciones')) {
+            if (!Schema::hasColumn('inventario_ubicaciones', 'observaciones')) {
                 $table->text('observaciones')->nullable()->after('descripcion');
             }
 
@@ -21,7 +21,7 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::table('inventario_ubicaciones', function (Blueprint $table): void {
-            if (! Schema::hasColumn('inventario_ubicaciones', 'tipo')) {
+            if (!Schema::hasColumn('inventario_ubicaciones', 'tipo')) {
                 $table->string('tipo', 50)->nullable()->after('descripcion');
             }
 

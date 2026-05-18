@@ -30,11 +30,11 @@ class RegistroFacturacionService
 
     public function crearRegistroFacturacionAnulacion(Factura $factura, string $motivo = 'Anulación de factura'): RegistroFacturacion
     {
-        $tieneAlta = $factura->registrosFacturacion()
+        $tiene_alta = $factura->registrosFacturacion()
             ->whereHas('tipoRegistroFacturacion', fn ($q) => $q->where('codigo', 'alta'))
             ->exists();
 
-        if (! $tieneAlta) {
+        if (!$tiene_alta) {
             throw new RuntimeException('Solo se pueden anular facturas emitidas con registro de facturacion de alta.');
         }
 
@@ -46,7 +46,7 @@ class RegistroFacturacionService
         $tipo = TipoRegistroFacturacion::query()->where('codigo', $tipoCodigo)->first();
         $modo = ModoRemisionFacturacion::query()->where('codigo', 'verifactu')->first();
         $estadoRemision = EstadoRemisionFacturacion::query()->where('codigo', 'pendiente')->first();
-        if (! $tipo || ! $modo) {
+        if (!$tipo || !$modo) {
             throw new RuntimeException('Faltan catálogos de registro de facturación.');
         }
 
@@ -113,7 +113,7 @@ class RegistroFacturacionService
     {
         $registro->loadMissing(['factura', 'tipoRegistroFacturacion']);
 
-        if (! $registro->factura) {
+        if (!$registro->factura) {
             throw new RuntimeException('No se puede recalcular el hash sin la factura asociada.');
         }
 
@@ -173,13 +173,13 @@ class RegistroFacturacionService
 
     private function extraerMotivoDesdeXml(RegistroFacturacion $registro): ?string
     {
-        if (! $registro->xml_contenido) {
+        if (!$registro->xml_contenido) {
             return null;
         }
 
         $xml = @simplexml_load_string($registro->xml_contenido);
 
-        if (! $xml || ! isset($xml->Motivo)) {
+        if (!$xml || !isset($xml->Motivo)) {
             return null;
         }
 

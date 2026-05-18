@@ -29,11 +29,11 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::table('servicio_precios', function (Blueprint $table): void {
-            if (! Schema::hasColumn('servicio_precios', 'vigente_desde')) {
+            if (!Schema::hasColumn('servicio_precios', 'vigente_desde')) {
                 $table->dateTime('vigente_desde')->useCurrent();
             }
 
-            if (! Schema::hasColumn('servicio_precios', 'vigente_hasta')) {
+            if (!Schema::hasColumn('servicio_precios', 'vigente_hasta')) {
                 $table->dateTime('vigente_hasta')->nullable();
             }
 

@@ -52,7 +52,7 @@ class AuthController extends ApiController
             ->where('email', $data['email'])
             ->first();
 
-        if ($user === null || ! Hash::check($data['password'], $user->password)) {
+        if ($user === null || !Hash::check($data['password'], $user->password)) {
             return $this->error('Credenciales inválidas.', 401);
         }
 

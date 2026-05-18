@@ -226,7 +226,7 @@ class ModuloMiddlewareFlowTest extends TestCase
      */
     private function rolId(array $nombres, int $fallbackId): int
     {
-        if (! Schema::hasTable('roles')) {
+        if (!Schema::hasTable('roles')) {
             return $fallbackId;
         }
 
@@ -280,7 +280,7 @@ class ModuloMiddlewareFlowTest extends TestCase
      */
     private function catalogoId(string $tabla, array $nombres, int $fallbackId): int
     {
-        if (! Schema::hasTable($tabla)) {
+        if (!Schema::hasTable($tabla)) {
             return $fallbackId;
         }
 

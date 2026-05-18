@@ -35,7 +35,7 @@ class SolicitudVerificacionAdminService
             $solicitud = $this->bloquearSolicitudActual($empresa);
             $estadoAnterior = $solicitud->estadoVerificacion?->nombre;
 
-            if (! in_array($estadoAnterior, [self::ESTADO_PENDIENTE, self::ESTADO_EN_REVISION, self::ESTADO_SUBSANACION], true)) {
+            if (!in_array($estadoAnterior, [self::ESTADO_PENDIENTE, self::ESTADO_EN_REVISION, self::ESTADO_SUBSANACION], true)) {
                 abort(422, 'La solicitud no se puede aprobar desde su estado actual.');
             }
 
@@ -190,7 +190,7 @@ class SolicitudVerificacionAdminService
             $solicitud = $this->bloquearSolicitudActual($empresa);
             $campo = self::FASES[$fase];
 
-            if ($fase === 'representacion' && $solicitud->{$campo} === null && ! $this->requiereRepresentacion($solicitud)) {
+            if ($fase === 'representacion' && $solicitud->{$campo} === null && !$this->requiereRepresentacion($solicitud)) {
                 abort(422, 'La fase de representacion no aplica a esta solicitud.');
             }
 
@@ -223,7 +223,7 @@ class SolicitudVerificacionAdminService
     {
         return $solicitud->estado_identidad === self::ESTADO_APROBADA
             && $solicitud->estado_empresa === self::ESTADO_APROBADA
-            && (! $this->requiereRepresentacion($solicitud) || $solicitud->estado_representacion === self::ESTADO_APROBADA);
+            && (!$this->requiereRepresentacion($solicitud) || $solicitud->estado_representacion === self::ESTADO_APROBADA);
     }
 
     private function requiereRepresentacion(SolicitudVerificacion $solicitud): bool

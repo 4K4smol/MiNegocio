@@ -21,7 +21,7 @@ class VerificacionRegistroRules
     {
         $normalizado = self::normalizar($tipoEmpresa);
 
-        return $normalizado === '' || ! str_contains($normalizado, 'autonomo');
+        return $normalizado === '' || !str_contains($normalizado, 'autonomo');
     }
 
     public static function requiereReversoDocumento(?string $tipoDocumento): bool

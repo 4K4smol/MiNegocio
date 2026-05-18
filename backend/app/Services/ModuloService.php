@@ -69,7 +69,7 @@ class ModuloService
             ->whereRaw('LOWER(codigo) = ?', [strtolower($codigoModulo)])
             ->first();
 
-        if (! $modulo) {
+        if (!$modulo) {
             throw new RuntimeException('No existe el módulo "'.$codigoModulo.'".');
         }
 

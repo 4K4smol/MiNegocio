@@ -391,7 +391,7 @@ class FacturacionLegalFlowTest extends TestCase
             'cliente.localizacionPrincipal',
         ]);
 
-        if (! $ordenFresh instanceof OrdenTrabajo) {
+        if (!$ordenFresh instanceof OrdenTrabajo) {
             $this->fail('No se pudo recargar la orden de trabajo.');
         }
 

@@ -141,7 +141,7 @@ class AdminSolicitudVerificacionDetalleResource extends JsonResource
             return false;
         }
 
-        $representacionNoAplica = ! VerificacionRegistroRules::requiereRepresentacion($this->tipoEmpresa?->nombre);
+        $representacionNoAplica = !VerificacionRegistroRules::requiereRepresentacion($this->tipoEmpresa?->nombre);
 
         return $solicitud->estado_identidad === SolicitudVerificacionAdminService::ESTADO_APROBADA
             && $solicitud->estado_empresa === SolicitudVerificacionAdminService::ESTADO_APROBADA

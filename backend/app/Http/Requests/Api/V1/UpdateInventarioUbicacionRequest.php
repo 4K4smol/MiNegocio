@@ -18,7 +18,7 @@ class UpdateInventarioUbicacionRequest extends FormRequest
             ? (int) $this->input('empresa_id')
             : null;
 
-        if (! $this->esAdmin() && $this->user()?->empresa_id !== null) {
+        if (!$this->esAdmin() && $this->user()?->empresa_id !== null) {
             $this->merge(['empresa_id' => $this->user()->empresa_id]);
         }
     }
@@ -34,11 +34,11 @@ class UpdateInventarioUbicacionRequest extends FormRequest
         $id = (int) $this->route('id');
 
         return [
-            'empresa_id' => ['sometimes','integer','exists:empresas,id'],
-            'nombre' => ['sometimes','string','max:255', Rule::unique('inventario_ubicaciones', 'nombre')->where(fn ($query) => $query->where('empresa_id', $empresaId))->ignore($id)],
-            'descripcion' => ['nullable','string'],
-            'observaciones' => ['nullable','string'],
-            'activo' => ['sometimes','boolean'],
+            'empresa_id' => ['sometimes', 'integer', 'exists:empresas,id'],
+            'nombre' => ['sometimes', 'string', 'max:255', Rule::unique('inventario_ubicaciones', 'nombre')->where(fn($query) => $query->where('empresa_id', $empresaId))->ignore($id)],
+            'descripcion' => ['nullable', 'string'],
+            'observaciones' => ['nullable', 'string'],
+            'activo' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -47,7 +47,7 @@ class UpdateInventarioUbicacionRequest extends FormRequest
         return [
             function (Validator $validator): void {
                 if (
-                    ! $this->esAdmin()
+                    !$this->esAdmin()
                     && $this->empresaIdSolicitada !== null
                     && $this->empresaIdSolicitada !== (int) $this->user()?->empresa_id
                 ) {

@@ -173,7 +173,7 @@ class InventarioMovimientoService
             ->where('empresa_id', $empresaId)
             ->exists();
 
-        if (! $existe) {
+        if (!$existe) {
             throw ValidationException::withMessages([
                 $field => ['La ubicacion no pertenece a la empresa indicada.'],
             ]);

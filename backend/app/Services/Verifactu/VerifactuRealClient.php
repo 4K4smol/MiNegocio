@@ -15,7 +15,7 @@ class VerifactuRealClient implements VerifactuClientInterface
         $certPath = config('services.verifactu.cert_path');
         $certPassword = config('services.verifactu.cert_password');
 
-        if (! $endpoint || ! $certPath || ! $certPassword) {
+        if (!$endpoint || !$certPath || !$certPassword) {
             throw new VerifactuRealNoConfiguradoException();
         }
 

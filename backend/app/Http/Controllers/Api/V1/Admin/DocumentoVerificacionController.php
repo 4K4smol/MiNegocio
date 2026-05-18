@@ -21,7 +21,7 @@ class DocumentoVerificacionController extends ApiController
         /** @var FilesystemAdapter $disk */
         $disk = Storage::disk('verificaciones');
 
-        if (! $disk->exists($documento->archivo)) {
+        if (!$disk->exists($documento->archivo)) {
             return $this->notFound('El documento no existe en el almacenamiento privado.');
         }
 
@@ -29,7 +29,7 @@ class DocumentoVerificacionController extends ApiController
             ?: $documento->mime_type
             ?: 'application/octet-stream';
 
-        if (! $this->esPrevisualizable($mimeType)) {
+        if (!$this->esPrevisualizable($mimeType)) {
             return $this->error('Este tipo de documento no se puede previsualizar.', 415);
         }
 

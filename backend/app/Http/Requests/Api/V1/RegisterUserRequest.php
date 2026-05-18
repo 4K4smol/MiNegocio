@@ -122,7 +122,7 @@ class RegisterUserRequest extends FormRequest
                 if (
                     $tipoDocumento !== null
                     && VerificacionRegistroRules::requiereReversoDocumento($tipoDocumento->nombre)
-                    && ! $this->hasFile('documentacion.dni_reverso')
+                    && !$this->hasFile('documentacion.dni_reverso')
                 ) {
                     $validator->errors()->add(
                         'documentacion.dni_reverso',
@@ -145,7 +145,7 @@ class RegisterUserRequest extends FormRequest
 
             if (
                 VerificacionRegistroRules::requiereRepresentacion($tipoEmpresa->nombre) &&
-                ! $this->hasFile('documentacion.documento_representacion')
+                !$this->hasFile('documentacion.documento_representacion')
             ) {
                 $validator->errors()->add(
                     'documentacion.documento_representacion',

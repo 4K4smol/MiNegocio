@@ -189,8 +189,8 @@ class FacturaFlujoCRUDTest extends TestCase
 
         // Cambiamos el estado a emitida manualmente SIN generar registro de alta
         // para simular un caso de inconsistencia o una factura no fiscal
-        $estadoEmitidaId = \App\Models\EstadoFactura::query()->where('codigo', 'emitida')->value('id');
-        $factura->estado_factura_id = $estadoEmitidaId;
+        $estado_emitida_id = \App\Models\EstadoFactura::query()->where('codigo', 'emitida')->value('id');
+        $factura->estado_factura_id = $estado_emitida_id;
         $factura->saveQuietly();
 
         $this->actingAs($user, 'sanctum')
@@ -249,16 +249,16 @@ class FacturaFlujoCRUDTest extends TestCase
             ])
             ->assertCreated();
 
-        $rectificativaId = $response->json('data.id');
+        $rectificativa_id = $response->json('data.id');
 
         $this->assertDatabaseHas('facturas', [
-            'id' => $rectificativaId,
+            'id' => $rectificativa_id,
             'factura_rectificada_id' => $factura->id,
         ]);
 
-        $this->assertDatabaseHas('registros_facturacion', ['factura_id' => $rectificativaId]);
+        $this->assertDatabaseHas('registros_facturacion', ['factura_id' => $rectificativa_id]);
         $this->assertDatabaseHas('registros_evento_facturacion', [
-            'factura_id' => $rectificativaId,
+            'factura_id' => $rectificativa_id,
             'codigo_evento' => 'REGISTRO_FACTURACION_ALTA_RECTIFICATIVA_CREADO',
         ]);
 
@@ -330,11 +330,11 @@ class FacturaFlujoCRUDTest extends TestCase
             ])
             ->assertCreated();
 
-        $rectificativaId = $response->json('data.id');
+        $rectificativa_id = $response->json('data.id');
 
         // Intentar rectificar la rectificativa
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $rectificativaId . '/rectificar', [
+            ->postJson('/api/v1/facturas/' . $rectificativa_id . '/rectificar', [
                 'motivo_rectificacion' => 'Rectificar una rectificativa',
             ])
             ->assertStatus(500);
@@ -421,12 +421,12 @@ class FacturaFlujoCRUDTest extends TestCase
         $user = User::factory()->create(['empresa_id' => $empresa->id]);
         app(ModuloService::class)->activarModulo((int) $empresa->id, 'facturacion');
 
-        $tipoClienteId = TipoCliente::query()->where('codigo', 'particular')->value('id')
+        $tipo_cliente_id = TipoCliente::query()->where('codigo', 'particular')->value('id')
             ?? TipoCliente::query()->value('id');
 
         $cliente = Cliente::query()->create([
             'empresa_id' => $empresa->id,
-            'tipo_cliente_id' => $tipoClienteId,
+            'tipo_cliente_id' => $tipo_cliente_id,
             'nombre' => 'Cliente Test ' . $sufijo,
             'dni_cif' => 'D' . substr(str_pad((string) abs(crc32('cli' . $sufijo)), 8, '0', STR_PAD_LEFT), 0, 8),
             'activo' => true,

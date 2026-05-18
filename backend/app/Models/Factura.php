@@ -77,7 +77,7 @@ class Factura extends Model
     protected static function booted(): void
     {
         static::updating(function (Factura $factura): void {
-            if (! $factura->registrosFacturacion()->exists()) {
+            if (!$factura->registrosFacturacion()->exists()) {
                 return;
             }
 

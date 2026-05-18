@@ -57,7 +57,7 @@ return new class extends Migration
         });
 
         Schema::table('facturas', function (Blueprint $table): void {
-            if (! Schema::hasColumn('facturas', 'orden_trabajo_id')) {
+            if (!Schema::hasColumn('facturas', 'orden_trabajo_id')) {
                 $table->foreignId('orden_trabajo_id')
                     ->nullable()
                     ->after('cliente_id')
@@ -66,43 +66,43 @@ return new class extends Migration
                     ->cascadeOnUpdate();
             }
 
-            if (! Schema::hasColumn('facturas', 'numero_completo')) {
+            if (!Schema::hasColumn('facturas', 'numero_completo')) {
                 $table->string('numero_completo', 80)->nullable()->after('numero');
             }
 
-            if (! Schema::hasColumn('facturas', 'fecha_vencimiento')) {
+            if (!Schema::hasColumn('facturas', 'fecha_vencimiento')) {
                 $table->date('fecha_vencimiento')->nullable()->after('fecha_operacion');
             }
 
-            if (! Schema::hasColumn('facturas', 'base_imponible')) {
+            if (!Schema::hasColumn('facturas', 'base_imponible')) {
                 $table->decimal('base_imponible', 12, 2)->default(0)->after('cuota_iva');
             }
 
-            if (! Schema::hasColumn('facturas', 'total_iva')) {
+            if (!Schema::hasColumn('facturas', 'total_iva')) {
                 $table->decimal('total_iva', 12, 2)->default(0)->after('base_imponible');
             }
 
-            if (! Schema::hasColumn('facturas', 'total_retencion')) {
+            if (!Schema::hasColumn('facturas', 'total_retencion')) {
                 $table->decimal('total_retencion', 12, 2)->default(0)->after('total_iva');
             }
 
-            if (! Schema::hasColumn('facturas', 'total_descuento')) {
+            if (!Schema::hasColumn('facturas', 'total_descuento')) {
                 $table->decimal('total_descuento', 12, 2)->default(0)->after('total_retencion');
             }
 
-            if (! Schema::hasColumn('facturas', 'metadatos')) {
+            if (!Schema::hasColumn('facturas', 'metadatos')) {
                 $table->json('metadatos')->nullable()->after('observaciones');
             }
 
-            if (! Schema::hasColumn('facturas', 'created_by')) {
+            if (!Schema::hasColumn('facturas', 'created_by')) {
                 $table->foreignId('created_by')->nullable()->after('observaciones_pago')->constrained('users')->nullOnDelete()->cascadeOnUpdate();
             }
 
-            if (! Schema::hasColumn('facturas', 'updated_by')) {
+            if (!Schema::hasColumn('facturas', 'updated_by')) {
                 $table->foreignId('updated_by')->nullable()->after('created_by')->constrained('users')->nullOnDelete()->cascadeOnUpdate();
             }
 
-            if (! Schema::hasColumn('facturas', 'deleted_at')) {
+            if (!Schema::hasColumn('facturas', 'deleted_at')) {
                 $table->softDeletes();
             }
         });
@@ -113,35 +113,35 @@ return new class extends Migration
         }
 
         Schema::table('factura_lineas', function (Blueprint $table): void {
-            if (! Schema::hasColumn('factura_lineas', 'retencion_porcentaje')) {
+            if (!Schema::hasColumn('factura_lineas', 'retencion_porcentaje')) {
                 $table->decimal('retencion_porcentaje', 5, 2)->default(0)->after('iva_porcentaje');
             }
 
-            if (! Schema::hasColumn('factura_lineas', 'cuota_retencion')) {
+            if (!Schema::hasColumn('factura_lineas', 'cuota_retencion')) {
                 $table->decimal('cuota_retencion', 10, 2)->default(0)->after('total_iva');
             }
 
-            if (! Schema::hasColumn('factura_lineas', 'total_linea')) {
+            if (!Schema::hasColumn('factura_lineas', 'total_linea')) {
                 $table->decimal('total_linea', 10, 2)->default(0)->after('cuota_retencion');
             }
         });
 
         Schema::table('factura_impuestos', function (Blueprint $table): void {
-            if (! Schema::hasColumn('factura_impuestos', 'tipo_impuesto')) {
+            if (!Schema::hasColumn('factura_impuestos', 'tipo_impuesto')) {
                 $table->string('tipo_impuesto', 30)->default('IVA')->after('factura_id');
             }
 
-            if (! Schema::hasColumn('factura_impuestos', 'base')) {
+            if (!Schema::hasColumn('factura_impuestos', 'base')) {
                 $table->decimal('base', 12, 2)->default(0)->after('impuesto_nombre');
             }
 
-            if (! Schema::hasColumn('factura_impuestos', 'porcentaje')) {
+            if (!Schema::hasColumn('factura_impuestos', 'porcentaje')) {
                 $table->decimal('porcentaje', 5, 2)->default(0)->after('base_imponible');
             }
         });
 
         Schema::table('registros_facturacion', function (Blueprint $table): void {
-            if (! Schema::hasColumn('registros_facturacion', 'estado_remision_facturacion_id')) {
+            if (!Schema::hasColumn('registros_facturacion', 'estado_remision_facturacion_id')) {
                 $table->foreignId('estado_remision_facturacion_id')
                     ->nullable()
                     ->after('modo_remision_facturacion_id')
@@ -150,27 +150,27 @@ return new class extends Migration
                     ->cascadeOnUpdate();
             }
 
-            if (! Schema::hasColumn('registros_facturacion', 'registro_anterior_id')) {
+            if (!Schema::hasColumn('registros_facturacion', 'registro_anterior_id')) {
                 $table->foreignId('registro_anterior_id')->nullable()->after('empresa_id')->constrained('registros_facturacion')->nullOnDelete()->cascadeOnUpdate();
             }
 
-            if (! Schema::hasColumn('registros_facturacion', 'registro_anulado_id')) {
+            if (!Schema::hasColumn('registros_facturacion', 'registro_anulado_id')) {
                 $table->foreignId('registro_anulado_id')->nullable()->after('registro_anterior_id')->constrained('registros_facturacion')->nullOnDelete()->cascadeOnUpdate();
             }
 
-            if (! Schema::hasColumn('registros_facturacion', 'numero_completo')) {
+            if (!Schema::hasColumn('registros_facturacion', 'numero_completo')) {
                 $table->string('numero_completo', 80)->nullable()->after('numero');
             }
 
-            if (! Schema::hasColumn('registros_facturacion', 'payload_json')) {
+            if (!Schema::hasColumn('registros_facturacion', 'payload_json')) {
                 $table->json('payload_json')->nullable()->after('hash_actual');
             }
 
-            if (! Schema::hasColumn('registros_facturacion', 'qr_contenido')) {
+            if (!Schema::hasColumn('registros_facturacion', 'qr_contenido')) {
                 $table->text('qr_contenido')->nullable()->after('xml_version');
             }
 
-            if (! Schema::hasColumn('registros_facturacion', 'remitido_at')) {
+            if (!Schema::hasColumn('registros_facturacion', 'remitido_at')) {
                 $table->timestampTz('remitido_at')->nullable()->after('enviado_aeat_at');
             }
         });

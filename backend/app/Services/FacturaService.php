@@ -99,7 +99,7 @@ class FacturaService
             $esFiscal = $this->esTipoFiscal($factura);
             $estadoNuevo = $this->estadoFactura($esFiscal ? 'emitida' : 'enviada');
 
-            if ($esFiscal && ! $factura->numero) {
+            if ($esFiscal && !$factura->numero) {
                 $numeracion = $this->numeracionFacturaService->siguiente(
                     (int) $factura->empresa_id,
                     (string) ($data['serie'] ?? $factura->serie ?: self::SERIE_DEFAULT),
@@ -194,7 +194,7 @@ class FacturaService
                 ? Servicio::query()->where('empresa_id', $empresaId)->whereKey((int) $lineaData['servicio_id'])->first()
                 : null;
 
-            if (isset($lineaData['servicio_id']) && ! $servicio) {
+            if (isset($lineaData['servicio_id']) && !$servicio) {
                 throw new RuntimeException('No se puede facturar un servicio de otra empresa.');
             }
 
@@ -300,7 +300,7 @@ class FacturaService
     {
         $cliente = Cliente::query()->where('empresa_id', $empresaId)->whereKey($clienteId)->first();
 
-        if (! $cliente) {
+        if (!$cliente) {
             throw new RuntimeException('El cliente no pertenece a la empresa.');
         }
 
@@ -320,7 +320,7 @@ class FacturaService
     {
         $tipo = TipoFactura::query()->where('codigo', $codigo)->first();
 
-        if (! $tipo) {
+        if (!$tipo) {
             throw new RuntimeException('No existe el tipo de factura "' . $codigo . '".');
         }
 
@@ -331,7 +331,7 @@ class FacturaService
     {
         $estado = EstadoFactura::query()->where('codigo', $codigo)->first();
 
-        if (! $estado) {
+        if (!$estado) {
             throw new RuntimeException('No existe el estado de factura "' . $codigo . '".');
         }
 

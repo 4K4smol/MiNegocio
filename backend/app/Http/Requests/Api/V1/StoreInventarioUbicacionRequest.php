@@ -18,7 +18,7 @@ class StoreInventarioUbicacionRequest extends FormRequest
             ? (int) $this->input('empresa_id')
             : null;
 
-        if (! $this->esAdmin() && $this->user()?->empresa_id !== null) {
+        if (!$this->esAdmin() && $this->user()?->empresa_id !== null) {
             $this->merge(['empresa_id' => $this->user()->empresa_id]);
         }
     }
@@ -46,7 +46,7 @@ class StoreInventarioUbicacionRequest extends FormRequest
         return [
             function (Validator $validator): void {
                 if (
-                    ! $this->esAdmin()
+                    !$this->esAdmin()
                     && $this->empresaIdSolicitada !== null
                     && $this->empresaIdSolicitada !== (int) $this->user()?->empresa_id
                 ) {

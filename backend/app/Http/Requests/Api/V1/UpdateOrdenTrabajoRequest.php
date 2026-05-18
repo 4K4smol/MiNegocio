@@ -26,7 +26,7 @@ class UpdateOrdenTrabajoRequest extends StoreOrdenTrabajoRequest
         $validator->after(function (Validator $validator): void {
             /** @var OrdenTrabajo|null $orden */
             $orden = $this->route('orden');
-            if (! $orden instanceof OrdenTrabajo) { return; }
+            if (!$orden instanceof OrdenTrabajo) { return; }
 
             $estado = $orden->estado?->codigo;
             if (in_array($estado, ['completada', 'facturada'], true) && $this->has('lineas')) {

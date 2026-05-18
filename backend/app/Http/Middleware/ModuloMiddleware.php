@@ -18,7 +18,7 @@ class ModuloMiddleware
     {
         $user = $request->user();
 
-        if ($user === null || ! $this->moduloService->empresaTieneModulo($user, $codigoModulo)) {
+        if ($user === null || !$this->moduloService->empresaTieneModulo($user, $codigoModulo)) {
             return new JsonResponse([
                 'success' => false,
                 'message' => 'La empresa no tiene activo el módulo requerido: '.$codigoModulo.'.',

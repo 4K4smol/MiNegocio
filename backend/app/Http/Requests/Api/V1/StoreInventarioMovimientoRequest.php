@@ -10,7 +10,7 @@ class StoreInventarioMovimientoRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
-        if (! $this->esAdmin() && $this->user()?->empresa_id !== null) {
+        if (!$this->esAdmin() && $this->user()?->empresa_id !== null) {
             $this->merge(['empresa_id' => $this->user()->empresa_id]);
         }
     }

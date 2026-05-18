@@ -52,7 +52,7 @@ class OrdenTrabajoController extends AbstractCrudController
             ->with(['cliente.localizaciones', 'localizacionCliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio', 'eventosCalendario'])
             ->whereKey($orden)
             ->first();
-        if (! $item) {
+        if (!$item) {
             return $this->notFound();
         }
         return $this->success(OrdenTrabajoResource::make($item)->resolve());
@@ -66,7 +66,7 @@ class OrdenTrabajoController extends AbstractCrudController
 
     public function update(UpdateOrdenTrabajoRequest $request, OrdenTrabajo $orden): JsonResponse
     {
-        if (! $this->findRecord($request, $orden->id)) {
+        if (!$this->findRecord($request, $orden->id)) {
             return $this->forbidden();
         }
         $updated = $this->ordenTrabajoService->actualizarOrden($orden, $request->validated(), $request->user());
@@ -75,7 +75,7 @@ class OrdenTrabajoController extends AbstractCrudController
 
     public function completar(Request $request, OrdenTrabajo $orden): JsonResponse
     {
-        if (! $this->findRecord($request, $orden->id)) {
+        if (!$this->findRecord($request, $orden->id)) {
             return $this->forbidden();
         }
         return $this->updated(OrdenTrabajoResource::make($this->ordenTrabajoService->completarOrden($orden, $request->user()))->resolve(), 'Orden completada correctamente.');
@@ -83,7 +83,7 @@ class OrdenTrabajoController extends AbstractCrudController
 
     public function cancelar(Request $request, OrdenTrabajo $orden): JsonResponse
     {
-        if (! $this->findRecord($request, $orden->id)) {
+        if (!$this->findRecord($request, $orden->id)) {
             return $this->forbidden();
         }
         return $this->updated(OrdenTrabajoResource::make($this->ordenTrabajoService->cancelarOrden($orden, $request->user()))->resolve(), 'Orden cancelada correctamente.');
@@ -91,7 +91,7 @@ class OrdenTrabajoController extends AbstractCrudController
 
     public function generarFactura(Request $request, OrdenTrabajo $orden): JsonResponse
     {
-        if (! $this->findRecord($request, $orden->id)) {
+        if (!$this->findRecord($request, $orden->id)) {
             return $this->forbidden();
         }
         $factura = $this->facturacionDesdeOrdenService->generarDesdeOrden($orden->load(['empresa', 'cliente', 'estado', 'lineas.servicio']), $request->user());

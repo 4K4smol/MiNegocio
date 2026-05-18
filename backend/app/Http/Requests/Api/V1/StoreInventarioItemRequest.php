@@ -12,11 +12,11 @@ class StoreInventarioItemRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
-        if ($this->filled('cantidad') && ! $this->filled('stock_actual')) {
+        if ($this->filled('cantidad') && !$this->filled('stock_actual')) {
             $this->merge(['stock_actual' => $this->input('cantidad')]);
         }
 
-        if (! $this->esAdmin() && $this->user()?->empresa_id !== null) {
+        if (!$this->esAdmin() && $this->user()?->empresa_id !== null) {
             $this->merge(['empresa_id' => $this->user()->empresa_id]);
         }
     }
@@ -49,7 +49,7 @@ class StoreInventarioItemRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
-                if (! $this->esAdmin() && (int) $this->input('empresa_id') !== (int) $this->user()?->empresa_id) {
+                if (!$this->esAdmin() && (int) $this->input('empresa_id') !== (int) $this->user()?->empresa_id) {
                     $validator->errors()->add('empresa_id', 'No puedes crear items en otra empresa.');
                 }
             },

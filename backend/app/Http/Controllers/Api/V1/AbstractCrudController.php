@@ -71,13 +71,13 @@ abstract class AbstractCrudController extends ApiController
 
     protected function fillEmpresaIdFromUser(array $data, Request $request): array
     {
-        if (! $this->usaEmpresaId()) {
+        if (!$this->usaEmpresaId()) {
             return $data;
         }
 
         $user = $request->user();
 
-        if (! $user instanceof User || $this->esAdministrador($user)) {
+        if (!$user instanceof User || $this->esAdministrador($user)) {
             return $data;
         }
 
@@ -96,13 +96,13 @@ abstract class AbstractCrudController extends ApiController
         $modelClass = $this->modelClass();
         $query = $modelClass::query();
 
-        if (! $this->usaEmpresaId()) {
+        if ($this->usaEmpresaId()) {
             return $query;
         }
 
         $user = $request->user();
 
-        if (! $user instanceof User || $this->esAdministrador($user)) {
+        if (!$user instanceof User || $this->esAdministrador($user)) {
             return $query;
         }
 

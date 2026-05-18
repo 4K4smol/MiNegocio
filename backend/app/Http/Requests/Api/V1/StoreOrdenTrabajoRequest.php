@@ -67,7 +67,7 @@ class StoreOrdenTrabajoRequest extends FormRequest
                 ->where('empresa_id', $user->empresa_id)
                 ->exists();
 
-            if (! $clienteOk) {
+            if (!$clienteOk) {
                 $validator->errors()->add('cliente_id', 'El cliente no pertenece a la empresa autenticada.');
             }
 
@@ -78,7 +78,7 @@ class StoreOrdenTrabajoRequest extends FormRequest
                     ->whereHas('cliente', fn ($query) => $query->where('empresa_id', $user->empresa_id))
                     ->exists();
 
-                if (! $localizacionOk) {
+                if (!$localizacionOk) {
                     $validator->errors()->add('localizacion_cliente_id', 'La localización no pertenece al cliente seleccionado.');
                 }
             }
@@ -108,7 +108,7 @@ class StoreOrdenTrabajoRequest extends FormRequest
                         ->whereHas('servicio', fn ($query) => $query->where('empresa_id', $user->empresa_id))
                         ->exists();
 
-                    if (! $precioOk) {
+                    if (!$precioOk) {
                         $validator->errors()->add("lineas.{$index}.servicio_precio_id", 'El precio seleccionado no pertenece al servicio indicado.');
                     }
                 }
@@ -119,7 +119,7 @@ class StoreOrdenTrabajoRequest extends FormRequest
                         ->where('activo', true)
                         ->exists();
 
-                    if (! $tipoTarifaOk) {
+                    if (!$tipoTarifaOk) {
                         $validator->errors()->add("lineas.{$index}.tipo_tarifa_servicio_id", 'El tipo de tarifa seleccionado no está activo.');
                     }
                 }
