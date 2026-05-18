@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('empresa_id')->constrained('empresas')->restrictOnDelete()->cascadeOnUpdate();
             $table->foreignId('cliente_id')->constrained('clientes')->restrictOnDelete()->cascadeOnUpdate();
-            $table->string('numero', 50);
+            $table->string('numero', 50)->nullable();
             $table->foreignId('estado_id');
             $table->string('estado_codigo', 30)->default('BORRADOR');
             $table->string('canal_origen', 30)->nullable();
@@ -26,6 +26,9 @@ return new class extends Migration
             $table->dateTime('fecha_cierre')->nullable();
             $table->foreignId('tecnico_responsable_id')->nullable()->constrained('users')->restrictOnDelete()->cascadeOnUpdate();
             $table->decimal('descuento_global_porcentaje', 5, 2)->default(0.00);
+            $table->decimal('subtotal', 12, 2)->default(0.00);
+            $table->decimal('iva_total', 12, 2)->default(0.00);
+            $table->decimal('total', 12, 2)->default(0.00);
             $table->text('notas_internas')->nullable();
             $table->text('notas_cliente')->nullable();
             $table->json('meta')->nullable();

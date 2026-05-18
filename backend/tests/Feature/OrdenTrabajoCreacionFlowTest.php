@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Services\ModuloService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class OrdenTrabajoCreacionFlowTest extends TestCase
@@ -56,6 +57,7 @@ class OrdenTrabajoCreacionFlowTest extends TestCase
             ])
             ->assertCreated()
             ->assertJsonPath('data.localizacion_cliente_id', $localizacion->id)
+            ->assertJsonPath('data.estado', 'programada')
             ->assertJsonPath('data.prioridad', 'alta')
             ->assertJsonPath('data.totales.subtotal', 144)
             ->assertJsonPath('data.totales.cuota_iva', 30.24)
@@ -92,6 +94,37 @@ class OrdenTrabajoCreacionFlowTest extends TestCase
             ])
             ->assertUnprocessable()
             ->assertJsonValidationErrors('localizacion_cliente_id');
+    }
+
+    public function test_numeracion_de_orden_usa_id_autoincremental(): void
+    {
+        [$user, $cliente, , $servicio, $precio] = $this->crearContexto();
+
+        $payload = [
+            'cliente_id' => $cliente->id,
+            'lineas' => [[
+                'servicio_id' => $servicio->id,
+                'servicio_precio_id' => $precio->id,
+                'cantidad' => 1,
+                'precio_unitario' => 80,
+                'iva_porcentaje' => 21,
+            ]],
+        ];
+
+        $first = $this->actingAs($user, 'sanctum')
+            ->postJson('/api/v1/ordenes-trabajo', $payload)
+            ->assertCreated()
+            ->json('data.numero');
+
+        $second = $this->actingAs($user, 'sanctum')
+            ->postJson('/api/v1/ordenes-trabajo', $payload)
+            ->assertCreated()
+            ->json('data.numero');
+
+        $this->assertMatchesRegularExpression('/^OT-'.now()->format('Ymd').'-\\d{6}$/', $first);
+        $this->assertMatchesRegularExpression('/^OT-'.now()->format('Ymd').'-\\d{6}$/', $second);
+        $this->assertNotSame($first, $second);
+        $this->assertFalse(Schema::hasTable('orden_trabajo_contadores'));
     }
 
     private function crearContexto(string $nif = 'B99900001'): array

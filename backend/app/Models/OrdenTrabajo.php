@@ -28,6 +28,9 @@ class OrdenTrabajo extends Model
         'fecha_cierre',
         'tecnico_responsable_id',
         'descuento_global_porcentaje',
+        'subtotal',
+        'iva_total',
+        'total',
         'notas_internas',
         'notas_cliente',
         'meta',
@@ -41,6 +44,9 @@ class OrdenTrabajo extends Model
         'fecha_fin_real' => 'datetime',
         'fecha_cierre' => 'datetime',
         'descuento_global_porcentaje' => 'decimal:2',
+        'subtotal' => 'decimal:2',
+        'iva_total' => 'decimal:2',
+        'total' => 'decimal:2',
         'meta' => 'array',
     ];
 

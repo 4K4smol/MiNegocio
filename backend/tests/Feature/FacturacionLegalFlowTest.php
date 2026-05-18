@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\Empresa;
 use App\Models\Factura;
 use App\Models\OrdenTrabajo;
+use App\Models\OrdenTrabajoEstado;
 use App\Models\OrdenTrabajoLinea;
 use App\Models\RegistroFacturacion;
 use App\Models\OrdenTrabajoPrioridad;
@@ -423,7 +424,13 @@ class FacturacionLegalFlowTest extends TestCase
 
         app(ModuloService::class)->activarModulo((int) $empresaId, 'facturacion');
 
-        $estadoId = $estadoCodigo === self::ESTADO_ORDEN_COMPLETADA ? 3 : 1;
+        $estadoId = OrdenTrabajoEstado::query()
+            ->where('codigo', $estadoCodigo)
+            ->value('id');
+
+        if ($estadoId === null) {
+            $this->fail('No existe estado de orden para el test.');
+        }
 
         $prioridadId = OrdenTrabajoPrioridad::query()
             ->where('codigo', 'normal')

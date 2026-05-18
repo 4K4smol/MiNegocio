@@ -11,8 +11,9 @@ class OrdenTrabajoResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $subtotal = (float) $this->lineas->sum('base_imponible');
-        $iva = (float) $this->lineas->sum('cuota_iva');
+        $subtotal = (float) ($this->subtotal ?? $this->lineas->sum('base_imponible'));
+        $iva = (float) ($this->iva_total ?? $this->lineas->sum('cuota_iva'));
+        $total = (float) ($this->total ?? ($subtotal + $iva));
         $lineasFacturablesPendientes = $this->lineas->filter(
             fn ($linea) => $linea->facturable && (float) $linea->cantidad > (float) $linea->facturado_cantidad
         );
@@ -46,7 +47,12 @@ class OrdenTrabajoResource extends JsonResource
             'notas' => ['cliente' => $this->notas_cliente, 'internas' => $this->notas_internas],
             'lineas' => OrdenTrabajoLineaResource::collection($this->whenLoaded('lineas')),
             'eventos_calendario' => CalendarioEventoResource::collection($this->whenLoaded('eventosCalendario')),
-            'totales' => ['subtotal' => round($subtotal, 2), 'cuota_iva' => round($iva, 2), 'total' => round($subtotal + $iva, 2)],
+            'totales' => [
+                'subtotal' => round($subtotal, 2),
+                'iva_total' => round($iva, 2),
+                'cuota_iva' => round($iva, 2),
+                'total' => round($total, 2),
+            ],
             'puede_facturarse' => $this->estado?->codigo === 'completada' && $lineasFacturablesPendientes->isNotEmpty(),
         ];
     }

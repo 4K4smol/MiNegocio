@@ -41,7 +41,7 @@ class CalendarioDashboardFlowTest extends TestCase
             'orden_trabajo_id' => $orden->id,
             'cliente_id' => $cliente->id,
             'tipo' => 'ORDEN_TRABAJO',
-            'estado_codigo' => 'pendiente',
+            'estado_codigo' => 'programada',
         ]);
     }
 

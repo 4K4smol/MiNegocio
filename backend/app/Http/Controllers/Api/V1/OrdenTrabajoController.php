@@ -9,7 +9,6 @@ use App\Http\Requests\Api\V1\UpdateOrdenTrabajoRequest;
 use App\Http\Resources\Api\V1\FacturaResource;
 use App\Http\Resources\Api\V1\OrdenTrabajoResource;
 use App\Models\OrdenTrabajo;
-use App\Services\OrdenTrabajoCreacionService;
 use App\Services\FacturacionDesdeOrdenService;
 use App\Services\OrdenTrabajoService;
 use Illuminate\Http\JsonResponse;
@@ -19,7 +18,6 @@ class OrdenTrabajoController extends AbstractCrudController
 {
     public function __construct(
         private readonly OrdenTrabajoService $ordenTrabajoService,
-        private readonly OrdenTrabajoCreacionService $ordenTrabajoCreacionService,
         private readonly FacturacionDesdeOrdenService $facturacionDesdeOrdenService,
     ) {}
 
@@ -62,7 +60,7 @@ class OrdenTrabajoController extends AbstractCrudController
 
     public function store(StoreOrdenTrabajoRequest $request): JsonResponse
     {
-        $orden = $this->ordenTrabajoCreacionService->crear($request->validated(), $request->user());
+        $orden = $this->ordenTrabajoService->crear($request->validated(), $request->user());
         return $this->created(OrdenTrabajoResource::make($orden)->resolve());
     }
 
