@@ -4,7 +4,7 @@ export const empresaNavigation = [
     { label: "Dashboard", to: "/app", icon: appIcons.dashboard },
     { label: "Clientes", to: "/app/clientes", icon: appIcons.clientes },
     { label: "Servicios", to: "/app/servicios", icon: appIcons.servicios },
-    { label: "Inventario", to: "/app/inventario", icon: appIcons.inventario },
+    { label: "Inventario", to: "/app/ubicaciones", icon: appIcons.inventario },
     { label: "Órdenes", to: "/app/ordenes-trabajo", icon: appIcons.ordenes },
     { label: "Facturación", to: "/app/facturas", icon: appIcons.facturas },
 ];

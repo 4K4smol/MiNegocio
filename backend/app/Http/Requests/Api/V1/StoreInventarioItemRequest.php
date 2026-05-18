@@ -12,6 +12,10 @@ class StoreInventarioItemRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
+        if ($this->filled('cantidad') && ! $this->filled('stock_actual')) {
+            $this->merge(['stock_actual' => $this->input('cantidad')]);
+        }
+
         if (! $this->esAdmin() && $this->user()?->empresa_id !== null) {
             $this->merge(['empresa_id' => $this->user()->empresa_id]);
         }

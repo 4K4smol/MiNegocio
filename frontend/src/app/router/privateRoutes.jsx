@@ -6,13 +6,13 @@ import { ClienteDetailPage } from "../../features/clientes/pages/ClienteDetailPa
 import { ClienteEditPage } from "../../features/clientes/pages/ClienteEditPage";
 import { ClientesPage } from "../../features/clientes/pages/ClientesPage";
 import { ConfiguracionPage } from "../../features/empresa/pages/ConfiguracionPage";
+import { EmpresaUbicacionesPage } from "../../features/empresa/pages/EmpresaUbicacionesPage";
 import { DashboardPage } from "../../features/dashboard/pages/DashboardPage";
 import { FacturaDetailPage } from "../../features/facturacion/pages/FacturaDetailPage";
 import { FacturasPage } from "../../features/facturacion/pages/FacturasPage";
 import { RegistrosFacturacionPage } from "../../features/facturacion/pages/RegistrosFacturacionPage";
 import { VerifactuPage } from "../../features/facturacion/pages/VerifactuPage";
 import { InformesPage } from "../../features/informes/pages/InformesPage";
-import { InventarioPage } from "../../features/inventario/pages/InventarioPage";
 import { InventarioCreatePage } from "../../features/inventario/pages/InventarioCreatePage";
 import { InventarioEditPage } from "../../features/inventario/pages/InventarioEditPage";
 import { OrdenCreatePage } from "../../features/ordenes/pages/OrdenCreatePage";
@@ -48,7 +48,8 @@ export const privateRoutes = (
                 <Route path="facturas/registros" element={<RegistrosFacturacionPage />} />
                 <Route path="facturas/verifactu" element={<VerifactuPage />} />
                 <Route path="facturas/:facturaId" element={<FacturaDetailPage />} />
-                <Route path="inventario" element={<InventarioPage />} />
+                <Route path="ubicaciones" element={<EmpresaUbicacionesPage />} />
+                <Route path="inventario" element={<Navigate to="/app/ubicaciones" replace />} />
                 <Route path="inventario/nuevo" element={<InventarioCreatePage />} />
                 <Route path="inventario/:itemId/editar" element={<InventarioEditPage />} />
                 <Route path="informes" element={<InformesPage />} />

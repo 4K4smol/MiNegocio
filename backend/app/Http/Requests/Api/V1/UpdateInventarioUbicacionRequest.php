@@ -31,16 +31,14 @@ class UpdateInventarioUbicacionRequest extends FormRequest
     public function rules(): array
     {
         $empresaId = (int) $this->input('empresa_id', $this->user()?->empresa_id);
-        $routeUbicacion = $this->route('inventario_ubicacione') ?? $this->route('inventario_ubicacion') ?? $this->route('id');
-        $id = is_object($routeUbicacion) && method_exists($routeUbicacion, 'getKey')
-            ? (int) $routeUbicacion->getKey()
-            : (int) $routeUbicacion;
+        $id = (int) $this->route('id');
 
         return [
             'empresa_id' => ['sometimes','integer','exists:empresas,id'],
             'nombre' => ['sometimes','string','max:255', Rule::unique('inventario_ubicaciones', 'nombre')->where(fn ($query) => $query->where('empresa_id', $empresaId))->ignore($id)],
             'descripcion' => ['nullable','string'],
-            'tipo' => ['nullable','string','max:50'],
+            'direccion' => ['nullable','string','max:255'],
+            'observaciones' => ['nullable','string'],
             'activo' => ['sometimes','boolean'],
         ];
     }

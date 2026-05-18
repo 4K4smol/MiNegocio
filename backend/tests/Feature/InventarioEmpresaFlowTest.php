@@ -51,13 +51,32 @@ class InventarioEmpresaFlowTest extends TestCase
         $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-items', [
             'unidad_medida_id' => $this->unidadId(),
             'nombre' => 'Item simple',
+            'cantidad' => 4,
         ])->assertCreated()
-            ->assertJsonPath('data.empresa_id', $empresa->id);
+            ->assertJsonPath('data.empresa_id', $empresa->id)
+            ->assertJsonPath('data.cantidad', '4.00');
 
         $this->assertDatabaseHas('inventario_items', [
             'empresa_id' => $empresa->id,
             'nombre' => 'Item simple',
+            'stock_actual' => 4,
         ]);
+    }
+
+    public function test_empresa_edita_item_sin_falso_duplicado_de_sku(): void
+    {
+        [$user, $empresa] = $this->crearUsuarioEmpresa('B33000027');
+        $item = $this->crearItem($empresa->id);
+
+        $this->actingAs($user, 'sanctum')->putJson("/api/v1/inventario-items/{$item->id}", [
+            'nombre' => 'Item editado',
+            'sku' => $item->sku,
+            'unidad_medida_id' => $item->unidad_medida_id,
+            'cantidad' => 8,
+        ])->assertOk()
+            ->assertJsonPath('data.nombre', 'Item editado')
+            ->assertJsonPath('data.sku', $item->sku)
+            ->assertJsonPath('data.cantidad', '8.00');
     }
 
     public function test_empresa_crea_ubicacion_sin_enviar_empresa_id(): void
@@ -65,14 +84,50 @@ class InventarioEmpresaFlowTest extends TestCase
         [$user, $empresa] = $this->crearUsuarioEmpresa('B33000019');
 
         $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-ubicaciones', [
-            'nombre' => 'Almacen principal',
-            'tipo' => 'almacen',
+            'nombre' => 'Almacen central',
+            'direccion' => 'Nave 1',
+            'observaciones' => 'Material operativo',
         ])->assertCreated()
-            ->assertJsonPath('data.empresa_id', $empresa->id);
+            ->assertJsonPath('data.empresa_id', $empresa->id)
+            ->assertJsonPath('data.direccion', 'Nave 1');
 
         $this->assertDatabaseHas('inventario_ubicaciones', [
             'empresa_id' => $empresa->id,
-            'nombre' => 'Almacen principal',
+            'nombre' => 'Almacen central',
+            'direccion' => 'Nave 1',
+            'observaciones' => 'Material operativo',
+        ]);
+    }
+
+    public function test_empresa_edita_ubicacion_sin_falso_duplicado_de_nombre(): void
+    {
+        [$user, $empresa] = $this->crearUsuarioEmpresa('B33000028');
+        $ubicacion = $this->crearUbicacion($empresa->id, 'Almacen editable');
+
+        $this->actingAs($user, 'sanctum')->putJson("/api/v1/inventario-ubicaciones/{$ubicacion->id}", [
+            'nombre' => 'Almacen editable',
+            'direccion' => 'Zona A',
+            'descripcion' => 'Material de uso diario',
+            'observaciones' => 'Acceso por puerta lateral',
+            'activo' => true,
+        ])->assertOk()
+            ->assertJsonPath('data.nombre', 'Almacen editable')
+            ->assertJsonPath('data.direccion', 'Zona A')
+            ->assertJsonPath('data.observaciones', 'Acceso por puerta lateral');
+    }
+
+    public function test_no_se_puede_eliminar_ubicacion_con_inventario_asociado(): void
+    {
+        [$user, $empresa] = $this->crearUsuarioEmpresa('B33000026');
+        $ubicacion = $this->crearUbicacion($empresa->id, 'Almacen con stock');
+        $this->crearItem($empresa->id, 3, $ubicacion->id);
+
+        $this->actingAs($user, 'sanctum')
+            ->deleteJson("/api/v1/inventario-ubicaciones/{$ubicacion->id}")
+            ->assertStatus(422);
+
+        $this->assertDatabaseHas('inventario_ubicaciones', [
+            'id' => $ubicacion->id,
         ]);
     }
 

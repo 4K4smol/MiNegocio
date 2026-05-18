@@ -24,6 +24,7 @@ class InventarioItemResource extends JsonResource
             'descripcion' => $this->descripcion,
             'sku' => $this->sku,
             'codigo_barras' => $this->codigo_barras,
+            'cantidad' => $this->stock_actual,
             'stock_actual' => $this->stock_actual,
             'stock_minimo' => $this->stock_minimo,
             'coste_unitario' => $this->coste_unitario,

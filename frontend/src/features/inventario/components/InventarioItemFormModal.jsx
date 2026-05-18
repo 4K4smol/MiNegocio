@@ -1,4 +1,5 @@
 import { FormModal } from "../../../shared/components/FormModal";
+import { SwitchInput } from "../../../shared/components/ui/SwitchInput";
 
 const fieldError = (errors, name) => {
     const value = errors?.[name];
@@ -40,18 +41,6 @@ export function InventarioItemFormModal({
                 </label>
 
                 <label>
-                    SKU
-                    <input defaultValue={item?.sku || ""} disabled={disabled} name="sku" />
-                    {fieldError(errors, "sku") ? <small className="field-error">{fieldError(errors, "sku")}</small> : null}
-                </label>
-
-                <label>
-                    Codigo de barras
-                    <input defaultValue={item?.codigo_barras || ""} disabled={disabled} name="codigo_barras" />
-                    {fieldError(errors, "codigo_barras") ? <small className="field-error">{fieldError(errors, "codigo_barras")}</small> : null}
-                </label>
-
-                <label>
                     Unidad de medida
                     <select defaultValue={item?.unidad_medida_id || ""} disabled={disabled} name="unidad_medida_id" required>
                         <option value="">Selecciona unidad</option>
@@ -74,6 +63,12 @@ export function InventarioItemFormModal({
                 </label>
 
                 <label>
+                    Cantidad
+                    <input defaultValue={item?.stock_actual ?? 0} disabled={disabled} min="0" name="stock_actual" step="0.01" type="number" />
+                    {fieldError(errors, "stock_actual") ? <small className="field-error">{fieldError(errors, "stock_actual")}</small> : null}
+                </label>
+
+                <label>
                     Stock minimo
                     <input defaultValue={item?.stock_minimo ?? 0} disabled={disabled} min="0" name="stock_minimo" step="0.01" type="number" />
                     {fieldError(errors, "stock_minimo") ? <small className="field-error">{fieldError(errors, "stock_minimo")}</small> : null}
@@ -91,10 +86,15 @@ export function InventarioItemFormModal({
                     {fieldError(errors, "descripcion") ? <small className="field-error">{fieldError(errors, "descripcion")}</small> : null}
                 </label>
 
-                <label className="form-checkbox is-wide">
-                    <input defaultChecked={item?.activo ?? true} disabled={disabled} name="activo" type="checkbox" />
-                    Item activo
-                </label>
+                <div className="is-wide">
+                    <SwitchInput
+                        defaultChecked={item?.activo ?? true}
+                        disabled={disabled}
+                        helpText="Controla si el articulo esta disponible para movimientos y consultas operativas."
+                        label="Articulo activo"
+                        name="activo"
+                    />
+                </div>
             </div>
         </FormModal>
     );

@@ -36,7 +36,8 @@ class StoreInventarioUbicacionRequest extends FormRequest
             'empresa_id' => [$this->esAdmin() ? 'required' : 'sometimes','integer','exists:empresas,id'],
             'nombre' => ['required','string','max:255', Rule::unique('inventario_ubicaciones', 'nombre')->where(fn ($query) => $query->where('empresa_id', $empresaId))],
             'descripcion' => ['nullable','string'],
-            'tipo' => ['nullable','string','max:50'],
+            'direccion' => ['nullable','string','max:255'],
+            'observaciones' => ['nullable','string'],
             'activo' => ['sometimes','boolean'],
         ];
     }

@@ -1,36 +1,68 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Modal } from "../../../shared/components/ui/Modal";
 import { Stepper } from "../../../shared/components/ui/Stepper";
 import { formatCurrency } from "../../../shared/utils/formatters";
 
-const STEPS = [{ label: "Orden" }, { label: "Vista previa" }, { label: "Confirmar" }];
+const STEPS = [
+    { label: "Orden" },
+    { label: "Vista previa" },
+    { label: "Confirmar" },
+];
 
 function clienteNombre(orden) {
     const c = orden?.cliente;
-    return c?.razon_social || [c?.nombre, c?.apellidos].filter(Boolean).join(" ") || "Sin cliente";
+    return (
+        c?.razon_social ||
+        [c?.nombre, c?.apellidos].filter(Boolean).join(" ") ||
+        "Sin cliente"
+    );
 }
 
-export function GenerarFacturaDesdeOrdenModal({ error, loading, onClose, onConfirm, open, orden }) {
+export function GenerarFacturaDesdeOrdenModal({
+    error,
+    loading,
+    onClose,
+    onConfirm,
+    open,
+    orden,
+}) {
     const [step, setStep] = useState(1);
 
-    useEffect(() => {
-        if (!open) setStep(1);
-    }, [open]);
-
-    const lineasFacturables = (orden?.lineas || []).filter((l) => l.facturable !== false);
+    const lineasFacturables = (orden?.lineas || []).filter(
+        (l) => l.facturable !== false,
+    );
+    const handleClose = () => {
+        setStep(1);
+        onClose?.();
+    };
 
     const footer = (
         <>
             {step > 1 && (
-                <button className="button button-ghost" disabled={loading} type="button" onClick={() => setStep((s) => s - 1)}>
+                <button
+                    className="button button-ghost"
+                    disabled={loading}
+                    type="button"
+                    onClick={() => setStep((s) => s - 1)}
+                >
                     ← Atrás
                 </button>
             )}
-            <button className="button button-ghost" disabled={loading} type="button" onClick={onClose}>
+            <button
+                className="button button-ghost"
+                disabled={loading}
+                type="button"
+                onClick={handleClose}
+            >
                 Cancelar
             </button>
             {step < 3 && (
-                <button className="button" disabled={loading} type="button" onClick={() => setStep((s) => s + 1)}>
+                <button
+                    className="button"
+                    disabled={loading}
+                    type="button"
+                    onClick={() => setStep((s) => s + 1)}
+                >
                     Siguiente →
                 </button>
             )}
@@ -65,17 +97,27 @@ export function GenerarFacturaDesdeOrdenModal({ error, loading, onClose, onConfi
             size="lg"
             subtitle={orden?.numero}
             title="Generar factura"
-            onClose={onClose}
+            onClose={handleClose}
         >
             <Stepper currentStep={step} steps={STEPS} />
 
-            {error ? <div className="form-error" style={{ marginBottom: 12 }}>{error}</div> : null}
+            {error ? (
+                <div className="form-error" style={{ marginBottom: 12 }}>
+                    {error}
+                </div>
+            ) : null}
 
             {/* Paso 1 — Datos de la orden */}
             {step === 1 && (
                 <>
-                    <p style={{ color: "var(--color-muted)", margin: "0 0 12px" }}>
-                        Se generará una factura a partir de las líneas facturables de esta orden completada.
+                    <p
+                        style={{
+                            color: "var(--color-muted)",
+                            margin: "0 0 12px",
+                        }}
+                    >
+                        Se generará una factura a partir de las líneas
+                        facturables de esta orden completada.
                     </p>
                     <dl className="detail-list">
                         <div>
@@ -92,7 +134,11 @@ export function GenerarFacturaDesdeOrdenModal({ error, loading, onClose, onConfi
                         </div>
                         <div>
                             <dt>Total estimado</dt>
-                            <dd><strong>{formatCurrency(orden?.totales?.total)}</strong></dd>
+                            <dd>
+                                <strong>
+                                    {formatCurrency(orden?.totales?.total)}
+                                </strong>
+                            </dd>
                         </div>
                     </dl>
                 </>
@@ -101,45 +147,87 @@ export function GenerarFacturaDesdeOrdenModal({ error, loading, onClose, onConfi
             {/* Paso 2 — Vista previa de líneas */}
             {step === 2 && (
                 <>
-                    <p style={{ color: "var(--color-muted)", margin: "0 0 12px", fontSize: 13 }}>
+                    <p
+                        style={{
+                            color: "var(--color-muted)",
+                            margin: "0 0 12px",
+                            fontSize: 13,
+                        }}
+                    >
                         Revisa las líneas que se incluirán en la factura.
                     </p>
                     {lineasFacturables.length > 0 ? (
-                        <table className="data-table" style={{ width: "100%", fontSize: 13 }}>
+                        <table
+                            className="data-table"
+                            style={{ width: "100%", fontSize: 13 }}
+                        >
                             <thead>
                                 <tr>
                                     <th>Servicio</th>
-                                    <th style={{ textAlign: "right" }}>Cant.</th>
-                                    <th style={{ textAlign: "right" }}>Precio</th>
+                                    <th style={{ textAlign: "right" }}>
+                                        Cant.
+                                    </th>
+                                    <th style={{ textAlign: "right" }}>
+                                        Precio
+                                    </th>
                                     <th style={{ textAlign: "right" }}>IVA%</th>
-                                    <th style={{ textAlign: "right" }}>Total</th>
+                                    <th style={{ textAlign: "right" }}>
+                                        Total
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {lineasFacturables.map((linea, i) => {
-                                    const base = Number(linea.cantidad || 0) * Number(linea.precio_unitario || 0);
-                                    const iva = (base * Number(linea.iva_porcentaje || 0)) / 100;
+                                    const base =
+                                        Number(linea.cantidad || 0) *
+                                        Number(linea.precio_unitario || 0);
+                                    const iva =
+                                        (base *
+                                            Number(linea.iva_porcentaje || 0)) /
+                                        100;
                                     return (
                                         <tr key={i}>
-                                            <td>{linea.descripcion || linea.servicio_nombre || "—"}</td>
-                                            <td style={{ textAlign: "right" }}>{linea.cantidad}</td>
-                                            <td style={{ textAlign: "right" }}>{formatCurrency(linea.precio_unitario)}</td>
-                                            <td style={{ textAlign: "right" }}>{linea.iva_porcentaje}%</td>
-                                            <td style={{ textAlign: "right" }}>{formatCurrency(base + iva)}</td>
+                                            <td>
+                                                {linea.descripcion ||
+                                                    linea.servicio_nombre ||
+                                                    "—"}
+                                            </td>
+                                            <td style={{ textAlign: "right" }}>
+                                                {linea.cantidad}
+                                            </td>
+                                            <td style={{ textAlign: "right" }}>
+                                                {formatCurrency(
+                                                    linea.precio_unitario,
+                                                )}
+                                            </td>
+                                            <td style={{ textAlign: "right" }}>
+                                                {linea.iva_porcentaje}%
+                                            </td>
+                                            <td style={{ textAlign: "right" }}>
+                                                {formatCurrency(base + iva)}
+                                            </td>
                                         </tr>
                                     );
                                 })}
                             </tbody>
                         </table>
                     ) : (
-                        <p style={{ color: "var(--color-muted)", textAlign: "center", padding: "20px 0" }}>
+                        <p
+                            style={{
+                                color: "var(--color-muted)",
+                                textAlign: "center",
+                                padding: "20px 0",
+                            }}
+                        >
                             No hay líneas facturables en esta orden.
                         </p>
                     )}
                     <dl className="detail-list" style={{ marginTop: 12 }}>
                         <div>
                             <dt>Base imponible</dt>
-                            <dd>{formatCurrency(orden?.totales?.base_imponible)}</dd>
+                            <dd>
+                                {formatCurrency(orden?.totales?.base_imponible)}
+                            </dd>
                         </div>
                         <div>
                             <dt>IVA</dt>
@@ -147,7 +235,11 @@ export function GenerarFacturaDesdeOrdenModal({ error, loading, onClose, onConfi
                         </div>
                         <div>
                             <dt>Total</dt>
-                            <dd><strong>{formatCurrency(orden?.totales?.total)}</strong></dd>
+                            <dd>
+                                <strong>
+                                    {formatCurrency(orden?.totales?.total)}
+                                </strong>
+                            </dd>
                         </div>
                     </dl>
                 </>
@@ -156,12 +248,17 @@ export function GenerarFacturaDesdeOrdenModal({ error, loading, onClose, onConfi
             {/* Paso 3 — Aviso legal y confirmación */}
             {step === 3 && (
                 <>
-                    <div className="notice-card notice-card--warning" style={{ marginBottom: 16 }}>
+                    <div
+                        className="notice-card notice-card--warning"
+                        style={{ marginBottom: 16 }}
+                    >
                         <strong>Antes de emitir</strong>
                         <p>
-                            Una factura emitida no debe modificarse directamente. Si necesitas corregirla,
-                            deberás emitir una factura rectificativa. Las facturas emitidas quedan registradas
-                            en el sistema fiscal y no pueden eliminarse.
+                            Una factura emitida no debe modificarse
+                            directamente. Si necesitas corregirla, deberás
+                            emitir una factura rectificativa. Las facturas
+                            emitidas quedan registradas en el sistema fiscal y
+                            no pueden eliminarse.
                         </p>
                     </div>
                     <dl className="detail-list">
@@ -171,12 +268,23 @@ export function GenerarFacturaDesdeOrdenModal({ error, loading, onClose, onConfi
                         </div>
                         <div>
                             <dt>Total a facturar</dt>
-                            <dd><strong>{formatCurrency(orden?.totales?.total)}</strong></dd>
+                            <dd>
+                                <strong>
+                                    {formatCurrency(orden?.totales?.total)}
+                                </strong>
+                            </dd>
                         </div>
                     </dl>
-                    <p style={{ color: "var(--color-muted)", fontSize: 12, marginTop: 12 }}>
-                        Puedes guardar como <strong>borrador</strong> para revisarla antes de emitirla,
-                        o <strong>emitirla directamente</strong>.
+                    <p
+                        style={{
+                            color: "var(--color-muted)",
+                            fontSize: 12,
+                            marginTop: 12,
+                        }}
+                    >
+                        Puedes guardar como <strong>borrador</strong> para
+                        revisarla antes de emitirla, o{" "}
+                        <strong>emitirla directamente</strong>.
                     </p>
                 </>
             )}

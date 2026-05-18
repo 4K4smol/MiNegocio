@@ -12,6 +12,10 @@ class UpdateInventarioItemRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
+        if ($this->filled('cantidad') && ! $this->filled('stock_actual')) {
+            $this->merge(['stock_actual' => $this->input('cantidad')]);
+        }
+
         if (! $this->esAdmin() && $this->user()?->empresa_id !== null) {
             $this->merge(['empresa_id' => $this->user()->empresa_id]);
         }
@@ -25,7 +29,7 @@ class UpdateInventarioItemRequest extends FormRequest
     public function rules(): array
     {
         $empresaId = (int) $this->input('empresa_id', $this->user()?->empresa_id);
-        $id = (int) ($this->route('inventario_item') ?? $this->route('id'));
+        $id = (int) $this->route('id');
 
         return [
             'empresa_id' => ['sometimes','integer','exists:empresas,id'],

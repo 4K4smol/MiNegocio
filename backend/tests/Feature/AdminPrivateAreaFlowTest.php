@@ -83,6 +83,11 @@ class AdminPrivateAreaFlowTest extends TestCase
         $actor = $this->crearAdmin(['activo' => false]);
         $ultimoAdmin = $this->crearAdmin();
 
+        User::query()
+            ->where('role_id', $this->roleId('admin'))
+            ->whereKeyNot($ultimoAdmin->id)
+            ->update(['activo' => false]);
+
         $this->actingAs($actor, 'sanctum')
             ->patchJson("/api/v1/admin/usuarios/{$ultimoAdmin->id}/desactivar")
             ->assertStatus(422);

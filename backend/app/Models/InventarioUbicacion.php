@@ -14,7 +14,8 @@ class InventarioUbicacion extends Model
         'empresa_id',
         'nombre',
         'descripcion',
-        'tipo',
+        'direccion',
+        'observaciones',
         'activo',
     ];
 

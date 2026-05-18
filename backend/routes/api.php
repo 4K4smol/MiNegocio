@@ -142,9 +142,11 @@ Route::prefix('v1')->group(function (): void {
             });
 
             Route::middleware('modulo:inventario')->group(function (): void {
-                Route::apiResource('inventario-items', InventarioItemController::class);
+                Route::apiResource('inventario-items', InventarioItemController::class)->parameters(['inventario-items' => 'id']);
                 Route::apiResource('inventario-movimientos', InventarioMovimientoController::class)->only(['index', 'show', 'store']);
-                Route::apiResource('inventario-ubicaciones', InventarioUbicacionController::class);
+                Route::patch('inventario-ubicaciones/{id}/activar', [InventarioUbicacionController::class, 'activar']);
+                Route::patch('inventario-ubicaciones/{id}/desactivar', [InventarioUbicacionController::class, 'desactivar']);
+                Route::apiResource('inventario-ubicaciones', InventarioUbicacionController::class)->parameters(['inventario-ubicaciones' => 'id']);
             });
 
             Route::middleware('modulo:calendario')->group(function (): void {
