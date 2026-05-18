@@ -17,7 +17,6 @@ class StoreServicioPrecioRequest extends FormRequest
             'servicio_id' => $servicio !== null ? (int) $servicio : $this->input('servicio_id'),
             'moneda' => $this->input('moneda', 'EUR'),
             'iva_porcentaje' => $this->input('iva_porcentaje', 21),
-            'vigente_desde' => $this->input('vigente_desde', now()->toDateTimeString()),
         ]);
     }
 
@@ -37,8 +36,6 @@ class StoreServicioPrecioRequest extends FormRequest
             'iva_porcentaje' => ['required', 'numeric', 'min:0', 'max:100'],
             'retencion_porcentaje' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'moneda' => ['required', 'string', 'size:3'],
-            'vigente_desde' => ['required', 'date'],
-            'vigente_hasta' => ['nullable', 'date', 'after:vigente_desde'],
             'meta' => ['nullable', 'array'],
         ];
     }

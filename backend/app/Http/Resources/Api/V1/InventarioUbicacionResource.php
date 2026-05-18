@@ -16,7 +16,6 @@ class InventarioUbicacionResource extends JsonResource
             'empresa_id' => $this->empresa_id,
             'nombre' => $this->nombre,
             'descripcion' => $this->descripcion,
-            'direccion' => $this->direccion,
             'observaciones' => $this->observaciones,
             'activo' => $this->activo,
             'created_at' => $this->created_at,

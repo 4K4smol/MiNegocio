@@ -25,8 +25,6 @@ class UpdateServicioPrecioRequest extends FormRequest
             'iva_porcentaje' => ['sometimes', 'required', 'numeric', 'min:0', 'max:100'],
             'retencion_porcentaje' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'moneda' => ['sometimes', 'required', 'string', 'size:3'],
-            'vigente_desde' => ['sometimes', 'required', 'date'],
-            'vigente_hasta' => ['nullable', 'date', 'after:vigente_desde'],
             'meta' => ['nullable', 'array'],
         ];
     }

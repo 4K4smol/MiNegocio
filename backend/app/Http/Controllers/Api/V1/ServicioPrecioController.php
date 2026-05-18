@@ -48,7 +48,7 @@ class ServicioPrecioController extends AbstractCrudController
 
         $precios = $this->baseQuery($request)
             ->where('servicio_id', $servicioModel->id)
-            ->orderByDesc('vigente_desde')
+            ->orderBy('tipo_tarifa_servicio_id')
             ->get();
 
         return $this->success(ServicioPrecioResource::collection($precios)->resolve());
@@ -65,10 +65,8 @@ class ServicioPrecioController extends AbstractCrudController
 
         $record = DB::transaction(function () use ($data): ServicioPrecio {
             if ($this->existePrecioDuplicado($data)) {
-                abort(422, 'Ya existe un precio para este servicio y tarifa con la misma fecha de vigencia.');
+                abort(422, 'Ya existe un precio para este servicio y tipo de tarifa.');
             }
-
-            $this->cerrarPrecioAnterior($data);
 
             return ServicioPrecio::query()->create($data);
         });
@@ -87,14 +85,12 @@ class ServicioPrecioController extends AbstractCrudController
         $data = $request->validated();
         $data['servicio_id'] = $data['servicio_id'] ?? $record->servicio_id;
         $data['tipo_tarifa_servicio_id'] = $data['tipo_tarifa_servicio_id'] ?? $record->tipo_tarifa_servicio_id;
-        $data['vigente_desde'] = $data['vigente_desde'] ?? $record->vigente_desde;
 
         DB::transaction(function () use ($record, $data): void {
             if ($this->existePrecioDuplicado($data, $record->id)) {
-                abort(422, 'Ya existe un precio para este servicio y tarifa con la misma fecha de vigencia.');
+                abort(422, 'Ya existe un precio para este servicio y tipo de tarifa.');
             }
 
-            $this->cerrarPrecioAnterior($data, $record->id);
             $record->fill($data);
             $record->save();
         });
@@ -102,23 +98,11 @@ class ServicioPrecioController extends AbstractCrudController
         return $this->updated(ServicioPrecioResource::make($record->load(['servicio', 'tarifa']))->resolve());
     }
 
-    private function cerrarPrecioAnterior(array $data, ?int $ignoreId = null): void
-    {
-        ServicioPrecio::query()
-            ->where('servicio_id', $data['servicio_id'])
-            ->where('tipo_tarifa_servicio_id', $data['tipo_tarifa_servicio_id'])
-            ->whereNull('vigente_hasta')
-            ->where('vigente_desde', '<', $data['vigente_desde'])
-            ->when($ignoreId !== null, fn (Builder $query) => $query->whereKeyNot($ignoreId))
-            ->update(['vigente_hasta' => $data['vigente_desde']]);
-    }
-
     private function existePrecioDuplicado(array $data, ?int $ignoreId = null): bool
     {
         return ServicioPrecio::query()
             ->where('servicio_id', $data['servicio_id'])
             ->where('tipo_tarifa_servicio_id', $data['tipo_tarifa_servicio_id'])
-            ->whereDate('vigente_desde', $data['vigente_desde'])
             ->when($ignoreId !== null, fn (Builder $query) => $query->whereKeyNot($ignoreId))
             ->exists();
     }

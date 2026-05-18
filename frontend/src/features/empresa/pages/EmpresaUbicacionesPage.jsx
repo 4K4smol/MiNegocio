@@ -35,7 +35,6 @@ const ubicacionPayloadFromForm = (form) => {
 
     return {
         nombre: emptyToNull(formData.get("nombre")),
-        direccion: emptyToNull(formData.get("direccion")),
         descripcion: emptyToNull(formData.get("descripcion")),
         observaciones: emptyToNull(formData.get("observaciones")),
         activo: formData.get("activo") === "on",

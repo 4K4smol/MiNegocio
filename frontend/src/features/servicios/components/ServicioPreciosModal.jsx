@@ -6,60 +6,94 @@ import { ErrorState } from "../../../shared/components/ErrorState";
 import { LoadingState } from "../../../shared/components/LoadingState";
 import { RowActionsMenu } from "../../../shared/components/RowActionsMenu";
 import { Modal } from "../../../shared/components/ui/Modal";
-import { unwrapApiCollection } from "../../../shared/utils/apiResponse";
 import {
     servicioPrecioPayloadFromForm,
     validationErrors,
 } from "../utils/serviciosForms";
-import { servicioPreciosService } from "../services/serviciosService";
+import {
+    servicioPreciosService,
+    tiposTarifaServicioService,
+} from "../services/serviciosService";
 import { ServicioPrecioFormModal } from "./ServicioPrecioFormModal";
 
-export function ServicioPreciosModal({
-    onClose,
-    onChanged,
-    open,
-    servicio,
-    tiposTarifa = [],
-}) {
+function getApiCollection(response) {
+    const raw = response?.data ?? response;
+
+    if (Array.isArray(raw)) return raw;
+    if (Array.isArray(raw?.data)) return raw.data;
+    if (Array.isArray(raw?.data?.data)) return raw.data.data;
+    if (Array.isArray(raw?.items)) return raw.items;
+    if (Array.isArray(raw?.data?.items)) return raw.data.items;
+    if (Array.isArray(raw?.result)) return raw.result;
+    if (Array.isArray(raw?.data?.result)) return raw.data.result;
+
+    return [];
+}
+
+export function ServicioPreciosModal({ onClose, onChanged, open, servicio }) {
     const [precios, setPrecios] = useState([]);
+    const [tiposTarifa, setTiposTarifa] = useState([]);
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+
     const [saving, setSaving] = useState(false);
     const [formMode, setFormMode] = useState(null);
     const [selectedPrecio, setSelectedPrecio] = useState(null);
     const [selectedTipoTarifaId, setSelectedTipoTarifaId] = useState(null);
+
     const [formError, setFormError] = useState("");
     const [formErrors, setFormErrors] = useState({});
+
     const [precioToDelete, setPrecioToDelete] = useState(null);
 
-    const loadPrecios = useCallback(async () => {
-        if (!servicio?.id) return;
+    const loadData = useCallback(async () => {
+        if (!open || !servicio?.id) return;
+
         setLoading(true);
         setError("");
+
         try {
-            setPrecios(
-                unwrapApiCollection(
-                    await servicioPreciosService.listByServicio(servicio.id),
-                ),
-            );
+            const [preciosResponse, tiposTarifaResponse] = await Promise.all([
+                servicioPreciosService.listByServicio(servicio.id),
+                tiposTarifaServicioService.list(),
+            ]);
+
+            const preciosData = getApiCollection(preciosResponse);
+            const tiposTarifaData = getApiCollection(tiposTarifaResponse);
+
+            setPrecios(preciosData);
+            setTiposTarifa(tiposTarifaData);
         } catch (currentError) {
             setError(
-                currentError?.message || "No se han podido cargar los precios.",
+                currentError?.response?.data?.message ||
+                    currentError?.message ||
+                    "No se han podido cargar los precios del servicio.",
             );
         } finally {
             setLoading(false);
         }
-    }, [servicio?.id]);
+    }, [open, servicio?.id]);
 
     useEffect(() => {
-        if (open) loadPrecios();
-    }, [open, loadPrecios]);
+        loadData();
+    }, [loadData]);
 
     const preciosPorTipoTarifa = useMemo(() => {
         const map = {};
+
         for (const precio of precios) {
-            map[precio.tipo_tarifa_servicio_id] = precio;
+            const tipoTarifaId =
+                precio.tipo_tarifa_servicio_id ??
+                precio.tipoTarifaServicioId ??
+                precio.tipo_tarifa?.id ??
+                precio.tipo_tarifa_servicio?.id;
+
+            if (tipoTarifaId) {
+                map[Number(tipoTarifaId)] = precio;
+            }
         }
+
         return map;
     }, [precios]);
 
@@ -70,6 +104,7 @@ export function ServicioPreciosModal({
 
     const closeForm = () => {
         if (saving) return;
+
         setFormMode(null);
         setSelectedPrecio(null);
         setSelectedTipoTarifaId(null);
@@ -92,11 +127,15 @@ export function ServicioPreciosModal({
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+
+        if (!servicio?.id) return;
+
         setSaving(true);
         resetForm();
 
         try {
             const payload = servicioPrecioPayloadFromForm(event.currentTarget);
+
             if (formMode === "edit" && selectedPrecio?.id) {
                 await servicioPreciosService.update(selectedPrecio.id, payload);
             } else {
@@ -105,16 +144,21 @@ export function ServicioPreciosModal({
                     payload,
                 );
             }
+
             setFormMode(null);
             setSelectedPrecio(null);
             setSelectedTipoTarifaId(null);
             resetForm();
-            await loadPrecios();
+
+            await loadData();
+
             onChanged?.();
         } catch (currentError) {
             setFormErrors(validationErrors(currentError));
             setFormError(
-                currentError?.message || "No se ha podido guardar el precio.",
+                currentError?.response?.data?.message ||
+                    currentError?.message ||
+                    "No se ha podido guardar el precio.",
             );
         } finally {
             setSaving(false);
@@ -123,15 +167,22 @@ export function ServicioPreciosModal({
 
     const handleDelete = async () => {
         if (!precioToDelete) return;
+
         setSaving(true);
+
         try {
             await servicioPreciosService.remove(precioToDelete.id);
+
             setPrecioToDelete(null);
-            await loadPrecios();
+
+            await loadData();
+
             onChanged?.();
         } catch (currentError) {
             setError(
-                currentError?.message || "No se ha podido eliminar el precio.",
+                currentError?.response?.data?.message ||
+                    currentError?.message ||
+                    "No se ha podido eliminar el precio.",
             );
         } finally {
             setSaving(false);
@@ -139,7 +190,10 @@ export function ServicioPreciosModal({
     };
 
     const tipoTarifaParaFormulario = selectedTipoTarifaId
-        ? tiposTarifa.find((t) => t.id === selectedTipoTarifaId) || null
+        ? tiposTarifa.find(
+              (tipoTarifa) =>
+                  Number(tipoTarifa.id) === Number(selectedTipoTarifaId),
+          ) || null
         : null;
 
     return (
@@ -161,122 +215,109 @@ export function ServicioPreciosModal({
                 onClose={onClose}
             >
                 {error ? <ErrorState>{error}</ErrorState> : null}
+
                 <p className="field-help">
-                    Los tipos de tarifa son definidos por MiNegocio. Aqui puedes
-                    indicar cuanto cuesta este servicio para cada tipo:
-                    Estandar, Urgente, Festivo o Nocturno.
+                    Configura el precio de este servicio según el tipo de
+                    tarifa: estándar, urgente, especial, fin de semana, festivo
+                    o nocturno.
                 </p>
 
                 {loading ? (
                     <LoadingState>Cargando precios...</LoadingState>
+                ) : tiposTarifa.length === 0 ? (
+                    <EmptyState
+                        description="No hay tipos de tarifa activos disponibles. Revisa la configuración global de tipos de tarifa."
+                        title="Sin tarifas configurables"
+                    />
                 ) : (
                     <DataTable
                         columns={[
                             "Tipo de tarifa",
                             "Precio",
                             "IVA",
-                            "Retencion",
-                            "Vigencia",
+                            "Retención",
                             "Acciones",
                         ]}
-                        empty={
-                            <EmptyState
-                                description="No hay tipos de tarifa disponibles para configurar precios en este servicio."
-                                title="Sin tarifas configurables"
-                            />
-                        }
                     >
-                        {tiposTarifa.length
-                            ? tiposTarifa.map((tipoTarifa) => {
-                                  const precio =
-                                      preciosPorTipoTarifa[tipoTarifa.id];
-                                  return (
-                                      <tr key={tipoTarifa.id}>
-                                          <td>
-                                              <strong>
-                                                  {tipoTarifa.nombre}
-                                              </strong>
-                                              <small>
-                                                  {tipoTarifa.descripcion ||
-                                                      "Tipo global"}
-                                              </small>
-                                          </td>
-                                          {precio ? (
-                                              <>
-                                                  <td>
-                                                      {precio.precio_base}{" "}
-                                                      {precio.moneda}
-                                                  </td>
-                                                  <td>
-                                                      {precio.iva_porcentaje ??
-                                                          0}
-                                                      %
-                                                  </td>
-                                                  <td>
-                                                      {precio.retencion_porcentaje ??
-                                                          0}
-                                                      %
-                                                  </td>
-                                                  <td>
-                                                      <span>
-                                                          {precio.vigente_desde ||
-                                                              "Sin fecha"}
-                                                      </span>
-                                                      <small>
-                                                          Hasta:{" "}
-                                                          {precio.vigente_hasta ||
-                                                              "Abierto"}
-                                                      </small>
-                                                  </td>
-                                                  <td>
-                                                      <RowActionsMenu
-                                                          actions={[
-                                                              {
-                                                                  label: "Editar",
-                                                                  onClick: () =>
-                                                                      openEditPrecio(
-                                                                          precio,
-                                                                      ),
-                                                              },
-                                                              {
-                                                                  label: "Quitar",
-                                                                  variant:
-                                                                      "danger",
-                                                                  onClick: () =>
-                                                                      setPrecioToDelete(
-                                                                          precio,
-                                                                      ),
-                                                              },
-                                                          ]}
-                                                      />
-                                                  </td>
-                                              </>
-                                          ) : (
-                                              <>
-                                                  <td colSpan={4}>
-                                                      <span className="text-muted">
-                                                          Sin configurar
-                                                      </span>
-                                                  </td>
-                                                  <td>
-                                                      <RowActionsMenu
-                                                          actions={[
-                                                              {
-                                                                  label: "Anadir precio",
-                                                                  onClick: () =>
-                                                                      openAddPrecio(
-                                                                          tipoTarifa.id,
-                                                                      ),
-                                                              },
-                                                          ]}
-                                                      />
-                                                  </td>
-                                              </>
-                                          )}
-                                      </tr>
-                                  );
-                              })
-                            : null}
+                        {tiposTarifa.map((tipoTarifa) => {
+                            const precio =
+                                preciosPorTipoTarifa[Number(tipoTarifa.id)];
+
+                            return (
+                                <tr key={tipoTarifa.id}>
+                                    <td>
+                                        <strong>{tipoTarifa.nombre}</strong>
+                                        <small>
+                                            {tipoTarifa.descripcion ||
+                                                "Tipo de tarifa global"}
+                                        </small>
+                                    </td>
+
+                                    {precio ? (
+                                        <>
+                                            <td>
+                                                {precio.precio_base}{" "}
+                                                {precio.moneda || "EUR"}
+                                            </td>
+
+                                            <td>
+                                                {precio.iva_porcentaje ?? 0}%
+                                            </td>
+
+                                            <td>
+                                                {precio.retencion_porcentaje ??
+                                                    0}
+                                                %
+                                            </td>
+
+                                            <td>
+                                                <RowActionsMenu
+                                                    actions={[
+                                                        {
+                                                            label: "Editar",
+                                                            onClick: () =>
+                                                                openEditPrecio(
+                                                                    precio,
+                                                                ),
+                                                        },
+                                                        {
+                                                            label: "Quitar",
+                                                            variant: "danger",
+                                                            onClick: () =>
+                                                                setPrecioToDelete(
+                                                                    precio,
+                                                                ),
+                                                        },
+                                                    ]}
+                                                />
+                                            </td>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <td colSpan={3}>
+                                                <span className="text-muted">
+                                                    Sin configurar
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <RowActionsMenu
+                                                    actions={[
+                                                        {
+                                                            label: "Añadir precio",
+                                                            onClick: () =>
+                                                                openAddPrecio(
+                                                                    tipoTarifa.id,
+                                                                ),
+                                                        },
+                                                    ]}
+                                                />
+                                            </td>
+                                        </>
+                                    )}
+                                </tr>
+                            );
+                        })}
                     </DataTable>
                 )}
             </Modal>
@@ -297,7 +338,7 @@ export function ServicioPreciosModal({
 
             <ConfirmModal
                 confirmLabel="Eliminar precio"
-                description="Esta accion elimina el precio seleccionado del servicio."
+                description="Esta acción elimina el precio seleccionado del servicio."
                 loading={saving}
                 open={Boolean(precioToDelete)}
                 title="Eliminar precio"

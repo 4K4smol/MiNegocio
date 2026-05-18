@@ -16,8 +16,6 @@ class ServicioPrecio extends Model
         'iva_porcentaje',
         'retencion_porcentaje',
         'moneda',
-        'vigente_desde',
-        'vigente_hasta',
         'meta',
     ];
 
@@ -25,8 +23,6 @@ class ServicioPrecio extends Model
         'precio_base' => 'decimal:2',
         'iva_porcentaje' => 'decimal:2',
         'retencion_porcentaje' => 'decimal:2',
-        'vigente_desde' => 'datetime',
-        'vigente_hasta' => 'datetime',
         'meta' => 'array',
     ];
 

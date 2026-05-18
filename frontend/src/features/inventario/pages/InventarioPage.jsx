@@ -72,7 +72,6 @@ const catalogPayloadFromForm = (form) => {
     return {
         nombre: emptyToNull(formData.get("nombre")),
         descripcion: emptyToNull(formData.get("descripcion")),
-        direccion: emptyToNull(formData.get("direccion")),
         observaciones: emptyToNull(formData.get("observaciones")),
         activo: true,
     };
@@ -93,10 +92,6 @@ function UbicacionFormModal({ error, loading, onClose, onSubmit, open }) {
                 <label>
                     Nombre
                     <input name="nombre" required />
-                </label>
-                <label>
-                    Direccion
-                    <input name="direccion" placeholder="Almacen, estanteria, vehiculo..." />
                 </label>
                 <label className="is-wide">
                     Descripcion

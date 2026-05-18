@@ -1,11 +1,6 @@
 import { FormModal } from "../../../shared/components/FormModal";
 import { fieldError } from "../utils/serviciosForms";
 
-const dateValue = (value) => {
-    if (!value) return "";
-    return String(value).slice(0, 10);
-};
-
 export function ServicioPrecioFormModal({
     disabled = false,
     errors = {},
@@ -74,11 +69,6 @@ export function ServicioPrecioFormModal({
                     {fieldError(errors, "moneda") ? <small className="field-error">{fieldError(errors, "moneda")}</small> : null}
                 </label>
 
-                <label>
-                    Vigente desde
-                    <input defaultValue={dateValue(precio?.vigente_desde)} disabled={disabled} name="vigente_desde" type="date" />
-                    {fieldError(errors, "vigente_desde") ? <small className="field-error">{fieldError(errors, "vigente_desde")}</small> : null}
-                </label>
             </div>
         </FormModal>
     );

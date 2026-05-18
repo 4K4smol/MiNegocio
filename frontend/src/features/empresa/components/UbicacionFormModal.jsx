@@ -46,15 +46,6 @@ export function UbicacionFormModal({
                         </small>
                     ) : null}
                 </label>
-                <label>
-                    Direccion
-                    <input
-                        defaultValue={ubicacion?.direccion || ""}
-                        disabled={disabled}
-                        name="direccion"
-                        placeholder="Almacen, estanteria, vehiculo..."
-                    />
-                </label>
                 <label className="is-wide">
                     Descripcion
                     <textarea

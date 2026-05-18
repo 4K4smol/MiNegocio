@@ -8,8 +8,8 @@ export function UbicacionesTable({ onEdit, onToggleActivo, ubicaciones = [] }) {
         <DataTable
             columns={[
                 "Nombre",
-                "Direccion",
                 "Descripcion",
+                "Observaciones",
                 "Estado",
                 "Acciones",
             ]}
@@ -27,8 +27,8 @@ export function UbicacionesTable({ onEdit, onToggleActivo, ubicaciones = [] }) {
                     <td>
                         <strong>{ubicacion.nombre}</strong>
                     </td>
-                    <td>{ubicacion.direccion || "Sin direccion"}</td>
                     <td>{ubicacion.descripcion || "Sin descripcion"}</td>
+                    <td>{ubicacion.observaciones || "Sin observaciones"}</td>
                     <td>
                         <StatusBadge
                             status={ubicacion.activo ? "activo" : "inactivo"}

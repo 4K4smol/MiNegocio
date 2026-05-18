@@ -98,7 +98,6 @@ class ServiciosEmpresaFlowTest extends TestCase
             ->postJson("/api/v1/servicios/{$servicio->id}/precios", [
                 'tipo_tarifa_servicio_id' => $tipoTarifa->id,
                 'precio_base' => 30,
-                'vigente_desde' => '2026-01-01',
             ])
             ->assertCreated()
             ->assertJsonPath('data.servicio_id', $servicio->id)
@@ -169,25 +168,34 @@ class ServiciosEmpresaFlowTest extends TestCase
         $this->assertDatabaseHas('servicio_precios', ['servicio_id' => $servicioB->id, 'tipo_tarifa_servicio_id' => $tipo->id, 'precio_base' => 50]);
     }
 
-    public function test_nuevo_precio_cierra_precio_vigente_anterior(): void
+    public function test_no_permite_duplicar_precio_para_servicio_y_tipo_tarifa(): void
     {
         [$user, $empresa] = $this->crearUsuarioEmpresa('B32000018');
         $servicio = $this->crearServicio($empresa->id, 'Limpieza');
         $tipo = $this->tipoTarifa('estandar');
-        $precioAnterior = $this->crearPrecio($servicio->id, $tipo->id, 30, '2026-01-01 00:00:00');
+        $this->crearPrecio($servicio->id, $tipo->id, 30);
 
         $this->actingAs($user, 'sanctum')
             ->postJson("/api/v1/servicios/{$servicio->id}/precios", [
                 'tipo_tarifa_servicio_id' => $tipo->id,
                 'precio_base' => 40,
-                'vigente_desde' => '2026-02-01',
             ])
-            ->assertCreated();
+            ->assertStatus(422);
+    }
 
-        $this->assertDatabaseHas('servicio_precios', [
-            'id' => $precioAnterior->id,
-            'vigente_hasta' => '2026-02-01',
-        ]);
+    public function test_empresa_actualiza_precio_existente_para_servicio_y_tipo_tarifa(): void
+    {
+        [$user, $empresa] = $this->crearUsuarioEmpresa('B32000026');
+        $servicio = $this->crearServicio($empresa->id, 'Limpieza');
+        $tipo = $this->tipoTarifa('estandar');
+        $precio = $this->crearPrecio($servicio->id, $tipo->id, 30);
+
+        $this->actingAs($user, 'sanctum')
+            ->putJson("/api/v1/servicio-precios/{$precio->id}", [
+                'precio_base' => 40,
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.precio_base', '40.00');
     }
 
     public function test_rutas_requieren_modulo_servicios_activo(): void
@@ -260,7 +268,7 @@ class ServiciosEmpresaFlowTest extends TestCase
         return TipoTarifaServicio::query()->where('codigo', $codigo)->firstOrFail();
     }
 
-    private function crearPrecio(int $servicioId, int $tipoTarifaId, int $precio = 30, string $vigenteDesde = '2026-01-01 00:00:00'): ServicioPrecio
+    private function crearPrecio(int $servicioId, int $tipoTarifaId, int $precio = 30): ServicioPrecio
     {
         return ServicioPrecio::query()->create([
             'servicio_id' => $servicioId,
@@ -268,7 +276,6 @@ class ServiciosEmpresaFlowTest extends TestCase
             'precio_base' => $precio,
             'iva_porcentaje' => 21,
             'moneda' => 'EUR',
-            'vigente_desde' => $vigenteDesde,
         ]);
     }
 }

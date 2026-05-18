@@ -85,16 +85,14 @@ class InventarioEmpresaFlowTest extends TestCase
 
         $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-ubicaciones', [
             'nombre' => 'Almacen central',
-            'direccion' => 'Nave 1',
             'observaciones' => 'Material operativo',
         ])->assertCreated()
             ->assertJsonPath('data.empresa_id', $empresa->id)
-            ->assertJsonPath('data.direccion', 'Nave 1');
+            ->assertJsonPath('data.observaciones', 'Material operativo');
 
         $this->assertDatabaseHas('inventario_ubicaciones', [
             'empresa_id' => $empresa->id,
             'nombre' => 'Almacen central',
-            'direccion' => 'Nave 1',
             'observaciones' => 'Material operativo',
         ]);
     }
@@ -106,13 +104,11 @@ class InventarioEmpresaFlowTest extends TestCase
 
         $this->actingAs($user, 'sanctum')->putJson("/api/v1/inventario-ubicaciones/{$ubicacion->id}", [
             'nombre' => 'Almacen editable',
-            'direccion' => 'Zona A',
             'descripcion' => 'Material de uso diario',
             'observaciones' => 'Acceso por puerta lateral',
             'activo' => true,
         ])->assertOk()
             ->assertJsonPath('data.nombre', 'Almacen editable')
-            ->assertJsonPath('data.direccion', 'Zona A')
             ->assertJsonPath('data.observaciones', 'Acceso por puerta lateral');
     }
 

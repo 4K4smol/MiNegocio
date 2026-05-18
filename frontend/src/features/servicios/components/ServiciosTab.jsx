@@ -8,13 +8,12 @@ import { RowActionsMenu } from "../../../shared/components/RowActionsMenu";
 import { StatusBadge } from "../../../shared/components/StatusBadge";
 import { unwrapApiCollection } from "../../../shared/utils/apiResponse";
 import { servicioPayloadFromForm, validationErrors } from "../utils/serviciosForms";
-import { serviciosService, tiposTarifaServicioService } from "../services/serviciosService";
+import { serviciosService } from "../services/serviciosService";
 import { ServicioFormModal } from "./ServicioFormModal";
 import { ServicioPreciosModal } from "./ServicioPreciosModal";
 
 export function ServiciosTab() {
     const [servicios, setServicios] = useState([]);
-    const [tiposTarifa, setTiposTarifa] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [search, setSearch] = useState("");
@@ -36,12 +35,8 @@ export function ServiciosTab() {
                 search: search.trim() || undefined,
                 activo: activo === "todos" ? undefined : activo === "activos",
             };
-            const [serviciosResponse, tarifasResponse] = await Promise.all([
-                serviciosService.list(params),
-                tiposTarifaServicioService.list(),
-            ]);
+            const serviciosResponse = await serviciosService.list(params);
             setServicios(unwrapApiCollection(serviciosResponse));
-            setTiposTarifa(unwrapApiCollection(tarifasResponse));
         } catch (currentError) {
             setError(currentError?.message || "No se han podido cargar los servicios.");
         } finally {
@@ -205,7 +200,6 @@ export function ServiciosTab() {
             <ServicioPreciosModal
                 open={Boolean(preciosServicio)}
                 servicio={preciosServicio}
-                tiposTarifa={tiposTarifa}
                 onChanged={loadData}
                 onClose={() => setPreciosServicio(null)}
             />

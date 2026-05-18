@@ -47,13 +47,10 @@ return new class extends Migration
             $table->decimal('iva_porcentaje', 5, 2)->default(21.00);
             $table->decimal('retencion_porcentaje', 5, 2)->nullable();
             $table->char('moneda', 3)->default('EUR');
-            $table->dateTime('vigente_desde');
-            $table->dateTime('vigente_hasta')->nullable();
             $table->json('meta')->nullable();
             $table->timestamps();
 
-            $table->index(['servicio_id', 'tipo_tarifa_servicio_id', 'vigente_desde'], 'servicio_precios_servicio_tipo_vigente_index');
-            $table->index(['servicio_id', 'vigente_hasta']);
+            $table->unique(['servicio_id', 'tipo_tarifa_servicio_id'], 'servicio_precios_servicio_tipo_unique');
         });
     }
 

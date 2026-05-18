@@ -19,8 +19,6 @@ class ServicioPrecioResource extends JsonResource
             'iva_porcentaje' => $this->iva_porcentaje,
             'retencion_porcentaje' => $this->retencion_porcentaje,
             'moneda' => $this->moneda,
-            'vigente_desde' => $this->vigente_desde,
-            'vigente_hasta' => $this->vigente_hasta,
             'meta' => $this->meta,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

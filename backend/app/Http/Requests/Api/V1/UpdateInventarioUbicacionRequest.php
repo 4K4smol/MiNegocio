@@ -37,7 +37,6 @@ class UpdateInventarioUbicacionRequest extends FormRequest
             'empresa_id' => ['sometimes','integer','exists:empresas,id'],
             'nombre' => ['sometimes','string','max:255', Rule::unique('inventario_ubicaciones', 'nombre')->where(fn ($query) => $query->where('empresa_id', $empresaId))->ignore($id)],
             'descripcion' => ['nullable','string'],
-            'direccion' => ['nullable','string','max:255'],
             'observaciones' => ['nullable','string'],
             'activo' => ['sometimes','boolean'],
         ];

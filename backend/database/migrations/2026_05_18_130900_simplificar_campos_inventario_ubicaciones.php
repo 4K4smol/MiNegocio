@@ -8,12 +8,8 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('inventario_ubicaciones', function (Blueprint $table): void {
-            if (! Schema::hasColumn('inventario_ubicaciones', 'direccion')) {
-                $table->string('direccion')->nullable()->after('descripcion');
-            }
-
             if (! Schema::hasColumn('inventario_ubicaciones', 'observaciones')) {
-                $table->text('observaciones')->nullable()->after('direccion');
+                $table->text('observaciones')->nullable()->after('descripcion');
             }
 
             if (Schema::hasColumn('inventario_ubicaciones', 'tipo')) {
@@ -31,10 +27,6 @@ return new class extends Migration {
 
             if (Schema::hasColumn('inventario_ubicaciones', 'observaciones')) {
                 $table->dropColumn('observaciones');
-            }
-
-            if (Schema::hasColumn('inventario_ubicaciones', 'direccion')) {
-                $table->dropColumn('direccion');
             }
         });
     }

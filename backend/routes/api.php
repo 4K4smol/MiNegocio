@@ -191,7 +191,6 @@ Route::prefix('v1')->group(function (): void {
                 Route::patch('servicios/{id}/desactivar', [ServicioController::class, 'desactivar']);
                 Route::get('servicios/{servicio}/precios', [ServicioPrecioController::class, 'indexByServicio']);
                 Route::post('servicios/{servicio}/precios', [ServicioPrecioController::class, 'storeForServicio']);
-                Route::get('tipos-tarifa-servicio', [TipoTarifaServicioController::class, 'index']);
                 Route::apiResource('servicios', ServicioController::class);
                 Route::apiResource('servicio-precios', ServicioPrecioController::class);
             });
@@ -216,6 +215,8 @@ Route::prefix('v1')->group(function (): void {
         Route::apiResource('tipos-localizacion-cliente', TipoLocalizacionClienteController::class)->only(['index', 'show'])->parameters(['tipos-localizacion-cliente' => 'id']);
         Route::apiResource('tipos-rectificacion', TipoRectificacionController::class)->only(['index', 'show'])->parameters(['tipos-rectificacion' => 'id']);
         Route::apiResource('tipos-registro-facturacion', TipoRegistroFacturacionController::class)->only(['index', 'show'])->parameters(['tipos-registro-facturacion' => 'id']);
+
+        Route::get('tipos-tarifa-servicio', [TipoTarifaServicioController::class, 'index']);
 
         Route::get('verificaciones-usuario/me', [VerificacionUsuarioController::class, 'showMine']);
         Route::post('verificaciones-usuario', [VerificacionUsuarioController::class, 'store']);

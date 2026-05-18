@@ -50,8 +50,6 @@ export const servicioPrecioPayloadFromForm = (form) => {
         iva_porcentaje: numberOrNull(formData.get("iva_porcentaje")),
         retencion_porcentaje: numberOrNull(formData.get("retencion_porcentaje")),
         moneda: emptyToNull(formData.get("moneda")) || "EUR",
-        vigente_desde: emptyToNull(formData.get("vigente_desde")),
-        vigente_hasta: emptyToNull(formData.get("vigente_hasta")),
         meta: metaFromForm(formData),
     };
 };
