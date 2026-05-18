@@ -8,6 +8,7 @@ import { ClientesPage } from "../../features/clientes/pages/ClientesPage";
 import { ConfiguracionPage } from "../../features/empresa/pages/ConfiguracionPage";
 import { EmpresaUbicacionesPage } from "../../features/empresa/pages/EmpresaUbicacionesPage";
 import { DashboardPage } from "../../features/dashboard/pages/DashboardPage";
+import { CrearFacturaPage } from "../../features/facturacion/pages/CrearFacturaPage";
 import { FacturaDetailPage } from "../../features/facturacion/pages/FacturaDetailPage";
 import { FacturasPage } from "../../features/facturacion/pages/FacturasPage";
 import { RegistrosFacturacionPage } from "../../features/facturacion/pages/RegistrosFacturacionPage";
@@ -45,6 +46,7 @@ export const privateRoutes = (
                 <Route path="calendario" element={<CalendarioPage />} />
                 <Route path="facturacion" element={<Navigate to="/app/facturas" replace />} />
                 <Route path="facturas" element={<FacturasPage />} />
+                <Route path="facturas/nueva" element={<CrearFacturaPage />} />
                 <Route path="facturas/registros" element={<RegistrosFacturacionPage />} />
                 <Route path="facturas/verifactu" element={<VerifactuPage />} />
                 <Route path="facturas/:facturaId" element={<FacturaDetailPage />} />

@@ -1,24 +1,84 @@
-import { Link } from "react-router-dom";
-import { AppIcon } from "../../../components/ui/AppIcon";
-import { appIcons } from "../../../config/appIcons";
-import { DataTable } from "../../../shared/components/DataTable";
-import { EmptyState } from "../../../shared/components/EmptyState";
-import { ErrorState } from "../../../shared/components/ErrorState";
-import { LoadingState } from "../../../shared/components/LoadingState";
-import { PageHeader } from "../../../shared/components/PageHeader";
-import { RowActionsMenu } from "../../../shared/components/RowActionsMenu";
-import { StatusBadge } from "../../../shared/components/StatusBadge";
-import { useResourceList } from "../../../shared/hooks/useResourceList";
-import { formatCurrency, formatDate } from "../../../shared/utils/formatters";
-import { facturasService } from "../services/facturasService";
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { AppIcon } from '../../../components/ui/AppIcon'
+import { appIcons } from '../../../config/appIcons'
+import { DataTable } from '../../../shared/components/DataTable'
+import { EmptyState } from '../../../shared/components/EmptyState'
+import { ErrorState } from '../../../shared/components/ErrorState'
+import { LoadingState } from '../../../shared/components/LoadingState'
+import { PageHeader } from '../../../shared/components/PageHeader'
+import { RowActionsMenu } from '../../../shared/components/RowActionsMenu'
+import { StatusBadge } from '../../../shared/components/StatusBadge'
+import { formatCurrency, formatDate } from '../../../shared/utils/formatters'
+import { AnularFacturaModal } from '../components/AnularFacturaModal'
+import { FacturasFilters } from '../components/FacturasFilters'
+import { FacturasKPIs } from '../components/FacturasKPIs'
+import { RectificarFacturaModal } from '../components/RectificarFacturaModal'
+import { useFacturas } from '../hooks/useFacturas'
+import { facturasService } from '../services/facturasService'
+import { getEstadoFactura, getNumeroFactura, isFacturaEditable, isFacturaFinalizada } from '../utils/facturaUtils'
 
 export function FacturasPage() {
-    const { error, items: facturas, loading, reload } = useResourceList(facturasService.list);
+    const { facturas, rawFacturas, loading, error, filters, setFilters, reload } = useFacturas()
+    const [saving, setSaving] = useState(false)
+    const [actionError, setActionError] = useState('')
+    const [anularId, setAnularId] = useState(null)
+    const [rectificarId, setRectificarId] = useState(null)
 
-    const markAsPaid = async (facturaId) => {
-        await facturasService.marcarPagada(facturaId);
-        reload();
-    };
+    const runAction = async (action) => {
+        setSaving(true)
+        setActionError('')
+        try {
+            await action()
+            reload()
+        } catch (e) {
+            setActionError(e?.message || 'No se pudo completar la acción.')
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    const handleAnular = (motivo) =>
+        runAction(async () => {
+            await facturasService.anular(anularId, motivo)
+            setAnularId(null)
+        })
+
+    const handleRectificar = (motivo) =>
+        runAction(async () => {
+            await facturasService.rectificar(rectificarId, motivo)
+            setRectificarId(null)
+        })
+
+    const handleMarcarPagada = (id) => runAction(() => facturasService.marcarPagada(id))
+
+    const getActions = (factura) => {
+        const estado = getEstadoFactura(factura)
+        const editable = isFacturaEditable(factura)
+        const finalizada = isFacturaFinalizada(factura)
+        return [
+            { label: 'Ver detalle', to: `/app/facturas/${factura.id}` },
+            {
+                label: 'Marcar como pagada',
+                disabled: factura.pagada || estado !== 'emitida',
+                hidden: finalizada || editable,
+                onClick: () => handleMarcarPagada(factura.id),
+            },
+            {
+                label: 'Anular',
+                disabled: saving,
+                hidden: finalizada || editable,
+                variant: 'danger',
+                onClick: () => setAnularId(factura.id),
+            },
+            {
+                label: 'Rectificar',
+                disabled: saving,
+                hidden: finalizada || editable,
+                onClick: () => setRectificarId(factura.id),
+            },
+        ]
+    }
 
     return (
         <section className="page">
@@ -33,23 +93,36 @@ export function FacturasPage() {
                             <AppIcon icon={appIcons.validar} size={18} />
                             VeriFactu
                         </Link>
+                        <Link className="button" to="/app/facturas/nueva">
+                            <AppIcon icon={appIcons.crear} size={18} />
+                            Nueva factura
+                        </Link>
                     </>
                 }
                 description="Consulta facturas, pagos y registros de facturación."
                 title="Facturación"
             />
 
+            {!loading ? <FacturasKPIs facturas={rawFacturas} /> : null}
+
+            <FacturasFilters filters={filters} onChange={setFilters} />
+
             {loading ? <LoadingState>Cargando facturas...</LoadingState> : null}
             {error ? <ErrorState>{error}</ErrorState> : null}
+            {actionError ? <ErrorState>{actionError}</ErrorState> : null}
 
             {!loading ? (
                 <DataTable
-                    columns={["Factura", "Cliente", "Fecha", "Estado", "Total", "Acciones"]}
+                    columns={['Factura', 'Cliente', 'Fecha', 'Estado', 'Total', 'Acciones']}
                     empty={
                         !facturas.length ? (
                             <EmptyState
-                                title="No hay facturas emitidas"
-                                description="Las facturas creadas desde órdenes completadas aparecerán en este listado."
+                                description={
+                                    filters.search || filters.estado
+                                        ? 'No hay facturas que coincidan con los filtros aplicados.'
+                                        : 'Las facturas creadas desde órdenes completadas aparecerán aquí.'
+                                }
+                                title="No hay facturas"
                             />
                         ) : null
                     }
@@ -57,45 +130,39 @@ export function FacturasPage() {
                     {facturas.map((factura) => (
                         <tr key={factura.id}>
                             <td>
-                                <strong>
-                                    {factura.serie ? `${factura.serie}-` : ""}
-                                    {factura.numero || factura.id}
-                                </strong>
-                                <small>{factura.tipo_factura || "Factura"}</small>
+                                <strong>{getNumeroFactura(factura)}</strong>
+                                {factura.tipo_factura ? <small>{factura.tipo_factura}</small> : null}
                             </td>
                             <td>
                                 {factura.receptor_nombre_razon_social ||
                                     factura.cliente?.nombre ||
-                                    "Sin cliente"}
+                                    'Sin cliente'}
                             </td>
                             <td>{formatDate(factura.fecha_emision)}</td>
                             <td>
-                                <StatusBadge
-                                    status={factura.pagada ? "pagada" : factura.estado_factura || "pendiente"}
-                                />
+                                <StatusBadge status={getEstadoFactura(factura)} />
                             </td>
                             <td>{formatCurrency(factura.total)}</td>
                             <td>
-                                <RowActionsMenu
-                                    actions={[
-                                        {
-                                            label: "Ver detalle",
-                                            to: `/app/facturas/${factura.id}`,
-                                        },
-                                        {
-                                            label: "Marcar como pagada",
-                                            disabled: factura.pagada,
-                                            onClick: () => markAsPaid(factura.id),
-                                        },
-                                        { label: "Anular", disabled: true, variant: "danger" },
-                                        { label: "Rectificar", disabled: true },
-                                    ]}
-                                />
+                                <RowActionsMenu actions={getActions(factura)} />
                             </td>
                         </tr>
                     ))}
                 </DataTable>
             ) : null}
+
+            <AnularFacturaModal
+                loading={saving}
+                open={Boolean(anularId)}
+                onClose={() => setAnularId(null)}
+                onConfirm={handleAnular}
+            />
+            <RectificarFacturaModal
+                loading={saving}
+                open={Boolean(rectificarId)}
+                onClose={() => setRectificarId(null)}
+                onConfirm={handleRectificar}
+            />
         </section>
-    );
+    )
 }

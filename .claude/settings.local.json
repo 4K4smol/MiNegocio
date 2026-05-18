@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php artisan *)"
+      "Bash(php artisan *)",
+      "Bash(Get-ChildItem -Path \"d:\\\\PROYECTOS\\\\MiNegocio\" -Force)",
+      "Bash(Select-Object Name, FullName)",
+      "Bash(Get-ChildItem -Path \"d:\\\\PROYECTOS\\\\MiNegocio\\\\frontend\\\\src\\\\features\\\\facturacion\" -Recurse)",
+      "Bash(Select-Object FullName)",
+      "PowerShell(Get-ChildItem -Path \"d:\\\\PROYECTOS\\\\MiNegocio\\\\frontend\\\\src\\\\features\\\\facturacion\" -Recurse -File | ForEach-Object { $_.FullName })",
+      "PowerShell(Get-ChildItem -Path \"d:\\\\PROYECTOS\\\\MiNegocio\\\\frontend\\\\src\\\\shared\" -Recurse -File | ForEach-Object { $_.FullName })",
+      "PowerShell(Get-ChildItem -Path \"d:\\\\PROYECTOS\\\\MiNegocio\\\\frontend\\\\src\\\\components\" -Recurse -File | ForEach-Object { $_.FullName })",
+      "PowerShell(Get-ChildItem -Path \"d:\\\\PROYECTOS\\\\MiNegocio\\\\frontend\\\\src\\\\config\" -Recurse -File | ForEach-Object { $_.FullName })"
     ]
   }
 }
