@@ -1,7 +1,13 @@
 import { FormInput } from "./FormInput";
 import { FormSelect } from "./FormSelect";
 
-export function RegisterStepAccess({ data, documentTypes, errors, onChange, onToggleTerms }) {
+export function RegisterStepAccess({
+    data,
+    documentTypes,
+    errors,
+    onChange,
+    onToggleTerms,
+}) {
     return (
         <div className="register-step">
             <div className="form-grid two-columns">
