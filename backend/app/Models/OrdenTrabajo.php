@@ -13,6 +13,7 @@ class OrdenTrabajo extends Model
     protected $fillable = [
         'empresa_id',
         'cliente_id',
+        'localizacion_cliente_id',
         'numero',
         'estado_id',
         'estado_codigo',
@@ -51,6 +52,11 @@ class OrdenTrabajo extends Model
     public function cliente(): BelongsTo
     {
         return $this->belongsTo(Cliente::class, 'cliente_id');
+    }
+
+    public function localizacionCliente(): BelongsTo
+    {
+        return $this->belongsTo(LocalizacionCliente::class, 'localizacion_cliente_id');
     }
 
     public function estado(): BelongsTo

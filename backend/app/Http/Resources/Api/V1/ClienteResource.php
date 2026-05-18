@@ -28,6 +28,21 @@ class ClienteResource extends JsonResource
             'updated_at' => $this->updated_at,
             'tipo_cliente' => $this->whenLoaded('tipoCliente'),
             'empresa' => $this->whenLoaded('empresa'),
+            'localizaciones' => $this->whenLoaded('localizaciones', fn () => $this->localizaciones->map(fn ($localizacion) => [
+                'id' => $localizacion->id,
+                'nombre' => $localizacion->nombre_localizacion,
+                'nombre_localizacion' => $localizacion->nombre_localizacion,
+                'direccion' => $localizacion->direccion,
+                'direccion_linea_2' => $localizacion->direccion_linea_2,
+                'ciudad' => $localizacion->ciudad,
+                'provincia' => $localizacion->provincia,
+                'codigo_postal' => $localizacion->codigo_postal,
+                'pais' => $localizacion->pais,
+                'direccion_completa' => $localizacion->direccion_completa,
+                'observaciones' => $localizacion->observaciones,
+                'es_principal' => (bool) $localizacion->es_principal,
+                'activo' => (bool) $localizacion->activo,
+            ])->values()),
         ];
     }
 }

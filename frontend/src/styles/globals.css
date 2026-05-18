@@ -309,11 +309,16 @@ input {
 .text-button {
   background: transparent;
   border: 0;
-  color: #d9e2ec;
+  color: var(--color-primary);
   cursor: pointer;
+  font-weight: 800;
   margin-top: auto;
   padding: 10px 0;
   text-align: left;
+}
+
+.text-button:hover {
+  color: var(--color-primary-dark);
 }
 
 .page {
@@ -974,6 +979,50 @@ input {
 .form-grid {
   display: grid;
   gap: 16px;
+}
+
+.form-grid label {
+  color: #334e68;
+  display: grid;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea,
+.data-table select {
+  background: #fff;
+  border: 1px solid #bcccdc;
+  border-radius: 8px;
+  color: var(--color-text);
+  font: inherit;
+  min-height: 42px;
+  padding: 10px 12px;
+  width: 100%;
+}
+
+.form-grid textarea {
+  resize: vertical;
+}
+
+.form-grid input:focus,
+.form-grid select:focus,
+.form-grid textarea:focus,
+.data-table select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.12);
+  outline: none;
+}
+
+.form-grid input:disabled,
+.form-grid select:disabled,
+.form-grid textarea:disabled,
+.data-table select:disabled {
+  background: #f8fafc;
+  color: #8798ad;
+  cursor: not-allowed;
 }
 
 .form-grid .is-wide {
@@ -1797,10 +1846,149 @@ input {
   background: #fff;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   display: grid;
   gap: 16px;
   min-height: 280px;
   padding: 24px;
+}
+
+.orden-create-page {
+  gap: 18px;
+  max-width: 1180px;
+}
+
+.orden-create-wizard {
+  display: grid;
+  gap: 18px;
+}
+
+.orden-create-wizard .wizard-step-body {
+  min-height: 0;
+}
+
+.orden-create-wizard .form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.orden-create-wizard .stepper {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 0;
+  padding: 18px 20px;
+}
+
+.orden-wizard-grid {
+  align-items: start;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+}
+
+.orden-wizard-form {
+  align-content: start;
+}
+
+.orden-summary-card {
+  align-self: stretch;
+  display: grid;
+  gap: 14px;
+}
+
+.orden-summary-card h3 {
+  font-size: 20px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.orden-summary-card .detail-list {
+  grid-template-columns: 1fr;
+}
+
+.orden-section-header {
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.orden-section-header h2 {
+  font-size: 20px;
+  margin: 0 0 4px;
+}
+
+.orden-section-header p {
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.orden-lineas-table {
+  min-width: 980px;
+}
+
+.orden-lineas-table th {
+  color: #52677a;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.orden-lineas-table td {
+  vertical-align: top;
+}
+
+.orden-lineas-table td:nth-child(3),
+.orden-lineas-table td:nth-child(4),
+.orden-lineas-table td:nth-child(5),
+.orden-lineas-table td:nth-child(6) {
+  width: 112px;
+}
+
+.orden-lineas-table td:last-child {
+  text-align: right;
+  width: 72px;
+}
+
+.orden-line-input {
+  background: #fff;
+  border: 1px solid #dce4ea;
+  border-radius: 8px;
+  color: var(--color-text);
+  font: inherit;
+  margin-top: 8px;
+  min-height: 38px;
+  padding: 9px 10px;
+  width: 100%;
+}
+
+.orden-line-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.12);
+  outline: none;
+}
+
+.orden-line-input--number {
+  min-width: 92px;
+}
+
+.orden-line-input--description {
+  min-width: 220px;
+}
+
+.orden-wizard-actions {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  justify-content: space-between;
+  padding: 14px;
+}
+
+.orden-wizard-actions__group {
+  display: flex;
+  gap: 8px;
 }
 
 /* ── Notice card (aviso legal facturas) ──────────────────── */
@@ -1876,6 +2064,8 @@ input {
   .register-heading,
   .preview-grid,
   .order-row,
+  .orden-wizard-actions,
+  .orden-wizard-actions__group,
   .wizard-actions {
     align-items: stretch;
     flex-direction: column;
@@ -1899,6 +2089,23 @@ input {
   .page-header-row {
     display: grid;
     gap: 16px;
+  }
+
+  .orden-create-wizard .stepper {
+    overflow-x: auto;
+    padding: 14px;
+  }
+
+  .orden-wizard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .orden-create-wizard .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .orden-wizard-actions__group {
+    width: 100%;
   }
 
   .modal-footer,

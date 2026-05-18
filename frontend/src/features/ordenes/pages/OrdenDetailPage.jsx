@@ -108,6 +108,10 @@ export function OrdenDetailPage() {
                             <dd>{formatDate(orden.fechas?.programada_inicio)}</dd>
                         </div>
                         <div>
+                            <dt>Localizacion</dt>
+                            <dd>{orden.localizacion?.direccion_completa || orden.localizacion?.nombre || "Principal o sin especificar"}</dd>
+                        </div>
+                        <div>
                             <dt>Total</dt>
                             <dd>{formatCurrency(orden.totales?.total)}</dd>
                         </div>
@@ -119,6 +123,7 @@ export function OrdenDetailPage() {
                                 <td>
                                     <strong>{linea.servicio_nombre || linea.descripcion}</strong>
                                     {linea.descripcion ? <small>{linea.descripcion}</small> : null}
+                                    {linea.meta?.tipo_tarifa_nombre ? <small>{linea.meta.tipo_tarifa_nombre}</small> : null}
                                 </td>
                                 <td>{linea.cantidad}</td>
                                 <td>{formatCurrency(linea.precio_unitario)}</td>

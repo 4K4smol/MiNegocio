@@ -2,12 +2,7 @@ import { useMemo, useState } from "react";
 import { DataTable } from "../../../shared/components/DataTable";
 import { EmptyState } from "../../../shared/components/EmptyState";
 import { Modal } from "../../../shared/components/ui/Modal";
-import { formatCurrency } from "../../../shared/utils/formatters";
-
-const precioVigente = (servicio) => {
-    const precios = servicio.precios || [];
-    return precios.find((precio) => !precio.vigente_hasta) || precios[0];
-};
+import { ServicioSelector } from "./ServicioSelector";
 
 export function ServicioSelectorModal({ onClose, onSelect, open, servicios = [] }) {
     const [search, setSearch] = useState("");
@@ -37,31 +32,21 @@ export function ServicioSelectorModal({ onClose, onSelect, open, servicios = [] 
                     onChange={(event) => setSearch(event.target.value)}
                 />
             </section>
-            <p className="field-help" style={{ marginTop: 4 }}>Solo se muestran servicios activos.</p>
+            <p className="field-help" style={{ marginTop: 4 }}>
+                Selecciona un servicio activo y el precio configurado para el tipo de tarifa que corresponda.
+            </p>
             <DataTable
-                columns={["Servicio", "Unidad", "Precio vigente", "Accion"]}
+                columns={["Servicio", "Unidad", "Tarifa y precio", "Accion"]}
                 empty={!filtered.length ? <EmptyState title="No hay servicios disponibles" /> : null}
             >
-                {filtered.map((servicio) => {
-                    const precio = precioVigente(servicio);
-                    return (
-                        <tr key={servicio.id}>
-                            <td>
-                                <strong>{servicio.nombre}</strong>
-                                {servicio.codigo ? <small>{servicio.codigo}</small> : null}
-                            </td>
-                            <td>{servicio.unidad_servicio || "unidad"}</td>
-                            <td>{formatCurrency(precio?.precio_base)}</td>
-                            <td>
-                                <button className="button button-ghost" type="button" onClick={() => onSelect(servicio)}>
-                                    Anadir
-                                </button>
-                            </td>
-                        </tr>
-                    );
-                })}
+                {filtered.map((servicio) => (
+                    <ServicioSelector
+                        key={servicio.id}
+                        servicio={servicio}
+                        onSelect={(selectedServicio, selectedPrecio) => onSelect(selectedServicio, selectedPrecio)}
+                    />
+                ))}
             </DataTable>
         </Modal>
     );
 }
-

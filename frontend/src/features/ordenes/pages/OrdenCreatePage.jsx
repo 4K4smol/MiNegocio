@@ -28,7 +28,7 @@ export function OrdenCreatePage() {
     };
 
     return (
-        <section className="page">
+        <section className="page orden-create-page">
             <PageHeader
                 description="Selecciona cliente, fecha y servicios para programar el trabajo."
                 title="Nueva orden"

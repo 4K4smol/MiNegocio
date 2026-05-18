@@ -17,10 +17,22 @@ const getOrdenTime = (orden) => {
     return new Date(value).toTimeString().slice(0, 5);
 };
 
+const getOrdenEndTime = (orden) => {
+    const value = orden?.fechas?.programada_fin || orden?.fecha_programada_fin;
+    if (!value) return "10:00";
+    return new Date(value).toTimeString().slice(0, 5);
+};
+
 const normalizeLine = (linea) => ({
     servicio_id: linea.servicio_id,
+    servicio_precio_id: linea.servicio_precio_id || linea.meta?.servicio_precio_id || "",
+    tipo_tarifa_servicio_id: linea.tipo_tarifa_servicio_id || linea.meta?.tipo_tarifa_servicio_id || "",
+    tipo_tarifa_nombre: linea.tipo_tarifa_nombre || linea.meta?.tipo_tarifa_nombre || "",
     servicio_nombre: linea.servicio_nombre || linea.descripcion || "Servicio",
     descripcion: linea.descripcion || linea.servicio_nombre || "Servicio",
+    observaciones: linea.observaciones || linea.meta?.observaciones || "",
+    unidad_snapshot: linea.unidad_snapshot || "unidad",
+    duracion_estimada_min: Number(linea.duracion_estimada_min || 0),
     cantidad: Number(linea.cantidad || 1),
     precio_unitario: Number(linea.precio_unitario || 0),
     descuento_porcentaje: Number(linea.descuento_porcentaje || 0),
@@ -51,9 +63,11 @@ export function useOrdenForm(initialOrden) {
     const [catalogError, setCatalogError] = useState("");
     const [form, setForm] = useState({
         cliente_id: initialOrden?.cliente?.id || "",
-        localizacion_id: "",
+        localizacion_cliente_id: initialOrden?.localizacion?.id || initialOrden?.localizacion_cliente_id || "",
         fecha: getOrdenDate(initialOrden),
-        hora: getOrdenTime(initialOrden),
+        hora_inicio: getOrdenTime(initialOrden),
+        hora_fin: getOrdenEndTime(initialOrden),
+        prioridad_codigo: initialOrden?.prioridad || "normal",
         notas_cliente: initialOrden?.notas?.cliente || "",
         notas_internas: initialOrden?.notas?.internas || "",
     });
@@ -91,22 +105,26 @@ export function useOrdenForm(initialOrden) {
         setForm((current) => ({ ...current, [field]: value }));
     }, []);
 
-    const addServiceLine = useCallback((servicio) => {
+    const addServiceLine = useCallback((servicio, precioSeleccionado = null) => {
         const precios = servicio.precios || [];
-        const precioVigente =
-            precios.find((precio) => !precio.vigente_hasta) ||
-            [...precios].sort((a, b) => String(b.vigente_desde || "").localeCompare(String(a.vigente_desde || "")))[0];
+        const precio = precioSeleccionado || precios[0];
+        const tarifa = precio?.tipo_tarifa_servicio || precio?.tarifa;
 
         setLineas((current) => ([
             ...current,
             normalizeLine({
                 servicio_id: servicio.id,
+                servicio_precio_id: precio?.id || "",
+                tipo_tarifa_servicio_id: precio?.tipo_tarifa_servicio_id || tarifa?.id || "",
+                tipo_tarifa_nombre: tarifa?.nombre || tarifa?.codigo || "",
                 servicio_nombre: servicio.nombre,
                 descripcion: servicio.nombre,
+                unidad_snapshot: servicio.unidad_servicio || "unidad",
+                duracion_estimada_min: servicio.duracion_estimada_min,
                 cantidad: 1,
-                precio_unitario: precioVigente?.precio_base ?? 0,
+                precio_unitario: precio?.precio_base ?? 0,
                 descuento_porcentaje: 0,
-                iva_porcentaje: precioVigente?.iva_porcentaje ?? 21,
+                iva_porcentaje: precio?.iva_porcentaje ?? 21,
                 facturable: true,
             }),
         ]));
@@ -131,19 +149,33 @@ export function useOrdenForm(initialOrden) {
         };
     }, { base_imponible: 0, cuota_iva: 0, total: 0 }), [lineas]);
 
+    const durationMinutes = useMemo(() => lineas.reduce(
+        (total, linea) => total + (Number(linea.duracion_estimada_min || 0) * Number(linea.cantidad || 1)),
+        0,
+    ), [lineas]);
+
     const buildPayload = useCallback(() => {
-        const fechaProgramada = form.fecha && form.hora
-            ? `${form.fecha}T${form.hora}:00`
+        const fechaProgramadaInicio = form.fecha && form.hora_inicio
+            ? `${form.fecha}T${form.hora_inicio}:00`
+            : null;
+        const fechaProgramadaFin = form.fecha && form.hora_fin
+            ? `${form.fecha}T${form.hora_fin}:00`
             : null;
 
         return {
             cliente_id: Number(form.cliente_id),
-            fecha_programada_inicio: fechaProgramada,
+            localizacion_cliente_id: form.localizacion_cliente_id ? Number(form.localizacion_cliente_id) : null,
+            prioridad_codigo: form.prioridad_codigo || "normal",
+            fecha_programada_inicio: fechaProgramadaInicio,
+            fecha_programada_fin: fechaProgramadaFin,
             notas_cliente: form.notas_cliente || null,
             notas_internas: form.notas_internas || null,
             lineas: lineas.map((linea) => ({
                 servicio_id: Number(linea.servicio_id),
+                servicio_precio_id: linea.servicio_precio_id ? Number(linea.servicio_precio_id) : null,
+                tipo_tarifa_servicio_id: linea.tipo_tarifa_servicio_id ? Number(linea.tipo_tarifa_servicio_id) : null,
                 descripcion: linea.descripcion || linea.servicio_nombre,
+                observaciones: linea.observaciones || null,
                 cantidad: Number(linea.cantidad || 0),
                 precio_unitario: Number(linea.precio_unitario || 0),
                 descuento_porcentaje: Number(linea.descuento_porcentaje || 0),
@@ -159,6 +191,7 @@ export function useOrdenForm(initialOrden) {
         catalogError,
         catalogLoading,
         clientes,
+        durationMinutes,
         form,
         lineas,
         removeLine,
@@ -168,4 +201,3 @@ export function useOrdenForm(initialOrden) {
         updateLine,
     };
 }
-

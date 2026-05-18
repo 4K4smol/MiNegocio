@@ -54,7 +54,7 @@ class OrdenTrabajoService
             }
             $this->calendarioEventoService->crearOActualizarDesdeOrden($orden, $user);
 
-            return $orden->fresh(['cliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio']);
+            return $orden->fresh(['cliente.localizaciones', 'localizacionCliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio', 'eventosCalendario']);
         });
     }
 
@@ -75,7 +75,7 @@ class OrdenTrabajoService
             }
             $this->calendarioEventoService->crearOActualizarDesdeOrden($orden, $user);
 
-            return $orden->fresh(['cliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio']);
+            return $orden->fresh(['cliente.localizaciones', 'localizacionCliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio', 'eventosCalendario']);
         });
     }
 
@@ -91,7 +91,7 @@ class OrdenTrabajoService
         $orden->save();
         $this->calendarioEventoService->marcarDesdeOrden($orden, 'completada');
 
-        return $orden->fresh(['cliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio']);
+        return $orden->fresh(['cliente.localizaciones', 'localizacionCliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio', 'eventosCalendario']);
     }
 
     public function cancelarOrden(OrdenTrabajo $orden, User $user): OrdenTrabajo
@@ -105,7 +105,7 @@ class OrdenTrabajoService
         $orden->save();
         $this->calendarioEventoService->marcarDesdeOrden($orden, 'cancelada');
 
-        return $orden->fresh(['cliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio']);
+        return $orden->fresh(['cliente.localizaciones', 'localizacionCliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio', 'eventosCalendario']);
     }
 
     public function calcularLinea(array $linea): array

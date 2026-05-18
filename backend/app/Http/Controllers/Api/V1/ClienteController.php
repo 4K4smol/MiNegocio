@@ -25,7 +25,7 @@ class ClienteController extends AbstractCrudController
 
     protected function baseQuery(Request $request): Builder
     {
-        return parent::baseQuery($request)->with('tipoCliente');
+        return parent::baseQuery($request)->with(['tipoCliente', 'localizaciones']);
     }
 
     public function store(StoreClienteRequest $request)
@@ -40,7 +40,7 @@ class ClienteController extends AbstractCrudController
 
         $cliente = Cliente::query()->create($data);
 
-        return $this->created(ClienteResource::make($cliente->load('tipoCliente'))->resolve());
+        return $this->created(ClienteResource::make($cliente->load(['tipoCliente', 'localizaciones']))->resolve());
     }
 
     public function update(UpdateClienteRequest $request, int $id)
@@ -60,6 +60,6 @@ class ClienteController extends AbstractCrudController
         $cliente->fill($data);
         $cliente->save();
 
-        return $this->updated(ClienteResource::make($cliente->load('tipoCliente'))->resolve());
+        return $this->updated(ClienteResource::make($cliente->load(['tipoCliente', 'localizaciones']))->resolve());
     }
 }

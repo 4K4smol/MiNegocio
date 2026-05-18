@@ -9,6 +9,7 @@ use App\Http\Requests\Api\V1\UpdateOrdenTrabajoRequest;
 use App\Http\Resources\Api\V1\FacturaResource;
 use App\Http\Resources\Api\V1\OrdenTrabajoResource;
 use App\Models\OrdenTrabajo;
+use App\Services\OrdenTrabajoCreacionService;
 use App\Services\FacturacionDesdeOrdenService;
 use App\Services\OrdenTrabajoService;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +17,11 @@ use Illuminate\Http\Request;
 
 class OrdenTrabajoController extends AbstractCrudController
 {
-    public function __construct(private readonly OrdenTrabajoService $ordenTrabajoService, private readonly FacturacionDesdeOrdenService $facturacionDesdeOrdenService) {}
+    public function __construct(
+        private readonly OrdenTrabajoService $ordenTrabajoService,
+        private readonly OrdenTrabajoCreacionService $ordenTrabajoCreacionService,
+        private readonly FacturacionDesdeOrdenService $facturacionDesdeOrdenService,
+    ) {}
 
     protected function modelClass(): string
     {
@@ -31,13 +36,24 @@ class OrdenTrabajoController extends AbstractCrudController
     public function index(Request $request): JsonResponse
     {
         $perPage = min(max((int) $request->integer('per_page', 15), 1), 100);
-        $items = $this->baseQuery($request)->with(['cliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio'])->paginate($perPage);
+        $items = $this->baseQuery($request)
+            ->with(['cliente', 'localizacionCliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio', 'eventosCalendario'])
+            ->when($request->filled('estado'), fn ($query) => $query->where('estado_codigo', $request->string('estado')))
+            ->when($request->filled('cliente_id'), fn ($query) => $query->where('cliente_id', $request->integer('cliente_id')))
+            ->when($request->filled('desde'), fn ($query) => $query->whereDate('fecha_programada_inicio', '>=', $request->date('desde')))
+            ->when($request->filled('hasta'), fn ($query) => $query->whereDate('fecha_programada_inicio', '<=', $request->date('hasta')))
+            ->orderByDesc('fecha_programada_inicio')
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
         return $this->success(OrdenTrabajoResource::collection($items)->response()->getData(true));
     }
 
     public function show(Request $request, int $orden): JsonResponse
     {
-        $item = $this->baseQuery($request)->with(['cliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio'])->whereKey($orden)->first();
+        $item = $this->baseQuery($request)
+            ->with(['cliente.localizaciones', 'localizacionCliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio', 'eventosCalendario'])
+            ->whereKey($orden)
+            ->first();
         if (! $item) {
             return $this->notFound();
         }
@@ -46,7 +62,7 @@ class OrdenTrabajoController extends AbstractCrudController
 
     public function store(StoreOrdenTrabajoRequest $request): JsonResponse
     {
-        $orden = $this->ordenTrabajoService->crearOrden($request->validated(), $request->user());
+        $orden = $this->ordenTrabajoCreacionService->crear($request->validated(), $request->user());
         return $this->created(OrdenTrabajoResource::make($orden)->resolve());
     }
 

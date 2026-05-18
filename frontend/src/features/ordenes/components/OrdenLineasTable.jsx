@@ -15,7 +15,10 @@ export function OrdenLineasTable({ disabled = false, errors = {}, lineas = [], o
 
     return (
         <>
-            <DataTable columns={["Servicio", "Cantidad", "Precio", "Dto.", "IVA", "Total", ""]}>
+            <DataTable
+                tableClassName="orden-lineas-table"
+                columns={["Servicio", "Tarifa", "Cantidad", "Precio", "Dto.", "IVA", "Total", ""]}
+            >
                 {lineas.map((linea, index) => {
                     const calculated = calculateLine(linea);
                     return (
@@ -23,13 +26,25 @@ export function OrdenLineasTable({ disabled = false, errors = {}, lineas = [], o
                             <td>
                                 <strong>{linea.servicio_nombre}</strong>
                                 <input
+                                    className="orden-line-input orden-line-input--description"
                                     disabled={disabled}
                                     value={linea.descripcion}
                                     onChange={(event) => onUpdate(index, "descripcion", event.target.value)}
                                 />
+                                <input
+                                    className="orden-line-input orden-line-input--description"
+                                    disabled={disabled}
+                                    placeholder="Observaciones de la linea"
+                                    value={linea.observaciones || ""}
+                                    onChange={(event) => onUpdate(index, "observaciones", event.target.value)}
+                                />
+                            </td>
+                            <td>
+                                <span>{linea.tipo_tarifa_nombre || "Sin tarifa"}</span>
                             </td>
                             <td>
                                 <input
+                                    className="orden-line-input orden-line-input--number"
                                     disabled={disabled}
                                     min="0.01"
                                     step="0.01"
@@ -40,6 +55,7 @@ export function OrdenLineasTable({ disabled = false, errors = {}, lineas = [], o
                             </td>
                             <td>
                                 <input
+                                    className="orden-line-input orden-line-input--number"
                                     disabled={disabled}
                                     min="0"
                                     step="0.01"
@@ -50,6 +66,7 @@ export function OrdenLineasTable({ disabled = false, errors = {}, lineas = [], o
                             </td>
                             <td>
                                 <input
+                                    className="orden-line-input orden-line-input--number"
                                     disabled={disabled}
                                     max="100"
                                     min="0"
@@ -61,6 +78,7 @@ export function OrdenLineasTable({ disabled = false, errors = {}, lineas = [], o
                             </td>
                             <td>
                                 <input
+                                    className="orden-line-input orden-line-input--number"
                                     disabled={disabled}
                                     max="100"
                                     min="0"
@@ -98,4 +116,3 @@ export function OrdenLineasTable({ disabled = false, errors = {}, lineas = [], o
         </>
     );
 }
-

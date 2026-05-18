@@ -2,7 +2,9 @@ import { useState } from "react";
 import { ErrorState } from "../../../shared/components/ErrorState";
 import { LoadingState } from "../../../shared/components/LoadingState";
 import { ClienteSelector } from "./ClienteSelector";
+import { LocalizacionSelector } from "./LocalizacionSelector";
 import { OrdenLineasTable } from "./OrdenLineasTable";
+import { PlanificacionOrdenPanel } from "./PlanificacionOrdenPanel";
 import { ServicioSelectorModal } from "./ServicioSelectorModal";
 import { useOrdenForm } from "../hooks/useOrdenForm";
 
@@ -22,6 +24,7 @@ export function OrdenForm({ disabled = false, errors = {}, initialOrden, onCance
         updateForm,
         updateLine,
     } = useOrdenForm(initialOrden);
+    const selectedCliente = clientes.find((cliente) => String(cliente.id) === String(form.cliente_id));
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -38,54 +41,25 @@ export function OrdenForm({ disabled = false, errors = {}, initialOrden, onCance
                     clientes={clientes}
                     disabled={disabled || saving}
                     errors={errors}
-                    localizacionId={form.localizacion_id}
                     value={form.cliente_id}
                     onChange={(value) => updateForm("cliente_id", value)}
-                    onLocalizacionChange={(value) => updateForm("localizacion_id", value)}
+                    onLocalizacionChange={(value) => updateForm("localizacion_cliente_id", value)}
                 />
-                <label>
-                    Fecha
-                    <input
-                        disabled={disabled || saving}
-                        name="fecha"
-                        required
-                        type="date"
-                        value={form.fecha}
-                        onChange={(event) => updateForm("fecha", event.target.value)}
-                    />
-                </label>
-                <label>
-                    Hora
-                    <input
-                        disabled={disabled || saving}
-                        name="hora"
-                        required
-                        type="time"
-                        value={form.hora}
-                        onChange={(event) => updateForm("hora", event.target.value)}
-                    />
-                </label>
-                <label className="is-wide">
-                    Notas para cliente
-                    <textarea
-                        disabled={disabled || saving}
-                        name="notas_cliente"
-                        rows={3}
-                        value={form.notas_cliente}
-                        onChange={(event) => updateForm("notas_cliente", event.target.value)}
-                    />
-                </label>
-                <label className="is-wide">
-                    Notas internas
-                    <textarea
-                        disabled={disabled || saving}
-                        name="notas_internas"
-                        rows={3}
-                        value={form.notas_internas}
-                        onChange={(event) => updateForm("notas_internas", event.target.value)}
-                    />
-                </label>
+                <LocalizacionSelector
+                    cliente={selectedCliente}
+                    disabled={disabled || saving}
+                    errors={errors}
+                    value={form.localizacion_cliente_id}
+                    onChange={(value) => updateForm("localizacion_cliente_id", value)}
+                />
             </div>
+
+            <PlanificacionOrdenPanel
+                disabled={disabled || saving}
+                errors={errors}
+                form={form}
+                onChange={updateForm}
+            />
 
             <div className="page-header-row">
                 <div>
@@ -121,12 +95,11 @@ export function OrdenForm({ disabled = false, errors = {}, initialOrden, onCance
                 open={selectorOpen}
                 servicios={servicios}
                 onClose={() => setSelectorOpen(false)}
-                onSelect={(servicio) => {
-                    addServiceLine(servicio);
+                onSelect={(servicio, precio) => {
+                    addServiceLine(servicio, precio);
                     setSelectorOpen(false);
                 }}
             />
         </form>
     );
 }
-

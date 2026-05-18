@@ -16,6 +16,7 @@ class OrdenTrabajoLineaResource extends JsonResource
             'servicio_id' => $this->servicio_id,
             'servicio_nombre' => $this->whenLoaded('servicio', fn () => $this->servicio?->nombre),
             'descripcion' => $this->descripcion,
+            'unidad_snapshot' => $this->unidad_snapshot,
             'cantidad' => (float) $this->cantidad,
             'precio_unitario' => (float) $this->precio_unitario,
             'descuento_porcentaje' => (float) $this->descuento_porcentaje,
@@ -25,6 +26,7 @@ class OrdenTrabajoLineaResource extends JsonResource
             'total' => (float) $this->total,
             'facturable' => (bool) $this->facturable,
             'facturado_cantidad' => (float) $this->facturado_cantidad,
+            'meta' => $this->meta,
         ];
     }
 }

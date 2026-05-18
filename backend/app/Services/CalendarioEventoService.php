@@ -72,7 +72,7 @@ class CalendarioEventoService
         }
 
         return DB::transaction(function () use ($orden, $user): CalendarioEvento {
-            $orden->loadMissing(['cliente.localizacionPrincipal', 'estado']);
+            $orden->loadMissing(['cliente.localizacionPrincipal', 'localizacionCliente', 'estado']);
             $evento = CalendarioEvento::query()
                 ->where('empresa_id', $orden->empresa_id)
                 ->where('orden_trabajo_id', $orden->id)
@@ -91,7 +91,8 @@ class CalendarioEventoService
                 'fin' => $orden->fecha_programada_fin ?: $orden->fecha_programada_inicio,
                 'todo_el_dia' => false,
                 'estado_codigo' => $orden->estado?->codigo ?? $orden->estado_codigo,
-                'ubicacion' => $orden->cliente?->localizacionPrincipal?->direccion,
+                'ubicacion' => $orden->localizacionCliente?->direccion_completa
+                    ?: $orden->cliente?->localizacionPrincipal?->direccion_completa,
                 'meta' => [
                     'origen' => 'orden_trabajo',
                     'numero_orden' => $orden->numero,
