@@ -10,7 +10,7 @@ import {
 import { CalendarDayCell } from "./CalendarDayCell";
 import "../styles/calendario.css";
 
-export function CalendarMonth({ events = [], monthDate, onNextMonth, onPreviousMonth }) {
+export function CalendarMonth({ events = [], monthDate, onNextMonth, onPreviousMonth, onSelectOrder }) {
     const days = getCalendarDays(monthDate);
     const currentMonth = monthDate.getMonth();
     const ordersByDate = groupOrdersByDate(events);
@@ -65,6 +65,7 @@ export function CalendarMonth({ events = [], monthDate, onNextMonth, onPreviousM
                             date={day}
                             isCurrentMonth={day.getMonth() === currentMonth}
                             key={dateKey}
+                            onSelectOrder={onSelectOrder}
                             orders={ordersByDate[dateKey] || []}
                             todayKey={todayKey}
                         />

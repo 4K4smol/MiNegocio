@@ -60,6 +60,56 @@ class InventarioEmpresaFlowTest extends TestCase
         ]);
     }
 
+    public function test_empresa_crea_ubicacion_sin_enviar_empresa_id(): void
+    {
+        [$user, $empresa] = $this->crearUsuarioEmpresa('B33000019');
+
+        $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-ubicaciones', [
+            'nombre' => 'Almacen principal',
+            'tipo' => 'almacen',
+        ])->assertCreated()
+            ->assertJsonPath('data.empresa_id', $empresa->id);
+
+        $this->assertDatabaseHas('inventario_ubicaciones', [
+            'empresa_id' => $empresa->id,
+            'nombre' => 'Almacen principal',
+        ]);
+    }
+
+    public function test_empresa_no_puede_crear_ubicacion_en_otra_empresa(): void
+    {
+        [$user] = $this->crearUsuarioEmpresa('B33000020');
+        [, $otraEmpresa] = $this->crearUsuarioEmpresa('B33000021');
+
+        $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-ubicaciones', [
+            'empresa_id' => $otraEmpresa->id,
+            'nombre' => 'Almacen ajeno',
+        ])->assertStatus(422);
+
+        $this->assertDatabaseMissing('inventario_ubicaciones', [
+            'empresa_id' => $otraEmpresa->id,
+            'nombre' => 'Almacen ajeno',
+        ]);
+    }
+
+    public function test_empresa_no_puede_editar_ubicacion_hacia_otra_empresa(): void
+    {
+        [$user, $empresa] = $this->crearUsuarioEmpresa('B33000022');
+        [, $otraEmpresa] = $this->crearUsuarioEmpresa('B33000023');
+        $ubicacion = $this->crearUbicacion($empresa->id, 'Almacen editable');
+
+        $this->actingAs($user, 'sanctum')->putJson("/api/v1/inventario-ubicaciones/{$ubicacion->id}", [
+            'empresa_id' => $otraEmpresa->id,
+            'nombre' => 'Almacen movido',
+        ])->assertStatus(422);
+
+        $this->assertDatabaseHas('inventario_ubicaciones', [
+            'id' => $ubicacion->id,
+            'empresa_id' => $empresa->id,
+            'nombre' => 'Almacen editable',
+        ]);
+    }
+
     public function test_listado_muestra_items(): void
     {
         [$user, $empresa] = $this->crearUsuarioEmpresa('B33000017');
@@ -184,7 +234,29 @@ class InventarioEmpresaFlowTest extends TestCase
         ]);
     }
 
-    public function test_admin_puede_operar_sobre_cualquier_empresa(): void
+    public function test_movimientos_no_permiten_update_ni_destroy(): void
+    {
+        [$user, $empresa] = $this->crearUsuarioEmpresa('B33000024');
+        $item = $this->crearItem($empresa->id, stock: 10);
+
+        $response = $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-movimientos', [
+            'inventario_item_id' => $item->id,
+            'tipo_movimiento_id' => $this->tipoMovimientoId('entrada'),
+            'cantidad' => 1,
+        ])->assertCreated();
+
+        $movimientoId = (int) $response->json('data.id');
+
+        $this->actingAs($user, 'sanctum')
+            ->putJson("/api/v1/inventario-movimientos/{$movimientoId}", ['motivo' => 'Cambio'])
+            ->assertStatus(405);
+
+        $this->actingAs($user, 'sanctum')
+            ->deleteJson("/api/v1/inventario-movimientos/{$movimientoId}")
+            ->assertStatus(405);
+    }
+
+    public function test_admin_no_tiene_rutas_operativas_de_stock(): void
     {
         $admin = $this->crearUsuarioAdmin();
         [, $empresa] = $this->crearUsuarioEmpresa('B33000012');
@@ -195,9 +267,13 @@ class InventarioEmpresaFlowTest extends TestCase
             'inventario_item_id' => $item->id,
             'tipo_movimiento_id' => $this->tipoMovimientoId('entrada'),
             'cantidad' => 4,
-        ])->assertCreated()
-            ->assertJsonPath('data.empresa_id', $empresa->id)
-            ->assertJsonPath('data.stock_posterior', '5.00');
+        ])->assertNotFound();
+
+        $this->actingAs($admin, 'sanctum')->postJson('/api/v1/inventario-movimientos', [
+            'inventario_item_id' => $item->id,
+            'tipo_movimiento_id' => $this->tipoMovimientoId('entrada'),
+            'cantidad' => 4,
+        ])->assertForbidden();
     }
 
     public function test_usuario_sin_modulo_inventario_no_puede_acceder(): void

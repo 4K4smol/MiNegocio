@@ -1,0 +1,101 @@
+import { DataTable } from "../../../shared/components/DataTable";
+import { EmptyState } from "../../../shared/components/EmptyState";
+import { formatCurrency } from "../../../shared/utils/formatters";
+import { calculateLine } from "../hooks/useOrdenForm";
+
+export function OrdenLineasTable({ disabled = false, errors = {}, lineas = [], onRemove, onUpdate, totals }) {
+    if (!lineas.length) {
+        return (
+            <EmptyState
+                title="Sin servicios"
+                description="Anade uno o varios servicios para calcular el importe de la orden."
+            />
+        );
+    }
+
+    return (
+        <>
+            <DataTable columns={["Servicio", "Cantidad", "Precio", "Dto.", "IVA", "Total", ""]}>
+                {lineas.map((linea, index) => {
+                    const calculated = calculateLine(linea);
+                    return (
+                        <tr key={`${linea.servicio_id}-${index}`}>
+                            <td>
+                                <strong>{linea.servicio_nombre}</strong>
+                                <input
+                                    disabled={disabled}
+                                    value={linea.descripcion}
+                                    onChange={(event) => onUpdate(index, "descripcion", event.target.value)}
+                                />
+                            </td>
+                            <td>
+                                <input
+                                    disabled={disabled}
+                                    min="0.01"
+                                    step="0.01"
+                                    type="number"
+                                    value={linea.cantidad}
+                                    onChange={(event) => onUpdate(index, "cantidad", event.target.value)}
+                                />
+                            </td>
+                            <td>
+                                <input
+                                    disabled={disabled}
+                                    min="0"
+                                    step="0.01"
+                                    type="number"
+                                    value={linea.precio_unitario}
+                                    onChange={(event) => onUpdate(index, "precio_unitario", event.target.value)}
+                                />
+                            </td>
+                            <td>
+                                <input
+                                    disabled={disabled}
+                                    max="100"
+                                    min="0"
+                                    step="0.01"
+                                    type="number"
+                                    value={linea.descuento_porcentaje}
+                                    onChange={(event) => onUpdate(index, "descuento_porcentaje", event.target.value)}
+                                />
+                            </td>
+                            <td>
+                                <input
+                                    disabled={disabled}
+                                    max="100"
+                                    min="0"
+                                    step="0.01"
+                                    type="number"
+                                    value={linea.iva_porcentaje}
+                                    onChange={(event) => onUpdate(index, "iva_porcentaje", event.target.value)}
+                                />
+                            </td>
+                            <td>{formatCurrency(calculated.total)}</td>
+                            <td>
+                                <button className="text-button" disabled={disabled} type="button" onClick={() => onRemove(index)}>
+                                    Quitar
+                                </button>
+                            </td>
+                        </tr>
+                    );
+                })}
+            </DataTable>
+            {errors.lineas ? <div className="form-error">{errors.lineas[0]}</div> : null}
+            <dl className="detail-list">
+                <div>
+                    <dt>Base imponible</dt>
+                    <dd>{formatCurrency(totals.base_imponible)}</dd>
+                </div>
+                <div>
+                    <dt>IVA</dt>
+                    <dd>{formatCurrency(totals.cuota_iva)}</dd>
+                </div>
+                <div>
+                    <dt>Total estimado</dt>
+                    <dd>{formatCurrency(totals.total)}</dd>
+                </div>
+            </dl>
+        </>
+    );
+}
+

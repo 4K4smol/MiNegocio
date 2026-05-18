@@ -15,9 +15,10 @@ import { InformesPage } from "../../features/informes/pages/InformesPage";
 import { InventarioPage } from "../../features/inventario/pages/InventarioPage";
 import { InventarioCreatePage } from "../../features/inventario/pages/InventarioCreatePage";
 import { InventarioEditPage } from "../../features/inventario/pages/InventarioEditPage";
-import { OrdenTrabajoCreatePage } from "../../features/ordenesTrabajo/pages/OrdenTrabajoCreatePage";
-import { OrdenTrabajoDetailPage } from "../../features/ordenesTrabajo/pages/OrdenTrabajoDetailPage";
-import { OrdenesTrabajoPage } from "../../features/ordenesTrabajo/pages/OrdenesTrabajoPage";
+import { OrdenCreatePage } from "../../features/ordenes/pages/OrdenCreatePage";
+import { OrdenDetailPage } from "../../features/ordenes/pages/OrdenDetailPage";
+import { OrdenEditPage } from "../../features/ordenes/pages/OrdenEditPage";
+import { OrdenesPage } from "../../features/ordenes/pages/OrdenesPage";
 import { ServicioCreatePage } from "../../features/servicios/pages/ServicioCreatePage";
 import { ServicioEditPage } from "../../features/servicios/pages/ServicioEditPage";
 import { ServiciosPage } from "../../features/servicios/pages/ServiciosPage";
@@ -37,9 +38,10 @@ export const privateRoutes = (
                 <Route path="servicios/nuevo" element={<ServicioCreatePage />} />
                 <Route path="servicios/:servicioId/editar" element={<ServicioEditPage />} />
                 <Route path="ordenes" element={<Navigate to="/app/ordenes-trabajo" replace />} />
-                <Route path="ordenes-trabajo" element={<OrdenesTrabajoPage />} />
-                <Route path="ordenes-trabajo/nueva" element={<OrdenTrabajoCreatePage />} />
-                <Route path="ordenes-trabajo/:ordenId" element={<OrdenTrabajoDetailPage />} />
+                <Route path="ordenes-trabajo" element={<OrdenesPage />} />
+                <Route path="ordenes-trabajo/nueva" element={<OrdenCreatePage />} />
+                <Route path="ordenes-trabajo/:ordenId" element={<OrdenDetailPage />} />
+                <Route path="ordenes-trabajo/:ordenId/editar" element={<OrdenEditPage />} />
                 <Route path="calendario" element={<CalendarioPage />} />
                 <Route path="facturacion" element={<Navigate to="/app/facturas" replace />} />
                 <Route path="facturas" element={<FacturasPage />} />

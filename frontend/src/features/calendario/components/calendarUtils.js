@@ -75,6 +75,7 @@ export const normalizeCalendarOrder = (event) => {
             "Sin cliente",
         dateKey: toDateKey(start),
         id: order.id || event.orden_trabajo_id || event.id,
+        start,
         status: normalizedStatus === "programado" ? "programada" : normalizedStatus,
         title: event.titulo || order.numero || "Orden de trabajo",
     };

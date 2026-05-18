@@ -1,10 +1,2 @@
-import { PlaceholderPage } from "../../../shared/components/PlaceholderPage";
+export { OrdenCreatePage as OrdenTrabajoCreatePage } from "../../ordenes/pages/OrdenCreatePage";
 
-export function OrdenTrabajoCreatePage() {
-    return (
-        <PlaceholderPage
-            title="Nueva orden"
-            description="Formulario preparado para conectar con ordenesTrabajoService.create."
-        />
-    );
-}

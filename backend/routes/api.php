@@ -121,8 +121,6 @@ Route::prefix('v1')->group(function (): void {
             Route::apiResource('tipos-factura', TipoFacturaController::class)->except(['index', 'show']);
             Route::apiResource('tipos-inventario-movimiento', TipoInventarioMovimientoController::class)->except(['index', 'show']);
             Route::apiResource('inventario-unidades-medida', InventarioUnidadMedidaController::class)->except(['index', 'show']);
-            Route::apiResource('admin/inventario-items', InventarioItemController::class)->only(['index', 'show', 'store', 'update']);
-            Route::apiResource('admin/inventario-movimientos', InventarioMovimientoController::class)->only(['index', 'show', 'store']);
             Route::apiResource('tipos-rectificacion', TipoRectificacionController::class)->except(['index', 'show']);
             Route::apiResource('tipos-registro-facturacion', TipoRegistroFacturacionController::class)->except(['index', 'show']);
 

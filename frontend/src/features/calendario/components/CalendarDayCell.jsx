@@ -1,7 +1,7 @@
 import { CalendarOrderBadge } from "./CalendarOrderBadge";
 import { toDateKey } from "./calendarUtils";
 
-export function CalendarDayCell({ date, isCurrentMonth, orders = [], todayKey }) {
+export function CalendarDayCell({ date, isCurrentMonth, onSelectOrder, orders = [], todayKey }) {
     const dateKey = toDateKey(date);
     const isToday = dateKey === todayKey;
 
@@ -19,7 +19,7 @@ export function CalendarDayCell({ date, isCurrentMonth, orders = [], todayKey })
             <span className="calendar-day-cell__number">{date.getDate()}</span>
             <div className="calendar-day-cell__orders">
                 {orders.map((order) => (
-                    <CalendarOrderBadge key={`${order.id}-${order.title}`} order={order} />
+                    <CalendarOrderBadge key={`${order.id}-${order.title}`} order={order} onClick={onSelectOrder} />
                 ))}
             </div>
         </article>
