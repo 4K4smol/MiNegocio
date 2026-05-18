@@ -7,7 +7,6 @@ namespace App\Services;
 use App\Models\EstadoFactura;
 use App\Models\Factura;
 use App\Models\TipoFactura;
-use App\Models\tipo_rectificacion;
 use App\Models\TipoRectificacion;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -16,89 +15,103 @@ use RuntimeException;
 class FacturaRectificativaService
 {
     private const ROL_ADMIN = 'admin';
-
     private const ESTADO_FACTURA_EMITIDA = 'emitida';
-
     private const TIPO_FACTURA_RECTIFICATIVA = 'rectificativa';
-
     private const TIPO_RECTIFICACION_DIFERENCIAS = 'por_diferencias';
-
     private const SERIE_RECTIFICATIVA = 'R';
 
     public function __construct(
         private readonly RegistroFacturacionService $registroFacturacionService,
-        private readonly RegistroEventoFacturacionService $registroEventoFacturacionService
+        private readonly RegistroEventoFacturacionService $registroEventoFacturacionService,
+        private readonly NumeracionFacturaService $numeracionFacturaService,
+        private readonly FacturaHistorialService $historialService
     ) {}
 
-    public function generarDesdeFactura(Factura $factura_original, User $user, ?string $motivo = null): Factura
+    public function generarDesdeFactura(Factura $facturaOriginal, User $user, ?string $motivo = null): Factura
     {
-        return DB::transaction(function () use ($factura_original, $user, $motivo): Factura {
-            $factura_original->loadMissing(['lineas', 'impuestos', 'estadoFactura', 'tipoFactura']);
-            $this->validarFacturaRectificable($factura_original, $user);
+        return DB::transaction(function () use ($facturaOriginal, $user, $motivo): Factura {
+            $facturaOriginal->loadMissing(['lineas', 'impuestos', 'estadoFactura', 'tipoFactura']);
+            $this->validarFacturaRectificable($facturaOriginal, $user);
 
             $tipoFactura = TipoFactura::query()->where('codigo', self::TIPO_FACTURA_RECTIFICATIVA)->first();
-            $tipo_rectificacion = TipoRectificacion::query()->where('codigo', self::TIPO_RECTIFICACION_DIFERENCIAS)->first();
+            $tipoRectificacion = TipoRectificacion::query()->where('codigo', self::TIPO_RECTIFICACION_DIFERENCIAS)->first();
             $estadoEmitida = EstadoFactura::query()->where('codigo', self::ESTADO_FACTURA_EMITIDA)->first();
 
-            if (!$tipoFactura || !$tipo_rectificacion || !$estadoEmitida) {
-                throw new RuntimeException('Faltan catálogos para generar factura rectificativa.');
+            if (! $tipoFactura || ! $tipoRectificacion || ! $estadoEmitida) {
+                throw new RuntimeException('Faltan catalogos para generar factura rectificativa.');
             }
 
-            $fecha_emision = now()->toDateString();
+            $numeracion = $this->numeracionFacturaService->siguiente((int) $facturaOriginal->empresa_id, self::SERIE_RECTIFICATIVA);
+            $fechaEmision = now()->toDateString();
+
             $rectificativa = Factura::query()->create([
-                'empresa_id' => $factura_original->empresa_id,
-                'cliente_id' => $factura_original->cliente_id,
+                'empresa_id' => $facturaOriginal->empresa_id,
+                'cliente_id' => $facturaOriginal->cliente_id,
+                'orden_trabajo_id' => $facturaOriginal->orden_trabajo_id,
                 'tipo_factura_id' => $tipoFactura->id,
                 'estado_factura_id' => $estadoEmitida->id,
-                'factura_rectificada_id' => $factura_original->id,
-                'tipo_rectificacion_id' => $tipo_rectificacion->id,
-                'motivo_rectificacion' => $motivo ?: 'Rectificación por diferencias.',
-                'serie' => self::SERIE_RECTIFICATIVA,
-                'numero' => $this->generarNumeroRectificativa((int) $factura_original->empresa_id),
-                'fecha_emision' => $fecha_emision,
-                'fecha_operacion' => $factura_original->fecha_operacion?->toDateString() ?: $factura_original->fecha_emision?->toDateString(),
-                'moneda' => $factura_original->moneda,
-                'emisor_nif' => $factura_original->emisor_nif,
-                'emisor_nombre_razon_social' => $factura_original->emisor_nombre_razon_social,
-                'emisor_domicilio_fiscal' => $factura_original->emisor_domicilio_fiscal,
-                'receptor_nif' => $factura_original->receptor_nif,
-                'receptor_nombre_razon_social' => $factura_original->receptor_nombre_razon_social,
-                'receptor_domicilio_fiscal' => $factura_original->receptor_domicilio_fiscal,
-                'receptor_cp' => $factura_original->receptor_cp,
-                'receptor_municipio' => $factura_original->receptor_municipio,
-                'receptor_provincia' => $factura_original->receptor_provincia,
-                'receptor_pais' => $factura_original->receptor_pais,
-                'subtotal' => -1 * (float) $factura_original->subtotal,
-                'cuota_iva' => -1 * (float) $factura_original->cuota_iva,
-                'total' => -1 * (float) $factura_original->total,
-                'observaciones' => 'Factura rectificativa de '.$factura_original->serie.'-'.$factura_original->numero,
+                'factura_rectificada_id' => $facturaOriginal->id,
+                'tipo_rectificacion_id' => $tipoRectificacion->id,
+                'motivo_rectificacion' => $motivo ?: 'Rectificacion por diferencias.',
+                'serie' => $numeracion['serie'],
+                'numero' => $numeracion['numero'],
+                'numero_completo' => $numeracion['numero_completo'],
+                'fecha_emision' => $fechaEmision,
+                'fecha_operacion' => $facturaOriginal->fecha_operacion?->toDateString() ?: $facturaOriginal->fecha_emision?->toDateString(),
+                'moneda' => $facturaOriginal->moneda,
+                'emisor_nif' => $facturaOriginal->emisor_nif,
+                'emisor_nombre_razon_social' => $facturaOriginal->emisor_nombre_razon_social,
+                'emisor_domicilio_fiscal' => $facturaOriginal->emisor_domicilio_fiscal,
+                'receptor_nif' => $facturaOriginal->receptor_nif,
+                'receptor_nombre_razon_social' => $facturaOriginal->receptor_nombre_razon_social,
+                'receptor_domicilio_fiscal' => $facturaOriginal->receptor_domicilio_fiscal,
+                'receptor_cp' => $facturaOriginal->receptor_cp,
+                'receptor_municipio' => $facturaOriginal->receptor_municipio,
+                'receptor_provincia' => $facturaOriginal->receptor_provincia,
+                'receptor_pais' => $facturaOriginal->receptor_pais,
+                'subtotal' => -1 * (float) $facturaOriginal->subtotal,
+                'cuota_iva' => -1 * (float) $facturaOriginal->cuota_iva,
+                'base_imponible' => -1 * (float) ($facturaOriginal->base_imponible ?: $facturaOriginal->subtotal),
+                'total_iva' => -1 * (float) ($facturaOriginal->total_iva ?: $facturaOriginal->cuota_iva),
+                'total_retencion' => -1 * (float) $facturaOriginal->total_retencion,
+                'total_descuento' => -1 * (float) $facturaOriginal->total_descuento,
+                'total' => -1 * (float) $facturaOriginal->total,
+                'observaciones' => 'Factura rectificativa de ' . ($facturaOriginal->numero_completo ?: $facturaOriginal->serie . '-' . $facturaOriginal->numero),
+                'created_by' => $user->id,
+                'updated_by' => $user->id,
             ]);
 
-            foreach ($factura_original->lineas as $linea) {
+            foreach ($facturaOriginal->lineas as $linea) {
                 $rectificativa->lineas()->create([
                     'orden_trabajo_linea_id' => null,
                     'servicio_id' => $linea->servicio_id,
                     'unidad_servicio_codigo' => $linea->unidad_servicio_codigo,
                     'unidad_servicio_nombre_snapshot' => $linea->unidad_servicio_nombre_snapshot,
                     'servicio_nombre_snapshot' => $linea->servicio_nombre_snapshot,
-                    'descripcion' => 'Rectificación: '.$linea->descripcion,
+                    'descripcion' => 'Rectificacion: ' . $linea->descripcion,
                     'cantidad' => -1 * (float) $linea->cantidad,
                     'precio_unitario' => $linea->precio_unitario,
                     'base_imponible' => -1 * (float) $linea->base_imponible,
                     'iva_porcentaje' => $linea->iva_porcentaje,
+                    'retencion_porcentaje' => $linea->retencion_porcentaje,
                     'descuento_porcentaje' => $linea->descuento_porcentaje,
                     'subtotal' => -1 * (float) $linea->subtotal,
                     'total_iva' => -1 * (float) $linea->total_iva,
+                    'cuota_retencion' => -1 * (float) $linea->cuota_retencion,
+                    'total_linea' => -1 * (float) ($linea->total_linea ?: $linea->total),
                     'total' => -1 * (float) $linea->total,
                     'orden' => $linea->orden,
                 ]);
             }
 
-            foreach ($factura_original->impuestos as $impuesto) {
+            foreach ($facturaOriginal->impuestos as $impuesto) {
                 $rectificativa->impuestos()->create([
+                    'tipo_impuesto' => $impuesto->tipo_impuesto ?? 'IVA',
                     'impuesto_codigo' => $impuesto->impuesto_codigo,
                     'impuesto_nombre' => $impuesto->impuesto_nombre,
+                    'base' => -1 * (float) ($impuesto->base ?: $impuesto->base_imponible),
                     'base_imponible' => -1 * (float) $impuesto->base_imponible,
+                    'porcentaje' => $impuesto->porcentaje ?: $impuesto->tipo_porcentaje,
                     'tipo_porcentaje' => $impuesto->tipo_porcentaje,
                     'cuota' => -1 * (float) $impuesto->cuota,
                     'es_exento' => $impuesto->es_exento,
@@ -111,6 +124,10 @@ class FacturaRectificativaService
                     'descripcion' => $impuesto->descripcion,
                 ]);
             }
+
+            $this->historialService->registrar($rectificativa, 'factura_rectificada', $user, null, $rectificativa->estado_factura_id, 'Factura rectificativa emitida.', [
+                'factura_rectificada_id' => $facturaOriginal->id,
+            ]);
 
             $this->registroEventoFacturacionService->registrar([
                 'empresa_id' => $rectificativa->empresa_id,
@@ -128,10 +145,21 @@ class FacturaRectificativaService
                 'factura_id' => $rectificativa->id,
                 'registro_facturacion_id' => $registroAlta->id,
                 'codigo_evento' => 'REGISTRO_FACTURACION_ALTA_RECTIFICATIVA_CREADO',
-                'descripcion' => 'Registro de facturación de alta para rectificativa generado.',
+                'descripcion' => 'Registro de facturacion de alta para rectificativa generado.',
             ]);
 
-            return $rectificativa->fresh(['lineas', 'impuestos', 'cliente', 'empresa', 'estadoFactura', 'tipoFactura', 'registrosFacturacion']);
+            $estadoRectificada = EstadoFactura::query()->where('codigo', 'rectificada')->first();
+            if ($estadoRectificada) {
+                $estadoAnteriorId = $facturaOriginal->estado_factura_id;
+                $facturaOriginal->estado_factura_id = $estadoRectificada->id;
+                $facturaOriginal->save();
+
+                $this->historialService->registrar($facturaOriginal, 'factura_rectificada', $user, $estadoAnteriorId, $estadoRectificada->id, 'Factura original marcada como rectificada.', [
+                    'factura_rectificativa_id' => $rectificativa->id,
+                ]);
+            }
+
+            return $rectificativa->fresh(['lineas', 'impuestos', 'cliente', 'empresa', 'estadoFactura', 'tipoFactura', 'registrosFacturacion', 'historial']);
         });
     }
 
@@ -152,25 +180,7 @@ class FacturaRectificativaService
         }
 
         if (! $factura->registrosFacturacion()->exists()) {
-            throw new RuntimeException('Solo se pueden rectificar facturas con registro de facturación.');
+            throw new RuntimeException('Solo se pueden rectificar facturas con registro de facturacion.');
         }
-    }
-
-    private function generarNumeroRectificativa(int $empresaId): string
-    {
-        $anio = now()->year;
-        $ultimaFactura = Factura::query()
-            ->where('empresa_id', $empresaId)
-            ->where('serie', self::SERIE_RECTIFICATIVA)
-            ->where('numero', 'like', 'R-'.$anio.'-%')
-            ->orderByDesc('id')
-            ->lockForUpdate()
-            ->first();
-
-        $siguienteNumero = $ultimaFactura
-            ? ((int) substr((string) $ultimaFactura->numero, -6)) + 1
-            : 1;
-
-        return 'R-'.$anio.'-'.str_pad((string) $siguienteNumero, 6, '0', STR_PAD_LEFT);
     }
 }

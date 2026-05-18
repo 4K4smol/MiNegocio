@@ -10,8 +10,12 @@ class TiposFacturaSeeder extends Seeder
     public function run(): void
     {
         $items = [
-            ['codigo' => 'ordinaria', 'nombre' => 'Ordinaria', 'orden' => 1],
-            ['codigo' => 'rectificativa', 'nombre' => 'Rectificativa', 'orden' => 2],
+            ['codigo' => 'presupuesto', 'nombre' => 'Presupuesto', 'orden' => 1],
+            ['codigo' => 'proforma', 'nombre' => 'Proforma', 'orden' => 2],
+            ['codigo' => 'ordinaria', 'nombre' => 'Factura ordinaria', 'orden' => 3],
+            ['codigo' => 'simplificada', 'nombre' => 'Factura simplificada', 'orden' => 4],
+            ['codigo' => 'rectificativa', 'nombre' => 'Factura rectificativa', 'orden' => 5],
+            ['codigo' => 'recapitulativa', 'nombre' => 'Factura recapitulativa', 'orden' => 6],
         ];
 
         foreach ($items as $item) {

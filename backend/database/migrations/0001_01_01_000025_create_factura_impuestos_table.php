@@ -12,9 +12,12 @@ return new class extends Migration
         Schema::create('factura_impuestos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('factura_id')->constrained('facturas')->restrictOnDelete()->cascadeOnUpdate();
+            $table->string('tipo_impuesto', 30)->default('IVA');
             $table->string('impuesto_codigo', 30);
             $table->string('impuesto_nombre', 100);
+            $table->decimal('base', 12, 2)->default(0.00);
             $table->decimal('base_imponible', 12, 2)->default(0.00);
+            $table->decimal('porcentaje', 5, 2)->default(0.00);
             $table->decimal('tipo_porcentaje', 5, 2)->default(0.00);
             $table->decimal('cuota', 12, 2)->default(0.00);
             $table->boolean('es_exento')->default(false);

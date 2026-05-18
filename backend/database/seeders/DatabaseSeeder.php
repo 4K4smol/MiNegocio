@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             ModulosSeeder::class,
 
             EstadosFacturaSeeder::class,
+            EstadosRemisionFacturacionSeeder::class,
             EstadosVerificacionSeeder::class,
             ModosRemisionFacturacionSeeder::class,
             TiposEventoFacturacionSeeder::class,

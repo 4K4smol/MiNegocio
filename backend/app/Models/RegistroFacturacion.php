@@ -16,11 +16,15 @@ class RegistroFacturacion extends Model
         'factura_id',
         'tipo_registro_facturacion_id',
         'modo_remision_facturacion_id',
+        'estado_remision_facturacion_id',
         'empresa_id',
+        'registro_anterior_id',
+        'registro_anulado_id',
         'emisor_nif',
         'emisor_nombre_razon_social',
         'serie',
         'numero',
+        'numero_completo',
         'fecha_expedicion',
         'tipo_factura_id',
         'cuota_total',
@@ -33,10 +37,12 @@ class RegistroFacturacion extends Model
         'registro_anterior_hash_64',
         'tipo_huella',
         'hash_actual',
+        'payload_json',
         'firma_electronica',
         'generado_at',
         'xml_contenido',
         'xml_version',
+        'qr_contenido',
         'codigo_sistema_informatico',
         'id_sistema_informatico',
         'nombre_sistema',
@@ -48,6 +54,7 @@ class RegistroFacturacion extends Model
         'productor_nif',
         'productor_nombre',
         'enviado_aeat_at',
+        'remitido_at',
         'respuesta_aeat',
         'estado_remision',
         'intentos_remision',
@@ -66,7 +73,9 @@ class RegistroFacturacion extends Model
         'indicador_multiples_ot' => 'boolean',
         'generado_at' => 'datetime',
         'enviado_aeat_at' => 'datetime',
+        'remitido_at' => 'datetime',
         'respuesta_aeat' => 'array',
+        'payload_json' => 'array',
         'estado_remision' => 'string',
         'intentos_remision' => 'integer',
         'ultimo_intento_at' => 'datetime',
@@ -92,6 +101,11 @@ class RegistroFacturacion extends Model
         return $this->belongsTo(ModoRemisionFacturacion::class, 'modo_remision_facturacion_id');
     }
 
+    public function estadoRemisionFacturacion(): BelongsTo
+    {
+        return $this->belongsTo(EstadoRemisionFacturacion::class, 'estado_remision_facturacion_id');
+    }
+
     public function empresa(): BelongsTo
     {
         return $this->belongsTo(Empresa::class, 'empresa_id');
@@ -100,5 +114,15 @@ class RegistroFacturacion extends Model
     public function tipoFactura(): BelongsTo
     {
         return $this->belongsTo(TipoFactura::class, 'tipo_factura_id');
+    }
+
+    public function registroAnterior(): BelongsTo
+    {
+        return $this->belongsTo(RegistroFacturacion::class, 'registro_anterior_id');
+    }
+
+    public function registroAnulado(): BelongsTo
+    {
+        return $this->belongsTo(RegistroFacturacion::class, 'registro_anulado_id');
     }
 }

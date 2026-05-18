@@ -11,14 +11,17 @@ return new class extends Migration
         // Registro técnico RRSIF / Veri*Factu (alta o anulación) encadenado por hash.
         Schema::create('registros_facturacion', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('factura_id')->constrained('facturas')->restrictOnDelete()->cascadeOnUpdate();
+            $table->foreignId('factura_id')->nullable()->constrained('facturas')->restrictOnDelete()->cascadeOnUpdate();
             $table->foreignId('tipo_registro_facturacion_id')->constrained('tipos_registro_facturacion')->restrictOnDelete()->cascadeOnUpdate();
             $table->foreignId('modo_remision_facturacion_id')->constrained('modos_remision_facturacion')->restrictOnDelete()->cascadeOnUpdate();
             $table->foreignId('empresa_id')->constrained('empresas')->restrictOnDelete()->cascadeOnUpdate();
+            $table->foreignId('registro_anterior_id')->nullable()->constrained('registros_facturacion')->nullOnDelete()->cascadeOnUpdate();
+            $table->foreignId('registro_anulado_id')->nullable()->constrained('registros_facturacion')->nullOnDelete()->cascadeOnUpdate();
             $table->string('emisor_nif', 20);
             $table->string('emisor_nombre_razon_social', 150);
             $table->string('serie', 20);
             $table->string('numero', 50);
+            $table->string('numero_completo', 80)->nullable();
             $table->date('fecha_expedicion');
             $table->foreignId('tipo_factura_id')->constrained('tipos_factura')->restrictOnDelete()->cascadeOnUpdate();
             $table->decimal('cuota_total', 12, 2)->default(0.00);
@@ -33,10 +36,12 @@ return new class extends Migration
 
             $table->string('tipo_huella', 30)->default('sha256');
             $table->string('hash_actual', 255);
+            $table->json('payload_json')->nullable();
             $table->text('firma_electronica')->nullable();
             $table->timestampTz('generado_at');
             $table->longText('xml_contenido');
             $table->string('xml_version', 20);
+            $table->text('qr_contenido')->nullable();
             $table->string('codigo_sistema_informatico', 50);
             $table->string('id_sistema_informatico', 60)->nullable();
             $table->string('nombre_sistema', 120);
@@ -48,6 +53,7 @@ return new class extends Migration
             $table->string('productor_nif', 20);
             $table->string('productor_nombre', 150);
             $table->timestampTz('enviado_aeat_at')->nullable();
+            $table->timestampTz('remitido_at')->nullable();
             $table->longText('respuesta_aeat')->nullable();
             $table->timestamps();
 

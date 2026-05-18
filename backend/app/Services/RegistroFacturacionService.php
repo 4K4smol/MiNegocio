@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\Factura;
 use App\Models\ModoRemisionFacturacion;
 use App\Models\RegistroFacturacion;
+use App\Models\EstadoRemisionFacturacion;
 use App\Models\TipoRegistroFacturacion;
 use Carbon\CarbonInterface;
 use RuntimeException;
@@ -36,26 +37,36 @@ class RegistroFacturacionService
     {
         $tipo = TipoRegistroFacturacion::query()->where('codigo', $tipoCodigo)->first();
         $modo = ModoRemisionFacturacion::query()->where('codigo', 'verifactu')->first();
+        $estadoRemision = EstadoRemisionFacturacion::query()->where('codigo', 'pendiente')->first();
         if (! $tipo || ! $modo) {
             throw new RuntimeException('Faltan catálogos de registro de facturación.');
         }
 
         $anterior = $this->obtenerRegistroAnterior((int) $factura->empresa_id);
+        $registroAnulado = $tipoCodigo === 'anulacion'
+            ? $factura->registrosFacturacion()
+                ->whereHas('tipoRegistroFacturacion', fn ($query) => $query->where('codigo', 'alta'))
+                ->orderByDesc('id')
+                ->first()
+            : null;
         $generadoAt = now()->setMicrosecond(0);
 
-        $hash = $this->calcularHash(
-            $this->construirPayloadHash($factura, $tipoCodigo, $anterior, $motivo, $generadoAt)
-        );
+        $payloadHash = $this->construirPayloadHash($factura, $tipoCodigo, $anterior, $motivo, $generadoAt);
+        $hash = $this->calcularHash($payloadHash);
 
         $data = [
             'factura_id' => $factura->id,
             'tipo_registro_facturacion_id' => $tipo->id,
             'modo_remision_facturacion_id' => $modo->id,
+            'estado_remision_facturacion_id' => $estadoRemision?->id,
             'empresa_id' => $factura->empresa_id,
+            'registro_anterior_id' => $anterior?->id,
+            'registro_anulado_id' => $registroAnulado?->id,
             'emisor_nif' => $factura->emisor_nif,
             'emisor_nombre_razon_social' => $factura->emisor_nombre_razon_social,
             'serie' => $factura->serie,
             'numero' => $factura->numero,
+            'numero_completo' => $factura->numero_completo ?: $factura->serie . '-' . $factura->numero,
             'fecha_expedicion' => $factura->fecha_emision->toDateString(),
             'tipo_factura_id' => $factura->tipo_factura_id,
             'cuota_total' => $factura->cuota_iva,
@@ -68,8 +79,10 @@ class RegistroFacturacionService
             'registro_anterior_hash_64' => $anterior?->hash_actual,
             'tipo_huella' => 'sha256',
             'hash_actual' => $hash,
+            'payload_json' => $payloadHash,
             'generado_at' => $generadoAt,
             'xml_version' => '1.0',
+            'qr_contenido' => json_encode($this->generarPayloadQrInterno($factura), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             'codigo_sistema_informatico' => self::CODIGO_SISTEMA,
             'nombre_sistema' => (string) config('app.name', 'MiNegocio'),
             'version_sistema' => (string) config('app.version', '1.0.0'),

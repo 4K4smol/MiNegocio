@@ -13,9 +13,12 @@ class FacturaImpuestoResource extends JsonResource
     {
         return $this->resource->only([
             'id',
+            'tipo_impuesto',
             'impuesto_codigo',
             'impuesto_nombre',
+            'base',
             'base_imponible',
+            'porcentaje',
             'tipo_porcentaje',
             'cuota'
         ]);

@@ -12,8 +12,12 @@ class EstadosFacturaSeeder extends Seeder
         $items = [
             ['codigo' => 'borrador', 'nombre' => 'Borrador', 'es_final' => false, 'permite_edicion' => true, 'orden' => 1],
             ['codigo' => 'emitida', 'nombre' => 'Emitida', 'es_final' => false, 'permite_edicion' => false, 'orden' => 2],
-            ['codigo' => 'pagada', 'nombre' => 'Pagada', 'es_final' => true, 'permite_edicion' => false, 'orden' => 3],
-            ['codigo' => 'anulada', 'nombre' => 'Anulada', 'es_final' => true, 'permite_edicion' => false, 'orden' => 4],
+            ['codigo' => 'enviada', 'nombre' => 'Enviada', 'es_final' => false, 'permite_edicion' => false, 'orden' => 3],
+            ['codigo' => 'pagada_parcial', 'nombre' => 'Pagada parcial', 'es_final' => false, 'permite_edicion' => false, 'orden' => 4],
+            ['codigo' => 'pagada', 'nombre' => 'Pagada', 'es_final' => true, 'permite_edicion' => false, 'orden' => 5],
+            ['codigo' => 'vencida', 'nombre' => 'Vencida', 'es_final' => false, 'permite_edicion' => false, 'orden' => 6],
+            ['codigo' => 'rectificada', 'nombre' => 'Rectificada', 'es_final' => true, 'permite_edicion' => false, 'orden' => 7],
+            ['codigo' => 'anulada', 'nombre' => 'Anulada', 'es_final' => true, 'permite_edicion' => false, 'orden' => 8],
         ];
 
         foreach ($items as $item) {

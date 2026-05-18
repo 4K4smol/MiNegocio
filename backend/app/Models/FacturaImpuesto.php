@@ -13,13 +13,15 @@ class FacturaImpuesto extends Model
     protected $table = 'factura_impuestos';
 
     protected $fillable = [
-        'factura_id', 'impuesto_codigo', 'impuesto_nombre', 'base_imponible', 'tipo_porcentaje', 'cuota',
+        'factura_id', 'tipo_impuesto', 'impuesto_codigo', 'impuesto_nombre', 'base', 'base_imponible', 'porcentaje', 'tipo_porcentaje', 'cuota',
         'es_exento', 'motivo_exencion', 'es_no_sujeto', 'motivo_no_sujecion',
         'recargo_equivalencia_porcentaje', 'recargo_equivalencia_cuota', 'calificacion', 'descripcion',
     ];
 
     protected $casts = [
+        'base' => 'decimal:2',
         'base_imponible' => 'decimal:2',
+        'porcentaje' => 'decimal:2',
         'tipo_porcentaje' => 'decimal:2',
         'cuota' => 'decimal:2',
         'es_exento' => 'boolean',

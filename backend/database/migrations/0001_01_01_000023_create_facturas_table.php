@@ -20,9 +20,11 @@ return new class extends Migration
             $table->string('motivo_rectificacion', 500)->nullable();
 
             $table->string('serie', 20)->default('A');
-            $table->string('numero', 50);
+            $table->string('numero', 50)->nullable();
+            $table->string('numero_completo', 80)->nullable();
             $table->date('fecha_emision');
             $table->date('fecha_operacion')->nullable();
+            $table->date('fecha_vencimiento')->nullable();
             $table->string('moneda', 3)->default('EUR');
 
             // Snapshot fiscal inmutable de emisor/receptor.
@@ -39,12 +41,20 @@ return new class extends Migration
 
             $table->decimal('subtotal', 12, 2)->default(0.00);
             $table->decimal('cuota_iva', 12, 2)->default(0.00);
+            $table->decimal('base_imponible', 12, 2)->default(0.00);
+            $table->decimal('total_iva', 12, 2)->default(0.00);
+            $table->decimal('total_retencion', 12, 2)->default(0.00);
+            $table->decimal('total_descuento', 12, 2)->default(0.00);
             $table->decimal('total', 12, 2)->default(0.00);
             $table->text('observaciones')->nullable();
+            $table->json('metadatos')->nullable();
             $table->boolean('pagada')->default(false);
             $table->date('fecha_pago')->nullable();
             $table->text('observaciones_pago')->nullable();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete()->cascadeOnUpdate();
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete()->cascadeOnUpdate();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->unique(['empresa_id', 'serie', 'numero']);
             $table->index(['empresa_id', 'fecha_emision']);

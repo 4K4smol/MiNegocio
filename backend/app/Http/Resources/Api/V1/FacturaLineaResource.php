@@ -21,8 +21,11 @@ class FacturaLineaResource extends JsonResource
             'descuento_porcentaje',
             'base_imponible',
             'iva_porcentaje',
+            'retencion_porcentaje',
             'subtotal',
             'total_iva',
+            'cuota_retencion',
+            'total_linea',
             'total',
             'orden'
         ]);

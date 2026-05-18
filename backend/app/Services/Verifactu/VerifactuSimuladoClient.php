@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Verifactu;
 
 use App\Models\RegistroFacturacion;
+use App\Models\EstadoRemisionFacturacion;
 use App\Models\User;
 use App\Services\RegistroEventoFacturacionService;
 use Illuminate\Support\Facades\DB;
@@ -52,9 +53,13 @@ class VerifactuSimuladoClient implements VerifactuClientInterface
                     ];
 
                     $registro->enviado_aeat_at = now();
+                    $registro->remitido_at = $registro->enviado_aeat_at;
                     $registro->ultimo_intento_at = now();
                     $registro->intentos_remision = (int) $registro->intentos_remision + 1;
                     $registro->estado_remision = 'enviado_simulado';
+                    $registro->estado_remision_facturacion_id = EstadoRemisionFacturacion::query()
+                        ->where('codigo', 'enviado')
+                        ->value('id');
                     $registro->codigo_error_aeat = null;
                     $registro->descripcion_error_aeat = null;
                     $registro->respuesta_aeat = $respuestaSimulada;
@@ -113,6 +118,9 @@ class VerifactuSimuladoClient implements VerifactuClientInterface
                 $registro->ultimo_intento_at = now();
                 $registro->intentos_remision = (int) $registro->intentos_remision + 1;
                 $registro->estado_remision = 'error_simulado';
+                $registro->estado_remision_facturacion_id = EstadoRemisionFacturacion::query()
+                    ->where('codigo', 'error')
+                    ->value('id');
                 $registro->codigo_error_aeat = 'SIM-500';
                 $registro->descripcion_error_aeat = $e->getMessage();
                 $registro->respuesta_aeat = $respuestaSimulada;

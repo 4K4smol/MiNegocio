@@ -169,10 +169,16 @@ Route::prefix('v1')->group(function (): void {
 
             Route::middleware('modulo:facturacion')->group(function (): void {
                 Route::get('facturas', [FacturaController::class, 'index']);
+                Route::post('facturas', [FacturaController::class, 'store']);
                 Route::get('facturas/{factura}', [FacturaController::class, 'show']);
+                Route::put('facturas/{id}', [FacturaController::class, 'update']);
+                Route::post('facturas/{factura}/emitir', [FacturaController::class, 'emitir']);
+                Route::post('facturas/{factura}/cobros', [FacturaController::class, 'registrarCobro']);
                 Route::post('facturas/{factura}/marcar-pagada', [FacturaController::class, 'marcarPagada']);
                 Route::post('facturas/{factura}/anular', [FacturaController::class, 'anular']);
                 Route::post('facturas/{factura}/rectificar', [FacturaController::class, 'rectificar']);
+                Route::get('facturas/{factura}/historial', [FacturaController::class, 'historial']);
+                Route::get('facturas/{factura}/registros-facturacion', [FacturaController::class, 'registrosFacturacion']);
 
                 Route::get('registros-facturacion', [RegistroFacturacionController::class, 'index']);
                 Route::get('registros-facturacion/exportar', [RegistroFacturacionController::class, 'exportar']);

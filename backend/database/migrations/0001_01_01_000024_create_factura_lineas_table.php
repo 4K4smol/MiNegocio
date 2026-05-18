@@ -22,9 +22,12 @@ return new class extends Migration
             $table->decimal('precio_unitario', 10, 2)->default(0.00);
             $table->decimal('base_imponible', 10, 2)->default(0.00);
             $table->decimal('iva_porcentaje', 5, 2)->default(21.00);
+            $table->decimal('retencion_porcentaje', 5, 2)->default(0.00);
             $table->decimal('descuento_porcentaje', 5, 2)->default(0.00);
             $table->decimal('subtotal', 10, 2)->default(0.00);
             $table->decimal('total_iva', 10, 2)->default(0.00);
+            $table->decimal('cuota_retencion', 10, 2)->default(0.00);
+            $table->decimal('total_linea', 10, 2)->default(0.00);
             $table->decimal('total', 10, 2)->default(0.00);
             $table->integer('orden')->default(1);
             $table->timestamps();

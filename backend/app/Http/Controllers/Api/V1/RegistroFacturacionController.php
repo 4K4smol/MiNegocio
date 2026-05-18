@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Models\RegistroFacturacion;
+use App\Http\Resources\Api\V1\RegistroFacturacionResource;
 use App\Services\RegistroFacturacionCadenaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,6 +15,7 @@ class RegistroFacturacionController extends AbstractCrudController
     public function __construct(private readonly RegistroFacturacionCadenaService $cadenaService) {}
 
     protected function modelClass(): string { return RegistroFacturacion::class; }
+    protected function resourceClass(): ?string { return RegistroFacturacionResource::class; }
 
     public function exportar(Request $request): JsonResponse
     {

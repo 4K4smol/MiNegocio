@@ -7,15 +7,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use RuntimeException;
 
 class Factura extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'facturas';
 
     protected $fillable = [
         'empresa_id',
         'cliente_id',
+        'orden_trabajo_id',
         'tipo_factura_id',
         'estado_factura_id',
         'factura_rectificada_id',
@@ -23,8 +27,10 @@ class Factura extends Model
         'motivo_rectificacion',
         'serie',
         'numero',
+        'numero_completo',
         'fecha_emision',
         'fecha_operacion',
+        'fecha_vencimiento',
         'moneda',
         'emisor_nif',
         'emisor_nombre_razon_social',
@@ -38,21 +44,34 @@ class Factura extends Model
         'receptor_pais',
         'subtotal',
         'cuota_iva',
+        'base_imponible',
+        'total_iva',
+        'total_retencion',
+        'total_descuento',
         'total',
         'observaciones',
+        'metadatos',
         'pagada',
         'fecha_pago',
         'observaciones_pago',
+        'created_by',
+        'updated_by',
     ];
 
     protected $casts = [
         'fecha_emision' => 'date',
         'fecha_operacion' => 'date',
+        'fecha_vencimiento' => 'date',
         'pagada' => 'boolean',
         'fecha_pago' => 'date',
         'subtotal' => 'decimal:2',
         'cuota_iva' => 'decimal:2',
+        'base_imponible' => 'decimal:2',
+        'total_iva' => 'decimal:2',
+        'total_retencion' => 'decimal:2',
+        'total_descuento' => 'decimal:2',
         'total' => 'decimal:2',
+        'metadatos' => 'array',
     ];
 
     protected static function booted(): void
@@ -71,8 +90,10 @@ class Factura extends Model
                 'motivo_rectificacion',
                 'serie',
                 'numero',
+                'numero_completo',
                 'fecha_emision',
                 'fecha_operacion',
+                'fecha_vencimiento',
                 'moneda',
                 'emisor_nif',
                 'emisor_nombre_razon_social',
@@ -86,6 +107,10 @@ class Factura extends Model
                 'receptor_pais',
                 'subtotal',
                 'cuota_iva',
+                'base_imponible',
+                'total_iva',
+                'total_retencion',
+                'total_descuento',
                 'total',
             ];
 
@@ -102,6 +127,10 @@ class Factura extends Model
     public function cliente(): BelongsTo
     {
         return $this->belongsTo(Cliente::class, 'cliente_id');
+    }
+    public function ordenTrabajo(): BelongsTo
+    {
+        return $this->belongsTo(OrdenTrabajo::class, 'orden_trabajo_id');
     }
     public function tipoFactura(): BelongsTo
     {
@@ -130,5 +159,17 @@ class Factura extends Model
     public function registrosFacturacion(): HasMany
     {
         return $this->hasMany(RegistroFacturacion::class, 'factura_id');
+    }
+    public function cobros(): HasMany
+    {
+        return $this->hasMany(FacturaCobro::class, 'factura_id');
+    }
+    public function historial(): HasMany
+    {
+        return $this->hasMany(FacturaHistorial::class, 'factura_id');
+    }
+    public function documentos(): HasMany
+    {
+        return $this->hasMany(FacturaDocumento::class, 'factura_id');
     }
 }

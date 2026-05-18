@@ -17,7 +17,12 @@ use RuntimeException;
 
 class FacturacionDesdeOrdenService
 {
-    public function __construct(private readonly RegistroFacturacionService $registroFacturacionService, private readonly RegistroEventoFacturacionService $registroEventoFacturacionService) {}
+    public function __construct(
+        private readonly RegistroFacturacionService $registroFacturacionService,
+        private readonly RegistroEventoFacturacionService $registroEventoFacturacionService,
+        private readonly NumeracionFacturaService $numeracionFacturaService,
+        private readonly FacturaHistorialService $historialService
+    ) {}
 
     private const ROL_ADMIN = 'admin';
 
@@ -55,17 +60,19 @@ class FacturacionDesdeOrdenService
 
             $tipoFactura = $this->obtenerTipoFactura();
             $estadoFactura = $this->obtenerEstadoFactura();
-            $numeroFactura = $this->generarNumeroFactura((int) $orden->empresa_id);
+            $numeracion = $this->numeracionFacturaService->siguiente((int) $orden->empresa_id, self::SERIE_FACTURA);
             $fechaEmision = now()->toDateString();
 
             $factura = Factura::query()->create([
                 'empresa_id' => $orden->empresa_id,
                 'cliente_id' => $orden->cliente_id,
+                'orden_trabajo_id' => $orden->id,
                 'tipo_factura_id' => $tipoFactura->id,
                 'estado_factura_id' => $estadoFactura->id,
 
-                'serie' => self::SERIE_FACTURA,
-                'numero' => $numeroFactura,
+                'serie' => $numeracion['serie'],
+                'numero' => $numeracion['numero'],
+                'numero_completo' => $numeracion['numero_completo'],
 
                 'fecha_emision' => $fechaEmision,
                 'fecha_operacion' => $fechaEmision,
@@ -81,6 +88,8 @@ class FacturacionDesdeOrdenService
                 'receptor_municipio' => $orden->cliente->localizacionPrincipal?->municipio,
                 'receptor_provincia' => $orden->cliente->localizacionPrincipal?->provincia,
                 'receptor_pais' => $orden->cliente->localizacionPrincipal?->pais,
+                'created_by' => $user->id,
+                'updated_by' => $user->id,
             ]);
 
             $lineasFactura = $this->crearLineasFactura($factura, $facturables);
@@ -95,6 +104,16 @@ class FacturacionDesdeOrdenService
                 'descripcion' => 'Factura generada desde orden de trabajo.',
             ]);
 
+            $this->historialService->registrar(
+                $factura,
+                'factura_emitida',
+                $user,
+                null,
+                $factura->estado_factura_id,
+                'Factura emitida desde orden de trabajo.',
+                ['orden_trabajo_id' => $orden->id]
+            );
+
             $registroAlta = $this->registroFacturacionService->crearRegistroFacturacionAlta($factura);
 
             $this->registroEventoFacturacionService->registrar([
@@ -108,7 +127,7 @@ class FacturacionDesdeOrdenService
 
             $this->marcarOrdenComoFacturada($orden);
 
-            return $factura->fresh(['lineas', 'impuestos']);
+            return $factura->fresh(['lineas', 'impuestos', 'cliente', 'empresa', 'estadoFactura', 'tipoFactura', 'registrosFacturacion', 'historial']);
         });
     }
 
@@ -178,28 +197,6 @@ class FacturacionDesdeOrdenService
         return $estado;
     }
 
-    private function generarNumeroFactura(int $empresaId): string
-    {
-        $anio = now()->year;
-
-        $ultimaFactura = Factura::query()
-            ->where('empresa_id', $empresaId)
-            ->where('serie', self::SERIE_FACTURA)
-            ->where('numero', 'like', 'F-'.$anio.'-%')
-            ->orderByDesc('id')
-            ->lockForUpdate()
-            ->first();
-
-        $siguienteNumero = 1;
-
-        if ($ultimaFactura) {
-            $ultimoSecuencial = (int) substr((string) $ultimaFactura->numero, -6);
-            $siguienteNumero = $ultimoSecuencial + 1;
-        }
-
-        return 'F-'.$anio.'-'.str_pad((string) $siguienteNumero, 6, '0', STR_PAD_LEFT);
-    }
-
     private function crearLineasFactura(Factura $factura, Collection $facturables): Collection
     {
         $lineasFactura = collect();
@@ -232,10 +229,13 @@ class FacturacionDesdeOrdenService
 
                 'base_imponible' => $baseImponible,
                 'iva_porcentaje' => $linea->iva_porcentaje,
+                'retencion_porcentaje' => $linea->retencion_porcentaje ?? 0,
                 'descuento_porcentaje' => $linea->descuento_porcentaje,
 
                 'subtotal' => $baseImponible,
                 'total_iva' => $cuotaIva,
+                'cuota_retencion' => 0,
+                'total_linea' => $total,
                 'total' => $total,
 
                 'orden' => $idx + 1,
@@ -266,8 +266,11 @@ class FacturacionDesdeOrdenService
             $cuota = round((float) $items->sum('total_iva'), 2);
 
             $factura->impuestos()->create([
+                'tipo_impuesto' => 'IVA',
                 'impuesto_codigo' => 'IVA',
                 'impuesto_nombre' => 'Impuesto sobre el Valor Añadido',
+                'base' => $base,
+                'porcentaje' => (float) $iva,
                 'tipo_porcentaje' => (float) $iva,
                 'base_imponible' => $base,
                 'cuota' => $cuota,
@@ -279,6 +282,10 @@ class FacturacionDesdeOrdenService
 
         $factura->subtotal = round($subtotal, 2);
         $factura->cuota_iva = round($cuotaIva, 2);
+        $factura->base_imponible = round($subtotal, 2);
+        $factura->total_iva = round($cuotaIva, 2);
+        $factura->total_retencion = 0;
+        $factura->total_descuento = 0;
         $factura->total = round($subtotal + $cuotaIva, 2);
         $factura->save();
     }
