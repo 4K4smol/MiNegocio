@@ -21,9 +21,10 @@ export const ordenesApi = {
         apiRequest(`${endpoints.ordenesTrabajo}/${id}/cancelar`, {
             method: "POST",
         }),
-    generarFactura: (id) =>
+    generarFactura: (id, body) =>
         apiRequest(`${endpoints.ordenesTrabajo}/${id}/generar-factura`, {
             method: "POST",
+            body,
         }),
 };
 

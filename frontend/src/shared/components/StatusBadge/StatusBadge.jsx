@@ -24,6 +24,10 @@ const STATUS_CONFIG = {
     inactivo: { label: "No activo", tone: "danger", legacy: "estado-rechazada" },
     rechazada: { label: "Rechazada", tone: "danger", legacy: "estado-rechazada" },
     rechazado: { label: "Rechazado", tone: "danger", legacy: "estado-rechazada" },
+    anulada: { label: "Anulada", tone: "danger", legacy: "estado-rechazada" },
+    borrador: { label: "Borrador", tone: "neutral", legacy: "estado-neutral" },
+    emitida: { label: "Emitida", tone: "info", legacy: "estado-revision" },
+    rectificada: { label: "Rectificada", tone: "warning", legacy: "estado-subsanacion" },
 };
 
 const normalizeStatus = (status = "") =>

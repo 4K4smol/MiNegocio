@@ -8,9 +8,10 @@ export function Button({
 }) {
     const variantClass = variant === "secondary" ? "button-secondary" : "";
     const ghostClass = variant === "ghost" ? "button-ghost" : "";
+    const dangerClass = variant === "danger" ? "button-danger" : "";
 
     return createElement(as, {
-        className: ["button", variantClass, ghostClass, className]
+        className: ["button", variantClass, ghostClass, dangerClass, className]
             .filter(Boolean)
             .join(" "),
         ...props,

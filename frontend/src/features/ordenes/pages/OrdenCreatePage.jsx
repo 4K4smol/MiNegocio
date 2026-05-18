@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ErrorState } from "../../../shared/components/ErrorState";
 import { PageHeader } from "../../../shared/components/PageHeader";
 import { unwrapApiData } from "../../../shared/utils/apiResponse";
-import { OrdenForm } from "../components/OrdenForm";
+import { OrdenCreateWizard } from "../components/OrdenCreateWizard";
 import { ordenesApi } from "../services/ordenesApi";
 
 export function OrdenCreatePage() {
@@ -34,8 +33,8 @@ export function OrdenCreatePage() {
                 description="Selecciona cliente, fecha y servicios para programar el trabajo."
                 title="Nueva orden"
             />
-            {error ? <ErrorState>{error}</ErrorState> : null}
-            <OrdenForm
+            <OrdenCreateWizard
+                error={error}
                 errors={errors}
                 saving={saving}
                 onCancel={() => navigate("/app/ordenes-trabajo")}
@@ -44,4 +43,3 @@ export function OrdenCreatePage() {
         </section>
     );
 }
-

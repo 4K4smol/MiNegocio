@@ -51,8 +51,8 @@ Route::prefix('v1')->group(function (): void {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('auth/login', [AuthController::class, 'login']);
 
-    Route::apiResource('tipos-documento-identidad', TipoDocumentoIdentidadController::class)->only(['index', 'show']);
-    Route::apiResource('tipos-empresa', TipoEmpresaController::class)->only(['index', 'show']);
+    Route::apiResource('tipos-documento-identidad', TipoDocumentoIdentidadController::class)->only(['index', 'show'])->parameters(['tipos-documento-identidad' => 'id']);
+    Route::apiResource('tipos-empresa', TipoEmpresaController::class)->only(['index', 'show'])->parameters(['tipos-empresa' => 'id']);
 
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('auth/me', [AuthController::class, 'me']);
@@ -63,7 +63,7 @@ Route::prefix('v1')->group(function (): void {
         Route::apiResource('estados-factura', EstadoFacturaController::class)->only(['index', 'show']);
 
         Route::middleware('admin')->group(function (): void {
-            Route::apiResource('estados-factura', EstadoFacturaController::class)->except(['index', 'show']);
+            Route::apiResource('estados-factura', EstadoFacturaController::class)->except(['index', 'show'])->parameters(['estados-factura' => 'id']);
 
             Route::apiResource('modulos', ModuloController::class);
             Route::patch('modulos/{id}/activar', [ModuloController::class, 'activar']);
@@ -107,22 +107,22 @@ Route::prefix('v1')->group(function (): void {
             Route::post('admin/empresas/{empresa}/modulos/{modulo}/activar', [AdminEmpresaModuloController::class, 'activar']);
             Route::post('admin/empresas/{empresa}/modulos/{modulo}/desactivar', [AdminEmpresaModuloController::class, 'desactivar']);
 
-            Route::apiResource('tipos-cliente', TipoClienteController::class)->except(['index', 'show']);
+            Route::apiResource('tipos-cliente', TipoClienteController::class)->except(['index', 'show'])->parameters(['tipos-cliente' => 'id']);
             Route::patch('tipos-cliente/{id}/activar', [TipoClienteController::class, 'activar']);
             Route::patch('tipos-cliente/{id}/desactivar', [TipoClienteController::class, 'desactivar']);
 
-            Route::apiResource('tipos-localizacion-cliente', TipoLocalizacionClienteController::class)->except(['index', 'show']);
+            Route::apiResource('tipos-localizacion-cliente', TipoLocalizacionClienteController::class)->except(['index', 'show'])->parameters(['tipos-localizacion-cliente' => 'id']);
             Route::patch('tipos-localizacion-cliente/{id}/activar', [TipoLocalizacionClienteController::class, 'activar']);
             Route::patch('tipos-localizacion-cliente/{id}/desactivar', [TipoLocalizacionClienteController::class, 'desactivar']);
 
-            Route::apiResource('tipos-empresa', TipoEmpresaController::class)->except(['index', 'show']);
-            Route::apiResource('tipos-documento-identidad', TipoDocumentoIdentidadController::class)->except(['index', 'show']);
-            Route::apiResource('tipos-evento-facturacion', TipoEventoFacturacionController::class)->except(['index', 'show']);
-            Route::apiResource('tipos-factura', TipoFacturaController::class)->except(['index', 'show']);
-            Route::apiResource('tipos-inventario-movimiento', TipoInventarioMovimientoController::class)->except(['index', 'show']);
-            Route::apiResource('inventario-unidades-medida', InventarioUnidadMedidaController::class)->except(['index', 'show']);
-            Route::apiResource('tipos-rectificacion', TipoRectificacionController::class)->except(['index', 'show']);
-            Route::apiResource('tipos-registro-facturacion', TipoRegistroFacturacionController::class)->except(['index', 'show']);
+            Route::apiResource('tipos-empresa', TipoEmpresaController::class)->except(['index', 'show'])->parameters(['tipos-empresa' => 'id']);
+            Route::apiResource('tipos-documento-identidad', TipoDocumentoIdentidadController::class)->except(['index', 'show'])->parameters(['tipos-documento-identidad' => 'id']);
+            Route::apiResource('tipos-evento-facturacion', TipoEventoFacturacionController::class)->except(['index', 'show'])->parameters(['tipos-evento-facturacion' => 'id']);
+            Route::apiResource('tipos-factura', TipoFacturaController::class)->except(['index', 'show'])->parameters(['tipos-factura' => 'id']);
+            Route::apiResource('tipos-inventario-movimiento', TipoInventarioMovimientoController::class)->except(['index', 'show'])->parameters(['tipos-inventario-movimiento' => 'id']);
+            Route::apiResource('inventario-unidades-medida', InventarioUnidadMedidaController::class)->except(['index', 'show'])->parameters(['inventario-unidades-medida' => 'id']);
+            Route::apiResource('tipos-rectificacion', TipoRectificacionController::class)->except(['index', 'show'])->parameters(['tipos-rectificacion' => 'id']);
+            Route::apiResource('tipos-registro-facturacion', TipoRegistroFacturacionController::class)->except(['index', 'show'])->parameters(['tipos-registro-facturacion' => 'id']);
 
             Route::get('admin/verificaciones-usuario', [VerificacionUsuarioController::class, 'index']);
             Route::get('admin/verificaciones-usuario/{id}', [VerificacionUsuarioController::class, 'show']);
@@ -206,14 +206,14 @@ Route::prefix('v1')->group(function (): void {
             Route::apiResource('tareas', TareaController::class);
         });
 
-        Route::apiResource('tipos-cliente', TipoClienteController::class)->only(['index', 'show']);
-        Route::apiResource('tipos-evento-facturacion', TipoEventoFacturacionController::class)->only(['index', 'show']);
-        Route::apiResource('tipos-factura', TipoFacturaController::class)->only(['index', 'show']);
-        Route::apiResource('tipos-inventario-movimiento', TipoInventarioMovimientoController::class)->only(['index', 'show']);
-        Route::apiResource('inventario-unidades-medida', InventarioUnidadMedidaController::class)->only(['index', 'show']);
-        Route::apiResource('tipos-localizacion-cliente', TipoLocalizacionClienteController::class)->only(['index', 'show']);
-        Route::apiResource('tipos-rectificacion', TipoRectificacionController::class)->only(['index', 'show']);
-        Route::apiResource('tipos-registro-facturacion', TipoRegistroFacturacionController::class)->only(['index', 'show']);
+        Route::apiResource('tipos-cliente', TipoClienteController::class)->only(['index', 'show'])->parameters(['tipos-cliente' => 'id']);
+        Route::apiResource('tipos-evento-facturacion', TipoEventoFacturacionController::class)->only(['index', 'show'])->parameters(['tipos-evento-facturacion' => 'id']);
+        Route::apiResource('tipos-factura', TipoFacturaController::class)->only(['index', 'show'])->parameters(['tipos-factura' => 'id']);
+        Route::apiResource('tipos-inventario-movimiento', TipoInventarioMovimientoController::class)->only(['index', 'show'])->parameters(['tipos-inventario-movimiento' => 'id']);
+        Route::apiResource('inventario-unidades-medida', InventarioUnidadMedidaController::class)->only(['index', 'show'])->parameters(['inventario-unidades-medida' => 'id']);
+        Route::apiResource('tipos-localizacion-cliente', TipoLocalizacionClienteController::class)->only(['index', 'show'])->parameters(['tipos-localizacion-cliente' => 'id']);
+        Route::apiResource('tipos-rectificacion', TipoRectificacionController::class)->only(['index', 'show'])->parameters(['tipos-rectificacion' => 'id']);
+        Route::apiResource('tipos-registro-facturacion', TipoRegistroFacturacionController::class)->only(['index', 'show'])->parameters(['tipos-registro-facturacion' => 'id']);
 
         Route::get('verificaciones-usuario/me', [VerificacionUsuarioController::class, 'showMine']);
         Route::post('verificaciones-usuario', [VerificacionUsuarioController::class, 'store']);

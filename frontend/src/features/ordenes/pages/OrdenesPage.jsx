@@ -55,10 +55,10 @@ export function OrdenesPage() {
         }
     };
 
-    const handleGenerarFactura = async () => {
+    const handleGenerarFactura = async (mode = "emitir") => {
         if (!facturaOrden) return;
         await runAction(async () => {
-            const response = await ordenesApi.generarFactura(facturaOrden.id);
+            const response = await ordenesApi.generarFactura(facturaOrden.id, { modo: mode });
             const factura = unwrapApiData(response);
             setFacturaOrden(null);
             navigate(`/app/facturas/${factura.id}`);

@@ -1,8 +1,12 @@
 export { Badge } from "./Badge";
 export { Button } from "./Button";
 export { Card } from "./Card";
+export { FormSection } from "./FormSection";
 export { Input } from "./Input";
 export { Modal } from "./Modal";
+export { MoneyInput } from "./MoneyInput";
 export { Select } from "./Select";
+export { Stepper } from "./Stepper";
+export { SwitchInput } from "./SwitchInput";
 export { Table } from "./Table";
 export { Textarea } from "./Textarea";

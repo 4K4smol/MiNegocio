@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useEffect, useId } from "react";
 
 const joinClasses = (...classes) => classes.filter(Boolean).join(" ");
 
@@ -22,6 +22,13 @@ export function Modal({
 }) {
     const titleId = useId();
     const visible = open ?? isOpen;
+
+    useEffect(() => {
+        if (!visible || closeDisabled) return;
+        const handler = (e) => { if (e.key === "Escape") onClose?.(); };
+        document.addEventListener("keydown", handler);
+        return () => document.removeEventListener("keydown", handler);
+    }, [visible, closeDisabled, onClose]);
 
     if (!visible) return null;
 

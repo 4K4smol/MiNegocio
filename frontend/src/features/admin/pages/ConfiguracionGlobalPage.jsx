@@ -14,6 +14,10 @@ const TABS = [
     ["tipos_localizacion", "Tipos de localizacion"],
     ["tipos_empresa", "Tipos de empresa"],
     ["tipos_documento_identidad", "Tipos de documento"],
+    ["tipos_evento_facturacion", "Tipos de evento"],
+    ["tipos_factura", "Tipos de factura"],
+    ["tipos_rectificacion", "Tipos de rectificacion"],
+    ["tipos_registro_facturacion", "Tipos de registro"],
     ["roles", "Roles"],
     ["estados_verificacion", "Estados de verificacion"],
     ["tipos_tarifa_servicio", "Tipos de tarifa de servicio"],
@@ -39,6 +43,11 @@ const commonCatalogFields = [
     { name: "descripcion", label: "Descripcion", type: "textarea", wide: true },
     { name: "orden", label: "Orden", type: "number", min: 1, defaultValue: 1 },
     { name: "activo", label: "Activo", type: "checkbox", defaultValue: true },
+];
+
+const nameCatalogFields = [
+    { name: "nombre", label: "Nombre", required: true },
+    { name: "descripcion", label: "Descripcion", type: "textarea", wide: true },
 ];
 
 const formatDate = (value) =>
@@ -75,8 +84,6 @@ export function ConfiguracionGlobalPage() {
     const [readonlyCatalogs, setReadonlyCatalogs] = useState({
         roles: [],
         estados_verificacion: [],
-        tipos_empresa: [],
-        tipos_documento_identidad: [],
     });
     const [loadingReadonly, setLoadingReadonly] = useState(true);
     const [error, setError] = useState("");
@@ -170,6 +177,96 @@ export function ConfiguracionGlobalPage() {
                 { name: "activo", label: "Activo", type: "checkbox", defaultValue: true },
             ],
         },
+        tipos_empresa: {
+            title: "Tipos de empresa",
+            singular: "tipo de empresa",
+            listFunction: adminApi.getTiposEmpresa,
+            createFunction: adminApi.crearTipoEmpresa,
+            updateFunction: adminApi.actualizarTipoEmpresa,
+            searchKeys: ["nombre", "descripcion"],
+            columns: [
+                textColumn("nombre", "Nombre"),
+                textColumn("descripcion", "Descripcion"),
+            ],
+            fields: nameCatalogFields,
+        },
+        tipos_documento_identidad: {
+            title: "Tipos de documento",
+            singular: "tipo de documento",
+            listFunction: adminApi.getTiposDocumentoIdentidad,
+            createFunction: adminApi.crearTipoDocumentoIdentidad,
+            updateFunction: adminApi.actualizarTipoDocumentoIdentidad,
+            searchKeys: ["nombre", "descripcion"],
+            columns: [
+                textColumn("nombre", "Nombre"),
+                textColumn("descripcion", "Descripcion"),
+            ],
+            fields: nameCatalogFields,
+        },
+        tipos_evento_facturacion: {
+            title: "Tipos de evento",
+            singular: "tipo de evento",
+            listFunction: adminApi.getTiposEventoFacturacion,
+            createFunction: adminApi.crearTipoEventoFacturacion,
+            updateFunction: adminApi.actualizarTipoEventoFacturacion,
+            searchKeys: ["codigo", "nombre", "descripcion"],
+            columns: [
+                textColumn("codigo", "Codigo"),
+                textColumn("nombre", "Nombre"),
+                textColumn("descripcion", "Descripcion"),
+                textColumn("orden", "Orden"),
+                catalogStatusColumn,
+            ],
+            fields: commonCatalogFields,
+        },
+        tipos_factura: {
+            title: "Tipos de factura",
+            singular: "tipo de factura",
+            listFunction: adminApi.getTiposFactura,
+            createFunction: adminApi.crearTipoFactura,
+            updateFunction: adminApi.actualizarTipoFactura,
+            searchKeys: ["codigo", "nombre", "descripcion"],
+            columns: [
+                textColumn("codigo", "Codigo"),
+                textColumn("nombre", "Nombre"),
+                textColumn("descripcion", "Descripcion"),
+                textColumn("orden", "Orden"),
+                catalogStatusColumn,
+            ],
+            fields: commonCatalogFields,
+        },
+        tipos_rectificacion: {
+            title: "Tipos de rectificacion",
+            singular: "tipo de rectificacion",
+            listFunction: adminApi.getTiposRectificacion,
+            createFunction: adminApi.crearTipoRectificacion,
+            updateFunction: adminApi.actualizarTipoRectificacion,
+            searchKeys: ["codigo", "nombre", "descripcion"],
+            columns: [
+                textColumn("codigo", "Codigo"),
+                textColumn("nombre", "Nombre"),
+                textColumn("descripcion", "Descripcion"),
+                textColumn("orden", "Orden"),
+                catalogStatusColumn,
+            ],
+            fields: commonCatalogFields,
+        },
+        tipos_registro_facturacion: {
+            title: "Tipos de registro",
+            singular: "tipo de registro",
+            listFunction: adminApi.getTiposRegistroFacturacion,
+            createFunction: adminApi.crearTipoRegistroFacturacion,
+            updateFunction: adminApi.actualizarTipoRegistroFacturacion,
+            searchKeys: ["codigo", "nombre", "descripcion"],
+            columns: [
+                textColumn("codigo", "Codigo"),
+                textColumn("nombre", "Nombre"),
+                textColumn("descripcion", "Descripcion"),
+                textColumn("orden", "Orden"),
+                catalogStatusColumn,
+            ],
+            fields: commonCatalogFields,
+        },
         inventario_unidades_medida: {
             title: "Unidades de inventario",
             singular: "unidad de medida",
@@ -211,17 +308,11 @@ export function ConfiguracionGlobalPage() {
             setLoadingReadonly(true);
             setError("");
             try {
-                const [catalogos, tiposEmpresa, tiposDocumento] = await Promise.all([
-                    adminApi.getAdminCatalogos(),
-                    adminApi.getTiposEmpresa({ per_page: 100 }),
-                    adminApi.getTiposDocumentoIdentidad({ per_page: 100 }),
-                ]);
+                const catalogos = await adminApi.getAdminCatalogos();
 
                 setReadonlyCatalogs({
                     roles: catalogos?.roles || [],
                     estados_verificacion: catalogos?.estados_verificacion || [],
-                    tipos_empresa: tiposEmpresa?.items || catalogos?.tipos_empresa || [],
-                    tipos_documento_identidad: tiposDocumento?.items || catalogos?.tipos_documento_identidad || [],
                 });
             } catch (apiError) {
                 setError(apiError.message || "No se ha podido cargar la configuracion.");
@@ -250,8 +341,6 @@ export function ConfiguracionGlobalPage() {
         const descriptions = {
             roles: "Los roles son sensibles porque gobiernan el acceso de usuarios.",
             estados_verificacion: "Estados usados por los flujos de alta, revision y subsanacion.",
-            tipos_empresa: "Catalogo usado por el registro y por las reglas de representacion.",
-            tipos_documento_identidad: "Catalogo usado por la verificacion de identidad.",
         };
 
         return (

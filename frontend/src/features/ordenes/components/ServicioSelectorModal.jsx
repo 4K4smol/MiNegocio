@@ -37,6 +37,7 @@ export function ServicioSelectorModal({ onClose, onSelect, open, servicios = [] 
                     onChange={(event) => setSearch(event.target.value)}
                 />
             </section>
+            <p className="field-help" style={{ marginTop: 4 }}>Solo se muestran servicios activos.</p>
             <DataTable
                 columns={["Servicio", "Unidad", "Precio vigente", "Accion"]}
                 empty={!filtered.length ? <EmptyState title="No hay servicios disponibles" /> : null}
