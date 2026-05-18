@@ -30,6 +30,14 @@ class RegistroFacturacionService
 
     public function crearRegistroFacturacionAnulacion(Factura $factura, string $motivo = 'Anulación de factura'): RegistroFacturacion
     {
+        $tieneAlta = $factura->registrosFacturacion()
+            ->whereHas('tipoRegistroFacturacion', fn ($q) => $q->where('codigo', 'alta'))
+            ->exists();
+
+        if (! $tieneAlta) {
+            throw new RuntimeException('Solo se pueden anular facturas emitidas con registro de facturacion de alta.');
+        }
+
         return $this->crearRegistro($factura, 'anulacion', $motivo);
     }
 

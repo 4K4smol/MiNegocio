@@ -171,16 +171,37 @@ class FacturaRectificativaService
             throw new RuntimeException('No puedes rectificar facturas de otra empresa.');
         }
 
-        if ($factura->tipoFactura?->codigo === self::TIPO_FACTURA_RECTIFICATIVA) {
+        $codigoTipo = $factura->tipoFactura?->codigo;
+        if ($codigoTipo === self::TIPO_FACTURA_RECTIFICATIVA) {
             throw new RuntimeException('No se puede rectificar una factura rectificativa.');
         }
 
-        if ($factura->estadoFactura?->codigo !== self::ESTADO_FACTURA_EMITIDA) {
-            throw new RuntimeException('Solo se pueden rectificar facturas emitidas.');
+        $codigoEstado = $factura->estadoFactura?->codigo;
+
+        if ($codigoEstado === 'borrador') {
+            throw new RuntimeException('No se pueden rectificar facturas en borrador. Edítalas directamente.');
         }
 
-        if (! $factura->registrosFacturacion()->exists()) {
-            throw new RuntimeException('Solo se pueden rectificar facturas con registro de facturacion.');
+        if ($codigoEstado === 'anulada') {
+            throw new RuntimeException('No se pueden rectificar facturas anuladas.');
+        }
+
+        if ($codigoEstado === 'rectificada') {
+            throw new RuntimeException('No se puede rectificar una factura que ya ha sido rectificada.');
+        }
+
+        // Permitimos rectificar facturas emitidas, pagadas o con pago parcial
+        $estadosPermitidos = [self::ESTADO_FACTURA_EMITIDA, 'pagada', 'pagada_parcial'];
+        if (! in_array($codigoEstado, $estadosPermitidos, true)) {
+            throw new RuntimeException('Solo se pueden rectificar facturas emitidas o pagadas.');
+        }
+
+        $tieneAlta = $factura->registrosFacturacion()
+            ->whereHas('tipoRegistroFacturacion', fn ($q) => $q->where('codigo', 'alta'))
+            ->exists();
+
+        if (! $tieneAlta) {
+            throw new RuntimeException('Solo se pueden rectificar facturas con registro de facturacion de alta.');
         }
     }
 }

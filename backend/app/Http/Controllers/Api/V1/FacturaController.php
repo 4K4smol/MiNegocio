@@ -153,23 +153,50 @@ class FacturaController extends AbstractCrudController
             return $this->forbidden();
         }
 
+        $factura->loadMissing(['estadoFactura', 'registrosFacturacion']);
+
         $estadoAnulada = EstadoFactura::query()->where('codigo', 'anulada')->first();
         if (! $estadoAnulada) {
             throw new RuntimeException('No existe el estado de factura "anulada". Ejecuta los seeders de estados de factura.');
         }
 
-        if ($factura->estadoFactura?->codigo === 'anulada') {
+        $codigoEstado = $factura->estadoFactura?->codigo;
+
+        if ($codigoEstado === 'borrador') {
+            throw new RuntimeException('No se puede anular una factura en borrador. Elimínala directamente.');
+        }
+
+        if ($codigoEstado === 'anulada') {
             throw new RuntimeException('La factura ya esta anulada.');
+        }
+
+        if ($codigoEstado === 'rectificada') {
+            throw new RuntimeException('No se puede anular una factura que ya ha sido rectificada.');
+        }
+
+        if (! in_array($codigoEstado, ['emitida', 'pagada', 'pagada_parcial'], true)) {
+            throw new RuntimeException('Solo se pueden anular facturas emitidas o pagadas.');
+        }
+
+        $tieneAlta = $factura->registrosFacturacion()
+            ->whereHas('tipoRegistroFacturacion', fn ($q) => $q->where('codigo', 'alta'))
+            ->exists();
+
+        if (! $tieneAlta) {
+            throw new RuntimeException('Solo se pueden anular facturas emitidas con registro de facturacion de alta.');
         }
 
         DB::transaction(function () use ($factura, $estadoAnulada, $request): void {
             $estadoAnteriorId = $factura->estado_factura_id;
+            $motivo = trim((string) $request->input('motivo_anulacion', ''));
             $factura->estado_factura_id = $estadoAnulada->id;
-            $factura->observaciones = trim((string) $request->input('motivo_anulacion', '')) ?: $factura->observaciones;
+            if ($motivo !== '') {
+                $factura->observaciones = $motivo;
+            }
             $factura->save();
 
             $this->historialService->registrar($factura, 'factura_anulada', $request->user(), $estadoAnteriorId, $estadoAnulada->id, 'Factura anulada.', [
-                'motivo' => $request->input('motivo_anulacion'),
+                'motivo' => $motivo ?: null,
             ]);
 
             $this->registroEventoFacturacionService->registrar([
@@ -180,7 +207,7 @@ class FacturaController extends AbstractCrudController
                 'descripcion' => 'Factura anulada.',
             ]);
 
-            $registroAnulacion = $this->registroFacturacionService->crearRegistroFacturacionAnulacion($factura, (string) $request->input('motivo_anulacion', 'Anulacion de factura'));
+            $registroAnulacion = $this->registroFacturacionService->crearRegistroFacturacionAnulacion($factura, $motivo ?: 'Anulacion de factura');
 
             $this->registroEventoFacturacionService->registrar([
                 'empresa_id' => $factura->empresa_id,

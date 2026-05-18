@@ -172,6 +172,7 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('facturas', [FacturaController::class, 'store']);
                 Route::get('facturas/{factura}', [FacturaController::class, 'show']);
                 Route::put('facturas/{id}', [FacturaController::class, 'update']);
+                Route::delete('facturas/{id}', [FacturaController::class, 'destroy']);
                 Route::post('facturas/{factura}/emitir', [FacturaController::class, 'emitir']);
                 Route::post('facturas/{factura}/cobros', [FacturaController::class, 'registrarCobro']);
                 Route::post('facturas/{factura}/marcar-pagada', [FacturaController::class, 'marcarPagada']);

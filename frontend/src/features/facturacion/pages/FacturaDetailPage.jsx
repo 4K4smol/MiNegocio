@@ -15,10 +15,12 @@ import { facturasService } from '../services/facturasService'
 import {
     getEstadoFactura,
     getNumeroFactura,
+    isFacturaAnulada,
     isFacturaBorrador,
     isFacturaEmitida,
     isFacturaFinalizada,
     isFacturaPagada,
+    isFacturaRectificada,
 } from '../utils/facturaUtils'
 
 const TABS = [
@@ -84,10 +86,17 @@ function ResumenTab({ factura }) {
                         <dd>{formatDate(factura.fecha_operacion)}</dd>
                     </div>
                 ) : null}
+                {factura.fecha_vencimiento ? (
+                    <div>
+                        <dt>Fecha de vencimiento</dt>
+                        <dd>{formatDate(factura.fecha_vencimiento)}</dd>
+                    </div>
+                ) : null}
                 <div>
                     <dt>Cliente / Receptor</dt>
                     <dd>
                         {factura.receptor_nombre_razon_social ||
+                            factura.cliente?.razon_social ||
                             factura.cliente?.nombre ||
                             'Sin cliente'}
                     </dd>
@@ -98,16 +107,16 @@ function ResumenTab({ factura }) {
                         <dd>{factura.receptor_nif}</dd>
                     </div>
                 ) : null}
-                {factura.receptor_direccion ? (
+                {factura.receptor_domicilio_fiscal ? (
                     <div>
-                        <dt>Dirección receptor</dt>
-                        <dd>{factura.receptor_direccion}</dd>
+                        <dt>Domicilio fiscal receptor</dt>
+                        <dd>{factura.receptor_domicilio_fiscal}</dd>
                     </div>
                 ) : null}
-                {factura.notas ? (
+                {factura.observaciones ? (
                     <div>
-                        <dt>Notas</dt>
-                        <dd>{factura.notas}</dd>
+                        <dt>Observaciones</dt>
+                        <dd>{factura.observaciones}</dd>
                     </div>
                 ) : null}
             </dl>
@@ -121,16 +130,10 @@ function ResumenTab({ factura }) {
                     <dt>IVA</dt>
                     <dd>{formatCurrency(factura.cuota_iva)}</dd>
                 </div>
-                {factura.cuota_recargo ? (
+                {factura.total_retencion > 0 ? (
                     <div>
-                        <dt>Recargo de equivalencia</dt>
-                        <dd>{formatCurrency(factura.cuota_recargo)}</dd>
-                    </div>
-                ) : null}
-                {factura.irpf ? (
-                    <div>
-                        <dt>IRPF</dt>
-                        <dd>{formatCurrency(factura.irpf)}</dd>
+                        <dt>Retención</dt>
+                        <dd>− {formatCurrency(factura.total_retencion)}</dd>
                     </div>
                 ) : null}
                 <div>
@@ -143,22 +146,7 @@ function ResumenTab({ factura }) {
                 </div>
             </dl>
 
-            {factura.motivo_anulacion ? (
-                <div
-                    style={{
-                        gridColumn: '1 / -1',
-                        padding: '1rem',
-                        borderRadius: '0.5rem',
-                        background: '#fef2f2',
-                        borderLeft: '4px solid #ef4444',
-                    }}
-                >
-                    <strong style={{ color: '#dc2626' }}>Motivo de anulación:</strong>{' '}
-                    {factura.motivo_anulacion}
-                </div>
-            ) : null}
-
-            {factura.motivo_rectificacion ? (
+            {factura.factura_rectificada_id ? (
                 <div
                     style={{
                         gridColumn: '1 / -1',
@@ -168,8 +156,12 @@ function ResumenTab({ factura }) {
                         borderLeft: '4px solid #f59e0b',
                     }}
                 >
-                    <strong style={{ color: '#d97706' }}>Motivo de rectificación:</strong>{' '}
-                    {factura.motivo_rectificacion}
+                    <strong style={{ color: '#d97706' }}>Factura rectificativa</strong>
+                    {factura.motivo_rectificacion ? (
+                        <span style={{ marginLeft: '0.5rem', color: '#374151' }}>
+                            — {factura.motivo_rectificacion}
+                        </span>
+                    ) : null}
                 </div>
             ) : null}
         </div>
@@ -181,90 +173,263 @@ function LineasTab({ factura }) {
         return <p style={{ color: '#6b7280' }}>Esta factura no tiene líneas registradas.</p>
     }
     return (
-        <DataTable columns={['Descripción', 'Cantidad', 'Precio unit.', 'Dto. %', 'IVA %', 'Total']}>
-            {factura.lineas.map((linea) => (
-                <tr key={linea.id}>
-                    <td>
-                        <strong>{linea.descripcion || linea.servicio_nombre_snapshot}</strong>
-                    </td>
-                    <td>{linea.cantidad}</td>
-                    <td>{formatCurrency(linea.precio_unitario)}</td>
-                    <td>{linea.descuento_porcentaje ?? 0}%</td>
-                    <td>{linea.iva_porcentaje ?? 0}%</td>
-                    <td>{formatCurrency(linea.total)}</td>
-                </tr>
-            ))}
-        </DataTable>
+        <>
+            <DataTable columns={['Descripción', 'Cantidad', 'Precio unit.', 'Dto. %', 'IVA %', 'Total']}>
+                {factura.lineas.map((linea) => (
+                    <tr key={linea.id}>
+                        <td>
+                            <strong>{linea.descripcion || linea.servicio_nombre_snapshot}</strong>
+                        </td>
+                        <td>{linea.cantidad}</td>
+                        <td>{formatCurrency(linea.precio_unitario)}</td>
+                        <td>{linea.descuento_porcentaje ?? 0}%</td>
+                        <td>{linea.iva_porcentaje ?? 0}%</td>
+                        <td>{formatCurrency(linea.total)}</td>
+                    </tr>
+                ))}
+            </DataTable>
+
+            {factura.impuestos?.length ? (
+                <div style={{ marginTop: '1.25rem' }}>
+                    <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+                        Desglose de impuestos
+                    </h3>
+                    <DataTable columns={['Impuesto', 'Base imponible', 'Tipo %', 'Cuota']}>
+                        {factura.impuestos.map((imp) => (
+                            <tr key={imp.id}>
+                                <td>{imp.impuesto_nombre || imp.impuesto_codigo || 'IVA'}</td>
+                                <td>{formatCurrency(imp.base_imponible)}</td>
+                                <td>{imp.tipo_porcentaje ?? imp.porcentaje ?? 0}%</td>
+                                <td>{formatCurrency(imp.cuota)}</td>
+                            </tr>
+                        ))}
+                    </DataTable>
+                </div>
+            ) : null}
+        </>
     )
 }
 
+const LABEL_TIPO_REGISTRO = {
+    alta: 'Alta',
+    anulacion: 'Anulación',
+    rectificativa: 'Rectificativa',
+}
+
+const LABEL_ESTADO_REMISION = {
+    pendiente: 'Pendiente de envío',
+    enviado_simulado: 'Enviado (simulado)',
+    enviado: 'Enviado a AEAT',
+    aceptado: 'Aceptado por AEAT',
+    rechazado: 'Rechazado por AEAT',
+}
+
 function TecnicoTab({ factura }) {
-    const registro = factura.registro_facturacion || factura.registro || null
-    if (!registro) {
+    const registros = factura.registros_facturacion ?? []
+    const ultimoHash = factura.ultimo_registro_facturacion_hash
+    const estadoRemision = factura.estado_remision_aeat
+
+    if (!registros.length && !ultimoHash) {
         return (
             <p style={{ color: '#6b7280' }}>
-                El registro técnico se genera automáticamente al emitir la factura.
+                El registro técnico se generará al emitir la factura.
             </p>
         )
     }
+
     return (
-        <dl className="detail-list is-wide">
-            {registro.id ? (
-                <div><dt>ID Registro</dt><dd><code>{registro.id}</code></dd></div>
-            ) : null}
-            {registro.huella || registro.hash ? (
-                <div>
-                    <dt>Huella / Hash</dt>
-                    <dd style={{ wordBreak: 'break-all', fontFamily: 'monospace', fontSize: '0.8125rem' }}>
-                        {registro.huella || registro.hash}
-                    </dd>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {/* Resumen del último registro */}
+            {ultimoHash ? (
+                <div
+                    style={{
+                        padding: '1rem',
+                        borderRadius: '0.5rem',
+                        background: 'var(--color-primary-50, #f5f3ff)',
+                        border: '1px solid var(--color-primary-200, #ddd6fe)',
+                    }}
+                >
+                    <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: 'var(--color-primary, #6d28d9)', fontSize: '0.875rem' }}>
+                        Hash del último registro
+                    </p>
+                    <code
+                        style={{
+                            wordBreak: 'break-all',
+                            fontSize: '0.8125rem',
+                            display: 'block',
+                            color: '#111827',
+                        }}
+                    >
+                        {ultimoHash}
+                    </code>
+                    {estadoRemision ? (
+                        <p style={{ margin: '0.5rem 0 0', fontSize: '0.8125rem', color: '#6b7280' }}>
+                            Estado de remisión: <strong>{LABEL_ESTADO_REMISION[estadoRemision] ?? estadoRemision}</strong>
+                        </p>
+                    ) : null}
                 </div>
             ) : null}
-            {registro.modo_generacion ? (
-                <div><dt>Modo de generación</dt><dd>{registro.modo_generacion}</dd></div>
-            ) : null}
-            {registro.tipo_huella ? (
-                <div><dt>Tipo de huella</dt><dd>{registro.tipo_huella}</dd></div>
-            ) : null}
-            {registro.fecha_hora_expedicion ? (
-                <div><dt>Fecha de expedición</dt><dd>{formatDate(registro.fecha_hora_expedicion)}</dd></div>
-            ) : null}
-            {registro.numero_registro_acuse ? (
-                <div><dt>Nº acuse de recibo</dt><dd><code>{registro.numero_registro_acuse}</code></dd></div>
-            ) : null}
-        </dl>
+
+            {/* Lista de registros */}
+            {registros.map((reg, idx) => (
+                <div
+                    key={reg.id ?? idx}
+                    style={{
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '0.5rem',
+                        padding: '1rem',
+                        background: '#fafafa',
+                    }}
+                >
+                    <p
+                        style={{
+                            margin: '0 0 0.75rem',
+                            fontWeight: 600,
+                            fontSize: '0.875rem',
+                            color: '#111827',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                        }}
+                    >
+                        <span
+                            style={{
+                                background: reg.tipo_registro === 'alta' ? '#dcfce7' : reg.tipo_registro === 'anulacion' ? '#fee2e2' : '#fef9c3',
+                                color: reg.tipo_registro === 'alta' ? '#166534' : reg.tipo_registro === 'anulacion' ? '#991b1b' : '#854d0e',
+                                borderRadius: '0.25rem',
+                                padding: '0.125rem 0.5rem',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                            }}
+                        >
+                            {LABEL_TIPO_REGISTRO[reg.tipo_registro] ?? reg.tipo_registro ?? 'Registro'}
+                        </span>
+                        {reg.numero_completo ? `· ${reg.numero_completo}` : null}
+                    </p>
+
+                    <dl className="detail-list">
+                        {reg.hash_actual ? (
+                            <div>
+                                <dt>Hash actual</dt>
+                                <dd>
+                                    <code style={{ wordBreak: 'break-all', fontSize: '0.8125rem' }}>
+                                        {reg.hash_actual}
+                                    </code>
+                                </dd>
+                            </div>
+                        ) : null}
+                        {reg.hash_anterior ? (
+                            <div>
+                                <dt>Hash anterior</dt>
+                                <dd>
+                                    <code style={{ wordBreak: 'break-all', fontSize: '0.8125rem', color: '#6b7280' }}>
+                                        {reg.hash_anterior}
+                                    </code>
+                                </dd>
+                            </div>
+                        ) : null}
+                        {reg.generado_at ? (
+                            <div>
+                                <dt>Generado el</dt>
+                                <dd>{formatDate(reg.generado_at)}</dd>
+                            </div>
+                        ) : null}
+                        {reg.estado_remision ? (
+                            <div>
+                                <dt>Estado remisión</dt>
+                                <dd>{LABEL_ESTADO_REMISION[reg.estado_remision] ?? reg.estado_remision}</dd>
+                            </div>
+                        ) : null}
+                        {reg.serie || reg.numero ? (
+                            <div>
+                                <dt>Serie / Número</dt>
+                                <dd>
+                                    {reg.serie ?? '—'} / {reg.numero ?? '—'}
+                                </dd>
+                            </div>
+                        ) : null}
+                    </dl>
+                </div>
+            ))}
+        </div>
     )
 }
 
 function VerifactuTab({ factura }) {
-    const estado = factura.verifactu_estado || factura.estado_verifactu || null
+    const estadoRemision = factura.estado_remision_aeat
+    const datosQr = factura.datos_qr
+
     return (
-        <dl className="detail-list">
-            <div>
-                <dt>Estado VeriFactu</dt>
-                <dd><VerifactuBadge estado={estado || 'no_configurado'} /></dd>
-            </div>
-            {factura.verifactu_csv ? (
-                <div><dt>CSV</dt><dd><code>{factura.verifactu_csv}</code></dd></div>
-            ) : null}
-            {factura.verifactu_qr ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <dl className="detail-list">
                 <div>
-                    <dt>Código QR</dt>
+                    <dt>Estado de remisión</dt>
                     <dd>
-                        <code style={{ wordBreak: 'break-all', fontSize: '0.8125rem' }}>
-                            {factura.verifactu_qr}
-                        </code>
+                        <VerifactuBadge estado={estadoRemision || 'pendiente'} />
                     </dd>
                 </div>
+                {datosQr?.etiqueta ? (
+                    <div>
+                        <dt>Modo</dt>
+                        <dd>{datosQr.etiqueta}</dd>
+                    </div>
+                ) : null}
+                {datosQr?.hash_registro ? (
+                    <div>
+                        <dt>Hash registro</dt>
+                        <dd>
+                            <code style={{ wordBreak: 'break-all', fontSize: '0.8125rem' }}>
+                                {datosQr.hash_registro}
+                            </code>
+                        </dd>
+                    </div>
+                ) : null}
+                {datosQr?.url_interna ? (
+                    <div>
+                        <dt>URL QR interna</dt>
+                        <dd>
+                            <code style={{ wordBreak: 'break-all', fontSize: '0.8125rem', color: '#6b7280' }}>
+                                {datosQr.url_interna}
+                            </code>
+                        </dd>
+                    </div>
+                ) : null}
+                {datosQr?.emisor_nif ? (
+                    <div>
+                        <dt>Emisor NIF</dt>
+                        <dd>{datosQr.emisor_nif}</dd>
+                    </div>
+                ) : null}
+                {datosQr?.importe_total ? (
+                    <div>
+                        <dt>Importe total</dt>
+                        <dd>{datosQr.importe_total} EUR</dd>
+                    </div>
+                ) : null}
+            </dl>
+
+            {!estadoRemision ? (
+                <p style={{ color: '#6b7280', margin: 0, fontSize: '0.875rem' }}>
+                    El registro VeriFactu se generará al emitir la factura. La remisión real a la AEAT requiere configuración adicional.
+                </p>
             ) : null}
-            {!estado ? (
-                <div style={{ gridColumn: '1 / -1' }}>
-                    <p style={{ color: '#6b7280', margin: 0 }}>
-                        VeriFactu no está configurado o esta factura no ha sido enviada al sistema de verificación.
-                    </p>
-                </div>
-            ) : null}
-        </dl>
+
+            <p
+                style={{
+                    margin: 0,
+                    fontSize: '0.8125rem',
+                    color: '#9ca3af',
+                    padding: '0.75rem',
+                    borderRadius: '0.375rem',
+                    background: '#f9fafb',
+                    border: '1px solid #f3f4f6',
+                }}
+            >
+                MVP: La remisión a la AEAT es simulada. Para integración real con VeriFactu es necesario configurar el servicio de envío y las credenciales de la AEAT.
+            </p>
+        </div>
     )
 }
 
@@ -317,11 +482,25 @@ export function FacturaDetailPage() {
             else reload()
         })
 
+    // Cálculo de estados
     const isBorrador = factura ? isFacturaBorrador(factura) : false
     const isEmitida = factura ? isFacturaEmitida(factura) : false
     const isPagada = factura ? isFacturaPagada(factura) : false
-    const isFinalizada = factura ? isFacturaFinalizada(factura) : false
+    const isAnulada = factura ? isFacturaAnulada(factura) : false
+    const isRectificada = factura ? isFacturaRectificada(factura) : false
+    const isFinalizada = isAnulada || isRectificada
     const estado = factura ? getEstadoFactura(factura) : ''
+
+    // Reglas de acciones:
+    // borrador → editar + emitir
+    // emitida → marcar pagada (si no pagada) + rectificar + anular
+    // pagada → rectificar (MVP; el backend puede rechazarlo)
+    // anulada / rectificada → sin acciones
+    const puedeEditar = isBorrador
+    const puedeEmitir = isBorrador
+    const puedeMarcarPagada = isEmitida && !isPagada
+    const puedeRectificar = !isBorrador && !isFinalizada
+    const puedeAnular = (isEmitida || isPagada) && !isFinalizada
 
     return (
         <section className="page">
@@ -332,7 +511,8 @@ export function FacturaDetailPage() {
                             <Link className="button button-ghost" to="/app/facturas">
                                 Volver
                             </Link>
-                            {isBorrador ? (
+
+                            {puedeEditar ? (
                                 <Link
                                     className="button button-ghost"
                                     to={`/app/facturas/${facturaId}/editar`}
@@ -340,7 +520,8 @@ export function FacturaDetailPage() {
                                     Editar
                                 </Link>
                             ) : null}
-                            {isBorrador ? (
+
+                            {puedeEmitir ? (
                                 <button
                                     className="button"
                                     disabled={saving}
@@ -350,27 +531,31 @@ export function FacturaDetailPage() {
                                     Emitir factura
                                 </button>
                             ) : null}
-                            {isEmitida && !isPagada ? (
+
+                            {puedeMarcarPagada ? (
                                 <button
                                     className="button"
                                     disabled={saving}
                                     type="button"
                                     onClick={handleMarcarPagada}
                                 >
-                                    {saving ? 'Guardando...' : 'Marcar como pagada'}
+                                    {saving ? 'Guardando…' : 'Marcar como pagada'}
                                 </button>
                             ) : null}
-                            {!isBorrador && !isFinalizada ? (
+
+                            {puedeRectificar ? (
                                 <button
                                     className="button button-ghost"
                                     disabled={saving}
+                                    title={isPagada ? 'La rectificación de facturas pagadas puede requerir confirmación adicional.' : undefined}
                                     type="button"
                                     onClick={() => setRectificarOpen(true)}
                                 >
                                     Rectificar
                                 </button>
                             ) : null}
-                            {!isBorrador && !isFinalizada ? (
+
+                            {puedeAnular ? (
                                 <button
                                     className="button button-danger"
                                     disabled={saving}
@@ -389,10 +574,10 @@ export function FacturaDetailPage() {
                 }
                 description={factura ? `Estado: ${estado}` : 'Detalle de factura'}
                 eyebrow="Facturación"
-                title={factura ? getNumeroFactura(factura) : 'Cargando...'}
+                title={factura ? getNumeroFactura(factura) : 'Cargando…'}
             />
 
-            {loading ? <LoadingState>Cargando factura...</LoadingState> : null}
+            {loading ? <LoadingState>Cargando factura…</LoadingState> : null}
             {error ? <ErrorState>{error}</ErrorState> : null}
             {actionError ? <ErrorState>{actionError}</ErrorState> : null}
 
