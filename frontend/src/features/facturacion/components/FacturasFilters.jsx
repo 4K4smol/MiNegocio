@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react'
+import { FilterField, SearchFilters, SearchInput } from '../../../shared/components/SearchFilters'
+
 const ESTADO_OPTIONS = [
     { value: '', label: 'Todos los estados' },
     { value: 'borrador', label: 'Borrador' },
@@ -8,24 +11,37 @@ const ESTADO_OPTIONS = [
 ]
 
 export function FacturasFilters({ filters, onChange }) {
+    const [draftFilters, setDraftFilters] = useState(filters)
+
+    useEffect(() => {
+        setDraftFilters(filters)
+    }, [filters])
+
+    const updateDraftFilter = (key, value) => setDraftFilters((current) => ({ ...current, [key]: value }))
+    const resetFilters = () => {
+        const nextFilters = { search: '', estado: '' }
+        setDraftFilters(nextFilters)
+        onChange(nextFilters)
+    }
+
     return (
-        <div className="filters-bar">
-            <input
-                className="input"
-                placeholder="Buscar por número o cliente..."
-                type="search"
-                value={filters.search}
-                onChange={(e) => onChange({ ...filters, search: e.target.value })}
+        <SearchFilters ariaLabel="Filtros de facturas" onReset={resetFilters} onSubmit={() => onChange(draftFilters)}>
+            <SearchInput
+                label="Buscar"
+                placeholder="Numero o cliente"
+                value={draftFilters.search}
+                onChange={(event) => updateDraftFilter('search', event.target.value)}
             />
-            <select
-                className="input"
-                value={filters.estado}
-                onChange={(e) => onChange({ ...filters, estado: e.target.value })}
-            >
-                {ESTADO_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-            </select>
-        </div>
+            <FilterField label="Estado">
+                <select
+                    value={draftFilters.estado}
+                    onChange={(event) => updateDraftFilter('estado', event.target.value)}
+                >
+                    {ESTADO_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                </select>
+            </FilterField>
+        </SearchFilters>
     )
 }

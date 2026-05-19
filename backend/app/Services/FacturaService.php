@@ -7,6 +7,8 @@ namespace App\Services;
 use App\Models\Cliente;
 use App\Models\EstadoFactura;
 use App\Models\Factura;
+use App\Models\OrdenTrabajo;
+use App\Models\OrdenTrabajoEstado;
 use App\Models\Servicio;
 use App\Models\TipoFactura;
 use App\Models\User;
@@ -131,6 +133,8 @@ class FacturaService
                     'descripcion' => 'Registro de facturacion de alta generado.',
                 ]);
             }
+
+            $this->marcarOrdenAsociadaComoFacturada($factura);
 
             return $factura->fresh($this->relacionesCompletas());
         });
@@ -352,5 +356,27 @@ class FacturaService
         if ((int) $factura->empresa_id !== (int) $user->empresa_id) {
             throw new RuntimeException('No puedes operar con facturas de otra empresa.');
         }
+    }
+
+    private function marcarOrdenAsociadaComoFacturada(Factura $factura): void
+    {
+        if (!$factura->orden_trabajo_id) {
+            return;
+        }
+
+        $estadoFacturada = OrdenTrabajoEstado::query()
+            ->whereRaw('LOWER(codigo) = ?', ['facturada'])
+            ->first();
+
+        if (!$estadoFacturada) {
+            throw new RuntimeException('No existe el estado de orden "facturada". Ejecuta los seeders de estados de orden.');
+        }
+
+        OrdenTrabajo::query()
+            ->whereKey($factura->orden_trabajo_id)
+            ->update([
+                'estado_id' => $estadoFacturada->id,
+                'estado_codigo' => $estadoFacturada->codigo,
+            ]);
     }
 }

@@ -6,6 +6,7 @@ import { EmptyState } from "../../../shared/components/EmptyState";
 import { ErrorState } from "../../../shared/components/ErrorState";
 import { LoadingState } from "../../../shared/components/LoadingState";
 import { RowActionsMenu } from "../../../shared/components/RowActionsMenu";
+import { FilterField, SearchFilters } from "../../../shared/components/SearchFilters";
 import { StatusBadge } from "../../../shared/components/StatusBadge";
 
 export function InventarioUbicacionesTab({
@@ -18,23 +19,30 @@ export function InventarioUbicacionesTab({
     onToggleActivo,
     ubicaciones = [],
 }) {
-    const [ubicacionId, setUbicacionId] = useState("todas");
-    const [stockBajo, setStockBajo] = useState(false);
+    const [filters, setFilters] = useState({ ubicacionId: "todas", stockBajo: false });
+    const [draftFilters, setDraftFilters] = useState(filters);
 
     const filteredItems = useMemo(
         () =>
             items.filter((item) => {
                 const ubicacionOk =
-                    ubicacionId === "todas"
+                    filters.ubicacionId === "todas"
                         ? true
                         : String(
                               item.ubicacion?.id || item.ubicacion_id || "",
-                          ) === String(ubicacionId);
-                const stockOk = stockBajo ? item.stock_bajo : true;
+                          ) === String(filters.ubicacionId);
+                const stockOk = filters.stockBajo ? item.stock_bajo : true;
                 return ubicacionOk && stockOk;
             }),
-        [items, stockBajo, ubicacionId],
+        [items, filters],
     );
+
+    const updateDraftFilter = (key, value) => setDraftFilters((current) => ({ ...current, [key]: value }));
+    const resetFilters = () => {
+        const nextFilters = { ubicacionId: "todas", stockBajo: false };
+        setDraftFilters(nextFilters);
+        setFilters(nextFilters);
+    };
 
     return (
         <section className="card">
@@ -52,30 +60,36 @@ export function InventarioUbicacionesTab({
                 </button>
             </div>
 
-            <section
-                className="filters-bar"
-                aria-label="Filtros de inventario por ubicacion"
+            <SearchFilters
+                ariaLabel="Filtros de inventario por ubicacion"
+                loading={loading}
+                onReset={resetFilters}
+                onSubmit={() => setFilters(draftFilters)}
             >
-                <select
-                    value={ubicacionId}
-                    onChange={(event) => setUbicacionId(event.target.value)}
-                >
-                    <option value="todas">Todas las ubicaciones</option>
-                    {ubicaciones.map((ubicacion) => (
-                        <option key={ubicacion.id} value={ubicacion.id}>
-                            {ubicacion.nombre}
-                        </option>
-                    ))}
-                </select>
-                <label className="form-checkbox">
-                    <input
-                        checked={stockBajo}
-                        type="checkbox"
-                        onChange={(event) => setStockBajo(event.target.checked)}
-                    />
-                    Solo stock bajo
-                </label>
-            </section>
+                <FilterField label="Ubicacion">
+                    <select
+                        value={draftFilters.ubicacionId}
+                        onChange={(event) => updateDraftFilter("ubicacionId", event.target.value)}
+                    >
+                        <option value="todas">Todas las ubicaciones</option>
+                        {ubicaciones.map((ubicacion) => (
+                            <option key={ubicacion.id} value={ubicacion.id}>
+                                {ubicacion.nombre}
+                            </option>
+                        ))}
+                    </select>
+                </FilterField>
+                <FilterField label="Stock">
+                    <span className="search-filters__checkbox">
+                        <input
+                            checked={draftFilters.stockBajo}
+                            type="checkbox"
+                            onChange={(event) => updateDraftFilter("stockBajo", event.target.checked)}
+                        />
+                        Solo stock bajo
+                    </span>
+                </FilterField>
+            </SearchFilters>
 
             {loading ? (
                 <LoadingState>Cargando inventario...</LoadingState>

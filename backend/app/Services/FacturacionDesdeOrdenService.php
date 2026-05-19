@@ -38,9 +38,11 @@ class FacturacionDesdeOrdenService
 
     private const SERIE_FACTURA = 'A';
 
-    public function generarDesdeOrden(OrdenTrabajo $orden, User $user): Factura
+    public function generarDesdeOrden(OrdenTrabajo $orden, User $user, string $modo = 'emitir'): Factura
     {
-        return DB::transaction(function () use ($orden, $user): Factura {
+        return DB::transaction(function () use ($orden, $user, $modo): Factura {
+            $modo = $modo === 'borrador' ? 'borrador' : 'emitir';
+
             $orden->loadMissing([
                 'empresa',
                 'cliente.localizacionPrincipal',
@@ -59,8 +61,10 @@ class FacturacionDesdeOrdenService
             }
 
             $tipoFactura = $this->obtenerTipoFactura();
-            $estadoFactura = $this->obtenerEstadoFactura();
-            $numeracion = $this->numeracionFacturaService->siguiente((int) $orden->empresa_id, self::SERIE_FACTURA);
+            $estadoFactura = $this->obtenerEstadoFactura($modo === 'emitir' ? self::ESTADO_FACTURA_EMITIDA : self::ESTADO_FACTURA_BORRADOR);
+            $numeracion = $modo === 'emitir'
+                ? $this->numeracionFacturaService->siguiente((int) $orden->empresa_id, self::SERIE_FACTURA)
+                : ['serie' => self::SERIE_FACTURA, 'numero' => null, 'numero_completo' => null];
             $fechaEmision = now()->toDateString();
 
             $factura = Factura::query()->create([
@@ -100,21 +104,22 @@ class FacturacionDesdeOrdenService
                 'empresa_id' => $factura->empresa_id,
                 'user_id' => $user->id,
                 'factura_id' => $factura->id,
-                'codigo_evento' => 'FACTURA_GENERADA_DESDE_ORDEN',
-                'descripcion' => 'Factura generada desde orden de trabajo.',
+                'codigo_evento' => $modo === 'emitir' ? 'FACTURA_GENERADA_DESDE_ORDEN' : 'FACTURA_BORRADOR_GENERADA_DESDE_ORDEN',
+                'descripcion' => $modo === 'emitir' ? 'Factura emitida desde orden de trabajo.' : 'Factura borrador generada desde orden de trabajo.',
             ]);
 
             $this->historialService->registrar(
                 $factura,
-                'factura_emitida',
+                $modo === 'emitir' ? 'factura_emitida' : 'factura_creada',
                 $user,
                 null,
                 $factura->estado_factura_id,
-                'Factura emitida desde orden de trabajo.',
+                $modo === 'emitir' ? 'Factura emitida desde orden de trabajo.' : 'Factura creada como borrador desde orden de trabajo.',
                 ['orden_trabajo_id' => $orden->id]
             );
 
-            $registroAlta = $this->registroFacturacionService->crearRegistroFacturacionAlta($factura);
+            if ($modo === 'emitir') {
+                $registroAlta = $this->registroFacturacionService->crearRegistroFacturacionAlta($factura);
 
             $this->registroEventoFacturacionService->registrar([
                 'empresa_id' => $factura->empresa_id,
@@ -125,7 +130,8 @@ class FacturacionDesdeOrdenService
                 'descripcion' => 'Registro de facturación de alta generado.',
             ]);
 
-            $this->marcarOrdenComoFacturada($orden);
+                $this->marcarOrdenComoFacturada($orden);
+            }
 
             return $factura->fresh(['lineas', 'impuestos', 'cliente', 'empresa', 'estadoFactura', 'tipoFactura', 'registrosFacturacion', 'historial']);
         });
@@ -178,17 +184,11 @@ class FacturacionDesdeOrdenService
         return $tipo;
     }
 
-    private function obtenerEstadoFactura(): EstadoFactura
+    private function obtenerEstadoFactura(string $codigo): EstadoFactura
     {
         $estado = EstadoFactura::query()
-            ->where('codigo', self::ESTADO_FACTURA_EMITIDA)
+            ->where('codigo', $codigo)
             ->first();
-
-        if (!$estado) {
-            $estado = EstadoFactura::query()
-                ->where('codigo', self::ESTADO_FACTURA_BORRADOR)
-                ->first();
-        }
 
         if (!$estado) {
             throw new RuntimeException('No existe un estado de factura válido ("emitida" o "borrador"). Ejecuta los seeders de estados de factura.');

@@ -9,6 +9,7 @@ import { FormModal } from "../../../shared/components/FormModal";
 import { LoadingState } from "../../../shared/components/LoadingState";
 import { PageHeader } from "../../../shared/components/PageHeader";
 import { RowActionsMenu } from "../../../shared/components/RowActionsMenu";
+import { FilterField, SearchFilters, SearchInput } from "../../../shared/components/SearchFilters";
 import { StatusBadge } from "../../../shared/components/StatusBadge";
 import { Modal } from "../../../shared/components/ui/Modal";
 import { unwrapApiCollection } from "../../../shared/utils/apiResponse";
@@ -116,10 +117,8 @@ export function InventarioPage() {
     const [error, setError] = useState("");
     const [formError, setFormError] = useState("");
     const [formErrors, setFormErrors] = useState({});
-    const [search, setSearch] = useState("");
-    const [activo, setActivo] = useState("todos");
-    const [ubicacionFilter, setUbicacionFilter] = useState("todos");
-    const [stockBajo, setStockBajo] = useState(false);
+    const [filters, setFilters] = useState({ search: "", activo: "todos", ubicacionId: "todos", stockBajo: false });
+    const [draftFilters, setDraftFilters] = useState(filters);
     const [formMode, setFormMode] = useState(null);
     const [selectedItem, setSelectedItem] = useState(null);
     const [movementItem, setMovementItem] = useState(null);
@@ -135,10 +134,10 @@ export function InventarioPage() {
         try {
             const params = {
                 per_page: 100,
-                search: search.trim() || undefined,
-                activo: activo === "todos" ? undefined : activo === "activos",
-                ubicacion_id: ubicacionFilter === "todos" ? undefined : ubicacionFilter,
-                stock_bajo: stockBajo || undefined,
+                search: filters.search.trim() || undefined,
+                activo: filters.activo === "todos" ? undefined : filters.activo === "activos",
+                ubicacion_id: filters.ubicacionId === "todos" ? undefined : filters.ubicacionId,
+                stock_bajo: filters.stockBajo || undefined,
             };
 
             const [itemsResponse, ubicacionesResponse, unidadesResponse, tiposResponse] = await Promise.all([
@@ -157,7 +156,7 @@ export function InventarioPage() {
         } finally {
             setLoading(false);
         }
-    }, [activo, search, stockBajo, ubicacionFilter]);
+    }, [filters]);
 
     useEffect(() => {
         loadData();
@@ -271,6 +270,14 @@ export function InventarioPage() {
         }
     };
 
+    const updateDraftFilter = (key, value) => setDraftFilters((current) => ({ ...current, [key]: value }));
+    const applyFilters = () => setFilters(draftFilters);
+    const resetFilters = () => {
+        const nextFilters = { search: "", activo: "todos", ubicacionId: "todos", stockBajo: false };
+        setDraftFilters(nextFilters);
+        setFilters(nextFilters);
+    };
+
     return (
         <section className="page">
             <PageHeader
@@ -289,24 +296,35 @@ export function InventarioPage() {
                 title="Inventario"
             />
 
-            <section className="filters-bar" aria-label="Filtros de inventario">
-                <input placeholder="Buscar por nombre, SKU o codigo de barras" value={search} onChange={(event) => setSearch(event.target.value)} />
-                <select value={activo} onChange={(event) => setActivo(event.target.value)}>
-                    <option value="todos">Todos</option>
-                    <option value="activos">Activos</option>
-                    <option value="inactivos">Inactivos</option>
-                </select>
-                <select value={ubicacionFilter} onChange={(event) => setUbicacionFilter(event.target.value)}>
-                    <option value="todos">Todas las ubicaciones</option>
-                    {ubicaciones.map((ubicacion) => (
-                        <option key={ubicacion.id} value={ubicacion.id}>{ubicacion.nombre}</option>
-                    ))}
-                </select>
-                <label className="form-checkbox">
-                    <input checked={stockBajo} type="checkbox" onChange={(event) => setStockBajo(event.target.checked)} />
-                    Stock bajo
-                </label>
-            </section>
+            <SearchFilters ariaLabel="Filtros de inventario" loading={loading} onReset={resetFilters} onSubmit={applyFilters}>
+                <SearchInput
+                    label="Buscar"
+                    placeholder="Nombre, SKU o codigo de barras"
+                    value={draftFilters.search}
+                    onChange={(event) => updateDraftFilter("search", event.target.value)}
+                />
+                <FilterField label="Estado">
+                    <select value={draftFilters.activo} onChange={(event) => updateDraftFilter("activo", event.target.value)}>
+                        <option value="todos">Todos</option>
+                        <option value="activos">Activos</option>
+                        <option value="inactivos">Inactivos</option>
+                    </select>
+                </FilterField>
+                <FilterField label="Ubicacion">
+                    <select value={draftFilters.ubicacionId} onChange={(event) => updateDraftFilter("ubicacionId", event.target.value)}>
+                        <option value="todos">Todas las ubicaciones</option>
+                        {ubicaciones.map((ubicacion) => (
+                            <option key={ubicacion.id} value={ubicacion.id}>{ubicacion.nombre}</option>
+                        ))}
+                    </select>
+                </FilterField>
+                <FilterField label="Stock">
+                    <span className="search-filters__checkbox">
+                        <input checked={draftFilters.stockBajo} type="checkbox" onChange={(event) => updateDraftFilter("stockBajo", event.target.checked)} />
+                        Stock bajo
+                    </span>
+                </FilterField>
+            </SearchFilters>
 
             {loading ? <LoadingState>Cargando inventario...</LoadingState> : null}
             {error ? <ErrorState>{error}</ErrorState> : null}

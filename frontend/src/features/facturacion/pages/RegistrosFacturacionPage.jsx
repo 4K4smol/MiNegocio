@@ -8,22 +8,23 @@ import { ErrorState } from '../../../shared/components/ErrorState'
 import { LoadingState } from '../../../shared/components/LoadingState'
 import { PageHeader } from '../../../shared/components/PageHeader'
 import { useResourceList } from '../../../shared/hooks/useResourceList'
+import { unwrapApiData } from '../../../shared/utils/apiResponse'
 import { formatDate } from '../../../shared/utils/formatters'
 import { registrosFacturacionService } from '../services/registrosFacturacionService'
 
 export function RegistrosFacturacionPage() {
     const { error, items: registros, loading } = useResourceList(registrosFacturacionService.list)
     const [validating, setValidating] = useState(false)
-    const [validationOk, setValidationOk] = useState(false)
+    const [validationResult, setValidationResult] = useState(null)
     const [validationError, setValidationError] = useState('')
 
     const handleValidarCadena = async () => {
         setValidating(true)
-        setValidationOk(false)
+        setValidationResult(null)
         setValidationError('')
         try {
-            await registrosFacturacionService.validarCadena()
-            setValidationOk(true)
+            const response = await registrosFacturacionService.validarCadena()
+            setValidationResult(unwrapApiData(response))
         } catch (e) {
             setValidationError(e?.message || 'Error al validar la cadena de integridad.')
         } finally {
@@ -51,9 +52,9 @@ export function RegistrosFacturacionPage() {
                         </button>
                     </>
                 }
-                description="Registro inmutable de todas las facturas según RD 1007/2023. Solo lectura."
-                eyebrow="Facturación"
-                title="Registros de facturación"
+                description="Registro tecnico e inmutable de altas y anulaciones de facturacion. Solo lectura."
+                eyebrow="Facturacion"
+                title="Registros de facturacion"
             />
 
             <div
@@ -67,13 +68,11 @@ export function RegistrosFacturacionPage() {
                     fontSize: '0.9rem',
                 }}
             >
-                Los registros de facturación son datos técnicos generados automáticamente al emitir cada
-                factura. Contienen la huella de integridad, firma electrónica y datos de remisión al sistema
-                VeriFactu conforme al Real Decreto 1007/2023. No es posible crear ni modificar registros
-                manualmente.
+                Los registros se generan automaticamente al emitir o anular facturas. Validar la cadena no modifica datos
+                ni envia nada a AEAT: solo recalcula hashes y comprueba el encadenamiento interno.
             </div>
 
-            {validationOk ? (
+            {validationResult?.valida && validationResult.total_registros > 0 ? (
                 <div
                     style={{
                         background: '#f0fdf4',
@@ -84,7 +83,42 @@ export function RegistrosFacturacionPage() {
                         color: '#15803d',
                     }}
                 >
-                    Cadena de integridad validada correctamente.
+                    Cadena de integridad validada correctamente. Registros comprobados: {validationResult.total_registros}.
+                </div>
+            ) : null}
+            {validationResult?.valida && validationResult.total_registros === 0 ? (
+                <div
+                    style={{
+                        background: '#f9fafb',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '0.5rem',
+                        padding: '1rem 1.25rem',
+                        marginBottom: '1rem',
+                        color: '#6b7280',
+                    }}
+                >
+                    No hay registros de facturación que validar todavía. Los registros se generan al emitir o anular facturas.
+                </div>
+            ) : null}
+            {validationResult && !validationResult.valida ? (
+                <div
+                    style={{
+                        background: '#fef2f2',
+                        border: '1px solid #fecaca',
+                        borderRadius: '0.5rem',
+                        padding: '1rem 1.25rem',
+                        marginBottom: '1rem',
+                        color: '#991b1b',
+                    }}
+                >
+                    <strong>La cadena de integridad tiene incidencias.</strong>
+                    <ul style={{ margin: '0.75rem 0 0', paddingLeft: '1.25rem' }}>
+                        {(validationResult.errores || []).map((currentError) => (
+                            <li key={`${currentError.registro_id}-${currentError.motivo}`}>
+                                Registro {currentError.registro_id}: {currentError.motivo}
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             ) : null}
             {validationError ? <ErrorState>{validationError}</ErrorState> : null}
@@ -94,11 +128,11 @@ export function RegistrosFacturacionPage() {
 
             {!loading ? (
                 <DataTable
-                    columns={['ID', 'Factura', 'Tipo', 'Referencia', 'Fecha expedición', 'Modo remisión']}
+                    columns={['ID', 'Factura', 'Registro', 'Hash', 'Fecha expedicion', 'Estado remision']}
                     empty={
                         !registros.length ? (
                             <EmptyState
-                                description="Los registros aparecerán aquí cuando se emitan facturas."
+                                description="Los registros apareceran aqui cuando se emitan o anulen facturas."
                                 title="Sin registros"
                             />
                         ) : null
@@ -112,23 +146,18 @@ export function RegistrosFacturacionPage() {
                             <td>
                                 {registro.factura_id ? (
                                     <Link to={`/app/facturas/${registro.factura_id}`}>
-                                        {registro.serie_factura ? `${registro.serie_factura}-` : ''}
-                                        {registro.numero_factura || registro.factura_id}
+                                        {registro.numero_completo || [registro.serie, registro.numero].filter(Boolean).join('-') || registro.factura_id}
                                     </Link>
-                                ) : (
-                                    '—'
-                                )}
+                                ) : '—'}
                             </td>
-                            <td>{registro.tipo_factura || '—'}</td>
+                            <td>{registro.tipo_registro || '—'}</td>
                             <td>
                                 <code style={{ fontFamily: 'monospace', fontSize: '0.8125rem' }}>
-                                    {registro.huella
-                                        ? `${registro.huella.substring(0, 16)}…`
-                                        : registro.numero_registro_acuse || '—'}
+                                    {registro.hash_actual ? `${registro.hash_actual.substring(0, 16)}...` : '—'}
                                 </code>
                             </td>
-                            <td>{formatDate(registro.fecha_hora_expedicion || registro.created_at)}</td>
-                            <td>{registro.modo_remision || registro.modo_generacion || '—'}</td>
+                            <td>{formatDate(registro.fecha_expedicion || registro.generado_at)}</td>
+                            <td>{registro.estado_remision || 'pendiente'}</td>
                         </tr>
                     ))}
                 </DataTable>

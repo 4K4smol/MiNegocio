@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Modal } from "../../../shared/components/ui/Modal";
+import { FilterField, SearchFilters, SearchInput } from "../../../shared/components/SearchFilters";
 import { useAuth } from "../../../shared/hooks/useAuth";
 import { adminApi } from "../api/adminApi";
 import { AdminActionsMenu } from "../components/AdminActionsMenu";
 import { AdminConfirmModal } from "../components/AdminConfirmModal";
 import { AdminDataTable } from "../components/AdminDataTable";
-import { AdminFiltersBar } from "../components/AdminFiltersBar";
 import { AdminPageHeader } from "../components/AdminPageHeader";
 import { AdminPagination } from "../components/AdminPagination";
 import { AdminStatusBadge } from "../components/AdminStatusBadge";
@@ -15,10 +15,12 @@ import { LoadingState } from "../components/LoadingState";
 
 const formatDate = (value) => value ? new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" }).format(new Date(value)) : "Sin fecha";
 const fullName = (user) => [user.nombre || user.name, user.apellido1, user.apellido2].filter(Boolean).join(" ") || "Sin nombre";
+const INITIAL_FILTERS = { texto: "", rol: "", activo: "", empresa: "" };
 
 export function UsuariosAdminPage() {
     const { usuario: currentUser } = useAuth();
-    const [filters, setFilters] = useState({ texto: "", rol: "", activo: "", empresa: "" });
+    const [filters, setFilters] = useState(INITIAL_FILTERS);
+    const [draftFilters, setDraftFilters] = useState(INITIAL_FILTERS);
     const [page, setPage] = useState(1);
     const [usuarios, setUsuarios] = useState([]);
     const [meta, setMeta] = useState(null);
@@ -67,25 +69,46 @@ export function UsuariosAdminPage() {
     };
 
     const roleOptions = useMemo(() => roles.map((role) => ({ value: role.id, label: role.nombre })), [roles]);
+    const updateDraftFilter = (key, value) => setDraftFilters((current) => ({ ...current, [key]: value }));
+    const applyFilters = () => {
+        setFilters(draftFilters);
+        setPage(1);
+    };
+    const resetFilters = () => {
+        setDraftFilters(INITIAL_FILTERS);
+        setFilters(INITIAL_FILTERS);
+        setPage(1);
+    };
 
     if (loading && !usuarios.length) return <LoadingState>Cargando usuarios...</LoadingState>;
 
     return (
         <section className="admin-page">
             <AdminPageHeader title="Usuarios" description="Consulta usuarios registrados, estado de acceso y roles." />
-            <AdminFiltersBar>
-                <input placeholder="Buscar nombre, email o empresa" value={filters.texto} onChange={(event) => { setFilters({ ...filters, texto: event.target.value }); setPage(1); }} />
-                <select value={filters.rol} onChange={(event) => { setFilters({ ...filters, rol: event.target.value }); setPage(1); }}>
-                    <option value="">Todos los roles</option>
-                    {roles.map((role) => <option key={role.id} value={role.nombre}>{role.nombre}</option>)}
-                </select>
-                <select value={filters.activo} onChange={(event) => { setFilters({ ...filters, activo: event.target.value }); setPage(1); }}>
-                    <option value="">Todos</option>
-                    <option value="true">Activos</option>
-                    <option value="false">Inactivos</option>
-                </select>
-                <input placeholder="Empresa" value={filters.empresa} onChange={(event) => { setFilters({ ...filters, empresa: event.target.value }); setPage(1); }} />
-            </AdminFiltersBar>
+            <SearchFilters ariaLabel="Filtros de usuarios" loading={loading} onReset={resetFilters} onSubmit={applyFilters}>
+                <SearchInput
+                    label="Buscar"
+                    placeholder="Nombre, email o empresa"
+                    value={draftFilters.texto}
+                    onChange={(event) => updateDraftFilter("texto", event.target.value)}
+                />
+                <FilterField label="Rol">
+                    <select value={draftFilters.rol} onChange={(event) => updateDraftFilter("rol", event.target.value)}>
+                        <option value="">Todos los roles</option>
+                        {roles.map((role) => <option key={role.id} value={role.nombre}>{role.nombre}</option>)}
+                    </select>
+                </FilterField>
+                <FilterField label="Estado">
+                    <select value={draftFilters.activo} onChange={(event) => updateDraftFilter("activo", event.target.value)}>
+                        <option value="">Todos</option>
+                        <option value="true">Activos</option>
+                        <option value="false">Inactivos</option>
+                    </select>
+                </FilterField>
+                <FilterField label="Empresa">
+                    <input placeholder="Empresa" value={draftFilters.empresa} onChange={(event) => updateDraftFilter("empresa", event.target.value)} />
+                </FilterField>
+            </SearchFilters>
             {error ? <ErrorState>{error}</ErrorState> : null}
             <AdminDataTable
                 columns={["Nombre", "Email", "Rol", "Empresa", "Estado", "Alta", "Acciones"]}

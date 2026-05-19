@@ -6,4 +6,5 @@ export { LoadingState } from "./LoadingState";
 export { PageHeader } from "./PageHeader";
 export { Pagination } from "./Pagination";
 export { RowActionsMenu } from "./RowActionsMenu";
+export { FilterField, SearchFilters, SearchInput } from "./SearchFilters";
 export { StatusBadge } from "./StatusBadge";

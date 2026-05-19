@@ -25,7 +25,20 @@ class ClienteController extends AbstractCrudController
 
     protected function baseQuery(Request $request): Builder
     {
-        return parent::baseQuery($request)->with(['tipoCliente', 'localizaciones']);
+        return parent::baseQuery($request)
+            ->with(['tipoCliente', 'localizaciones'])
+            ->when($request->filled('search'), function (Builder $query) use ($request): void {
+                $search = '%'.$request->string('search')->toString().'%';
+
+                $query->where(function (Builder $inner) use ($search): void {
+                    $inner->where('nombre', 'like', $search)
+                        ->orWhere('apellidos', 'like', $search)
+                        ->orWhere('razon_social', 'like', $search)
+                        ->orWhere('dni_cif', 'like', $search)
+                        ->orWhere('email', 'like', $search)
+                        ->orWhere('telefono', 'like', $search);
+                });
+            });
     }
 
     public function store(StoreClienteRequest $request)

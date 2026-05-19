@@ -96,7 +96,7 @@ abstract class AbstractCrudController extends ApiController
         $modelClass = $this->modelClass();
         $query = $modelClass::query();
 
-        if ($this->usaEmpresaId()) {
+        if (!$this->usaEmpresaId()) {
             return $query;
         }
 

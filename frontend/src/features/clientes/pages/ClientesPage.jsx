@@ -5,6 +5,7 @@ import { ErrorState } from "../../../shared/components/ErrorState";
 import { FormModal } from "../../../shared/components/FormModal";
 import { LoadingState } from "../../../shared/components/LoadingState";
 import { PageHeader } from "../../../shared/components/PageHeader";
+import { FilterField, SearchFilters, SearchInput } from "../../../shared/components/SearchFilters";
 import { unwrapApiCollection } from "../../../shared/utils/apiResponse";
 import { ClienteDetailModal } from "../components/ClienteDetailModal";
 import { ClienteForm } from "../components/ClienteForm";
@@ -25,20 +26,23 @@ export function ClientesPage() {
     const [formMode, setFormMode] = useState(null);
     const [selectedCliente, setSelectedCliente] = useState(null);
     const [selectedClienteForView, setSelectedClienteForView] = useState(null);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [statusFilter, setStatusFilter] = useState("todos");
+    const [filters, setFilters] = useState({ search: "", status: "todos" });
+    const [draftFilters, setDraftFilters] = useState(filters);
 
     const loadClientes = useCallback(async () => {
         setLoading(true);
         setError("");
         try {
-            setClientes(unwrapApiCollection(await clientesService.list({ per_page: 100 })));
+            setClientes(unwrapApiCollection(await clientesService.list({
+                per_page: 100,
+                search: filters.search.trim() || undefined,
+            })));
         } catch (currentError) {
             setError(currentError?.message || "No se han podido cargar los clientes.");
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [filters.search]);
 
     const loadTiposCliente = useCallback(async () => {
         setLoadingTipos(true);
@@ -58,28 +62,25 @@ export function ClientesPage() {
     }, [loadClientes, loadTiposCliente]);
 
     const filteredClientes = useMemo(() => {
-        const query = searchTerm.trim().toLowerCase();
-
         return clientes.filter((cliente) => {
-            const matchesSearch = !query || [
-                cliente.nombre,
-                cliente.apellidos,
-                cliente.razon_social,
-                cliente.dni_cif,
-                cliente.email,
-                cliente.telefono,
-            ].some((value) => String(value || "").toLowerCase().includes(query));
-
             const matchesStatus =
-                statusFilter === "todos"
-                || (statusFilter === "activos" && cliente.activo)
-                || (statusFilter === "inactivos" && !cliente.activo);
+                filters.status === "todos"
+                || (filters.status === "activos" && cliente.activo)
+                || (filters.status === "inactivos" && !cliente.activo);
 
-            return matchesSearch && matchesStatus;
+            return matchesStatus;
         });
-    }, [clientes, searchTerm, statusFilter]);
+    }, [clientes, filters.status]);
 
-    const hasActiveFilters = Boolean(searchTerm.trim()) || statusFilter !== "todos";
+    const hasActiveFilters = Boolean(filters.search.trim()) || filters.status !== "todos";
+
+    const updateDraftFilter = (key, value) => setDraftFilters((current) => ({ ...current, [key]: value }));
+    const applyFilters = () => setFilters(draftFilters);
+    const resetFilters = () => {
+        const nextFilters = { search: "", status: "todos" };
+        setDraftFilters(nextFilters);
+        setFilters(nextFilters);
+    };
 
     const resetFormState = () => {
         setFormError("");
@@ -152,18 +153,21 @@ export function ClientesPage() {
                 title="Clientes"
             />
             {error ? <ErrorState>{error}</ErrorState> : null}
-            <section className="filters-bar clientes-filters" aria-label="Filtros de clientes">
-                <input
-                    placeholder="Buscar por nombre, razon social o DNI/CIF"
-                    value={searchTerm}
-                    onChange={(event) => setSearchTerm(event.target.value)}
+            <SearchFilters ariaLabel="Filtros de clientes" loading={loading} onReset={resetFilters} onSubmit={applyFilters}>
+                <SearchInput
+                    label="Buscar"
+                    placeholder="Nombre, razon social o DNI/CIF"
+                    value={draftFilters.search}
+                    onChange={(event) => updateDraftFilter("search", event.target.value)}
                 />
-                <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+                <FilterField label="Estado">
+                    <select value={draftFilters.status} onChange={(event) => updateDraftFilter("status", event.target.value)}>
                     <option value="todos">Todos</option>
                     <option value="activos">Activos</option>
                     <option value="inactivos">Inactivos</option>
-                </select>
-            </section>
+                    </select>
+                </FilterField>
+            </SearchFilters>
             {loading ? (
                 <LoadingState>Cargando clientes...</LoadingState>
             ) : (

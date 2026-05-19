@@ -19,6 +19,7 @@ use App\Services\FacturaRectificativaService;
 use App\Services\FacturaService;
 use App\Services\RegistroEventoFacturacionService;
 use App\Services\RegistroFacturacionService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -43,6 +44,40 @@ class FacturaController extends AbstractCrudController
     protected function resourceClass(): ?string
     {
         return FacturaResource::class;
+    }
+
+    protected function baseQuery(Request $request): Builder
+    {
+        return parent::baseQuery($request)
+            ->when($request->filled('search'), function (Builder $query) use ($request): void {
+                $search = '%'.$request->string('search')->toString().'%';
+
+                $query->where(function (Builder $inner) use ($search): void {
+                    $inner->where('serie', 'like', $search)
+                        ->orWhere('numero', 'like', $search)
+                        ->orWhere('numero_completo', 'like', $search)
+                        ->orWhere('receptor_nombre_razon_social', 'like', $search)
+                        ->orWhere('receptor_nif', 'like', $search)
+                        ->orWhereHas('cliente', function (Builder $clienteQuery) use ($search): void {
+                            $clienteQuery->where('nombre', 'like', $search)
+                                ->orWhere('apellidos', 'like', $search)
+                                ->orWhere('razon_social', 'like', $search)
+                                ->orWhere('dni_cif', 'like', $search);
+                        });
+                });
+            })
+            ->when($request->filled('estado'), function (Builder $query) use ($request): void {
+                $estado = $request->string('estado')->toString();
+
+                if ($estado === 'pagada') {
+                    $query->where('pagada', true);
+                    return;
+                }
+
+                $query->whereHas('estadoFactura', fn (Builder $estadoQuery) =>
+                    $estadoQuery->where('codigo', $estado)
+                );
+            });
     }
 
     public function index(Request $request): JsonResponse

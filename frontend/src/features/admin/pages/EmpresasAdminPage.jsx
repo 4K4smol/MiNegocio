@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FilterField, SearchFilters, SearchInput } from "../../../shared/components/SearchFilters";
 import { adminApi } from "../api/adminApi";
 import { AdminActionsMenu } from "../components/AdminActionsMenu";
 import { AdminConfirmModal } from "../components/AdminConfirmModal";
 import { AdminDataTable } from "../components/AdminDataTable";
-import { AdminFiltersBar } from "../components/AdminFiltersBar";
 import { AdminPageHeader } from "../components/AdminPageHeader";
 import { AdminPagination } from "../components/AdminPagination";
 import { AdminStatusBadge } from "../components/AdminStatusBadge";
@@ -12,9 +12,12 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { LoadingState } from "../components/LoadingState";
 
+const INITIAL_FILTERS = { texto: "", estado: "", tipo_empresa: "" };
+
 export function EmpresasAdminPage() {
     const navigate = useNavigate();
-    const [filters, setFilters] = useState({ texto: "", estado: "", tipo_empresa: "" });
+    const [filters, setFilters] = useState(INITIAL_FILTERS);
+    const [draftFilters, setDraftFilters] = useState(INITIAL_FILTERS);
     const [page, setPage] = useState(1);
     const [empresas, setEmpresas] = useState([]);
     const [meta, setMeta] = useState(null);
@@ -55,32 +58,52 @@ export function EmpresasAdminPage() {
         }
     };
 
+    const updateDraftFilter = (key, value) => setDraftFilters((current) => ({ ...current, [key]: value }));
+    const applyFilters = () => {
+        setFilters(draftFilters);
+        setPage(1);
+    };
+    const resetFilters = () => {
+        setDraftFilters(INITIAL_FILTERS);
+        setFilters(INITIAL_FILTERS);
+        setPage(1);
+    };
+
     if (loading && !empresas.length) return <LoadingState>Cargando empresas...</LoadingState>;
 
     return (
         <section className="admin-page">
-            <AdminPageHeader title="Empresas" description="Empresas y autónomos registrados, verificación, usuarios y módulos." />
-            <AdminFiltersBar>
-                <input placeholder="Buscar empresa o NIF" value={filters.texto} onChange={(event) => { setFilters({ ...filters, texto: event.target.value }); setPage(1); }} />
-                <select value={filters.estado} onChange={(event) => { setFilters({ ...filters, estado: event.target.value }); setPage(1); }}>
-                    <option value="">Todos los estados</option>
-                    <option value="activa">Activas</option>
-                    <option value="inactiva">Inactivas</option>
-                    <option value="pendiente">Pendientes</option>
-                    <option value="aprobada">Aprobadas</option>
-                    <option value="rechazada">Rechazadas</option>
-                </select>
-                <select value={filters.tipo_empresa} onChange={(event) => { setFilters({ ...filters, tipo_empresa: event.target.value }); setPage(1); }}>
-                    <option value="">Todos los tipos</option>
-                    <option value="autonomo">Autónomo</option>
-                    <option value="sociedad">Sociedad</option>
-                    <option value="pyme">PYME</option>
-                </select>
-            </AdminFiltersBar>
+            <AdminPageHeader title="Empresas" description="Empresas y autonomos registrados, verificacion, usuarios y modulos." />
+            <SearchFilters ariaLabel="Filtros de empresas" loading={loading} onReset={resetFilters} onSubmit={applyFilters}>
+                <SearchInput
+                    label="Buscar"
+                    placeholder="Empresa o NIF"
+                    value={draftFilters.texto}
+                    onChange={(event) => updateDraftFilter("texto", event.target.value)}
+                />
+                <FilterField label="Estado">
+                    <select value={draftFilters.estado} onChange={(event) => updateDraftFilter("estado", event.target.value)}>
+                        <option value="">Todos los estados</option>
+                        <option value="activa">Activas</option>
+                        <option value="inactiva">Inactivas</option>
+                        <option value="pendiente">Pendientes</option>
+                        <option value="aprobada">Aprobadas</option>
+                        <option value="rechazada">Rechazadas</option>
+                    </select>
+                </FilterField>
+                <FilterField label="Tipo">
+                    <select value={draftFilters.tipo_empresa} onChange={(event) => updateDraftFilter("tipo_empresa", event.target.value)}>
+                        <option value="">Todos los tipos</option>
+                        <option value="autonomo">Autonomo</option>
+                        <option value="sociedad">Sociedad</option>
+                        <option value="pyme">PYME</option>
+                    </select>
+                </FilterField>
+            </SearchFilters>
             {error ? <ErrorState>{error}</ErrorState> : null}
             <AdminDataTable
-                columns={["Empresa", "NIF", "Tipo", "Verificación", "Estado", "Usuarios", "Módulos", "Acciones"]}
-                empty={!empresas.length ? <EmptyState title="No hay empresas" description="Ajusta los filtros para ampliar la búsqueda." /> : null}
+                columns={["Empresa", "NIF", "Tipo", "Verificacion", "Estado", "Usuarios", "Modulos", "Acciones"]}
+                empty={!empresas.length ? <EmptyState title="No hay empresas" description="Ajusta los filtros para ampliar la busqueda." /> : null}
             >
                 {empresas.map((empresa) => {
                     const ultimaSolicitud = empresa.solicitudes_verificacion?.[0];

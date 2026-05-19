@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FormModal } from "../../../shared/components/FormModal";
+import { SearchFilters, SearchInput } from "../../../shared/components/SearchFilters";
 import { AdminActionsMenu } from "./AdminActionsMenu";
 import { AdminConfirmModal } from "./AdminConfirmModal";
 import { AdminDataTable } from "./AdminDataTable";
-import { AdminFiltersBar } from "./AdminFiltersBar";
 import { EmptyState } from "./EmptyState";
 import { ErrorState } from "./ErrorState";
 import { LoadingState } from "./LoadingState";
@@ -70,6 +70,7 @@ function CatalogFormFields({ config, disabled, value, onChange }) {
 export function AdminCatalogCrud({ config, onSuccess, extraItemActions, footerActions }) {
     const [items, setItems] = useState([]);
     const [search, setSearch] = useState("");
+    const [draftSearch, setDraftSearch] = useState("");
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
@@ -169,13 +170,26 @@ export function AdminCatalogCrud({ config, onSuccess, extraItemActions, footerAc
     return (
         <section className="admin-page">
             {error ? <ErrorState>{error}</ErrorState> : null}
-            <AdminFiltersBar>
-                <input placeholder={`Buscar en ${config.title.toLowerCase()}`} value={search} onChange={(event) => setSearch(event.target.value)} />
-                <div className="config-toolbar-spacer" />
+            <SearchFilters
+                ariaLabel={`Filtros de ${config.title.toLowerCase()}`}
+                onReset={() => {
+                    setDraftSearch("");
+                    setSearch("");
+                }}
+                onSubmit={() => setSearch(draftSearch)}
+            >
+                <SearchInput
+                    label="Buscar"
+                    placeholder={`Buscar en ${config.title.toLowerCase()}`}
+                    value={draftSearch}
+                    onChange={(event) => setDraftSearch(event.target.value)}
+                />
+            </SearchFilters>
+            <div className="search-filters-toolbar">
                 <button type="button" className="admin-button" onClick={openCreate}>
                     Nuevo
                 </button>
-            </AdminFiltersBar>
+            </div>
             <AdminDataTable
                 columns={[...config.columns.map((column) => column.label), "Acciones"]}
                 empty={!filteredItems.length ? <EmptyState title={`Sin ${config.title.toLowerCase()}`} /> : null}

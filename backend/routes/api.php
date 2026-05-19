@@ -269,6 +269,9 @@ Route::prefix('v1')->group(function (): void {
                     Route::get('{id}', 'show');
                 });
 
+                Route::get('verifactu/estado', [VerifactuController::class, 'estado']);
+                Route::get('verifactu/configuracion', [VerifactuController::class, 'configuracion']);
+                Route::get('verifactu/incidencias', [VerifactuController::class, 'incidencias']);
                 Route::post('verifactu/enviar-pendientes', [VerifactuController::class, 'enviarPendientes']);
             });
 

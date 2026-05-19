@@ -62,6 +62,13 @@ export function VerifactuPage() {
     }, [load])
 
     const handleEnviarPendientes = async () => {
+        const esSimulado = data.config?.modo === 'simulado' || !data.config?.remision_real_configurada
+        if (esSimulado) {
+            const ok = window.confirm(
+                'El sistema está en modo simulado. Los registros se procesarán localmente pero NO se enviarán a AEAT. ¿Deseas continuar?'
+            )
+            if (!ok) return
+        }
         setSending(true)
         setSendOk(null)
         setSendError('')
@@ -178,7 +185,16 @@ export function VerifactuPage() {
                                     <div><dt>URL sistema</dt><dd><code>{config.url_sistema}</code></dd></div>
                                 ) : null}
                                 {config.modo ? (
-                                    <div><dt>Modo</dt><dd>{config.modo}</dd></div>
+                                    <div>
+                                        <dt>Modo</dt>
+                                        <dd>
+                                            {config.modo === 'simulado'
+                                                ? 'Simulado (los envíos no llegan a AEAT)'
+                                                : config.modo === 'real'
+                                                ? 'Real'
+                                                : config.modo}
+                                        </dd>
+                                    </div>
                                 ) : null}
                                 {config.activo !== undefined ? (
                                     <div><dt>Activo</dt><dd>{config.activo ? 'Sí' : 'No'}</dd></div>
@@ -230,13 +246,21 @@ export function VerifactuPage() {
                         <h3 style={{ fontSize: '0.9rem', fontWeight: 600, margin: '0 0 0.5rem' }}>
                             Declaración responsable
                         </h3>
-                        <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280', lineHeight: 1.6 }}>
-                            Este sistema de facturación cumple con los requisitos técnicos establecidos en el
-                            Real Decreto 1007/2023, de 5 de diciembre, por el que se aprueba el Reglamento
-                            que establece los requisitos que deben adoptar los sistemas y programas
-                            informáticos o electrónicos que soporten los procesos de facturación de
-                            empresarios y profesionales.
-                        </p>
+                        {estado?.modo === 'simulado' ? (
+                            <p style={{ margin: 0, fontSize: '0.875rem', color: '#92400e', lineHeight: 1.6 }}>
+                                El sistema está funcionando en <strong>modo simulado</strong>. Los registros se generan
+                                localmente con el formato VeriFactu, pero no se remiten a la AEAT. Para cumplir con el
+                                RD 1007/2023 es necesario configurar el modo real y la remisión electrónica.
+                            </p>
+                        ) : (
+                            <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280', lineHeight: 1.6 }}>
+                                Este sistema de facturación cumple con los requisitos técnicos establecidos en el
+                                Real Decreto 1007/2023, de 5 de diciembre, por el que se aprueba el Reglamento
+                                que establece los requisitos que deben adoptar los sistemas y programas
+                                informáticos o electrónicos que soporten los procesos de facturación de
+                                empresarios y profesionales.
+                            </p>
+                        )}
                     </div>
                 </>
             ) : null}

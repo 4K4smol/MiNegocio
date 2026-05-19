@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AppIcon } from "../../../components/ui/AppIcon";
 import { appIcons } from "../../../config/appIcons";
@@ -9,6 +9,7 @@ import { EmptyState } from "../../../shared/components/EmptyState";
 import { ErrorState } from "../../../shared/components/ErrorState";
 import { LoadingState } from "../../../shared/components/LoadingState";
 import { PageHeader } from "../../../shared/components/PageHeader";
+import { FilterField, SearchFilters } from "../../../shared/components/SearchFilters";
 import { unwrapApiCollection, unwrapApiData } from "../../../shared/utils/apiResponse";
 import { formatCurrency, formatDate } from "../../../shared/utils/formatters";
 import { OrdenActionsDropdown } from "../components/OrdenActionsDropdown";
@@ -26,21 +27,13 @@ export function OrdenesPage() {
     const [actionError, setActionError] = useState("");
     const [facturaOrden, setFacturaOrden] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [draftFilters, setDraftFilters] = useState(filters);
 
     useEffect(() => {
         clientesService.list({ per_page: 100 })
             .then((response) => setClientes(unwrapApiCollection(response)))
             .catch(() => setClientes([]));
     }, []);
-
-    const filteredOrdenes = useMemo(() => ordenes.filter((orden) => {
-        const estadoOk = !filters.estado || orden.estado === filters.estado;
-        const clienteOk = !filters.cliente_id || String(orden.cliente?.id) === String(filters.cliente_id);
-        const date = scheduledDate(orden)?.slice(0, 10);
-        const desdeOk = !filters.fecha_desde || !date || date >= filters.fecha_desde;
-        const hastaOk = !filters.fecha_hasta || !date || date <= filters.fecha_hasta;
-        return estadoOk && clienteOk && desdeOk && hastaOk;
-    }), [filters, ordenes]);
 
     const runAction = async (action) => {
         setSaving(true);
@@ -65,6 +58,14 @@ export function OrdenesPage() {
         });
     };
 
+    const updateDraftFilter = (key, value) => setDraftFilters((current) => ({ ...current, [key]: value }));
+    const applyFilters = () => setFilters(draftFilters);
+    const resetFilters = () => {
+        const nextFilters = { cliente_id: "", estado: "", fecha_desde: "", fecha_hasta: "" };
+        setDraftFilters(nextFilters);
+        setFilters(nextFilters);
+    };
+
     return (
         <section className="page">
             <PageHeader
@@ -78,21 +79,29 @@ export function OrdenesPage() {
                 title="Ordenes"
             />
 
-            <section className="filters-bar" aria-label="Filtros de ordenes">
-                <select value={filters.estado} onChange={(event) => setFilters((current) => ({ ...current, estado: event.target.value }))}>
-                    <option value="">Todos los estados</option>
-                    <option value="pendiente">Pendientes</option>
-                    <option value="completada">Completadas</option>
-                    <option value="cancelada">Canceladas</option>
-                    <option value="facturada">Facturadas</option>
-                </select>
-                <select value={filters.cliente_id} onChange={(event) => setFilters((current) => ({ ...current, cliente_id: event.target.value }))}>
-                    <option value="">Todos los clientes</option>
-                    {clientes.map((cliente) => <option key={cliente.id} value={cliente.id}>{clienteNombre(cliente)}</option>)}
-                </select>
-                <input type="date" value={filters.fecha_desde} onChange={(event) => setFilters((current) => ({ ...current, fecha_desde: event.target.value }))} />
-                <input type="date" value={filters.fecha_hasta} onChange={(event) => setFilters((current) => ({ ...current, fecha_hasta: event.target.value }))} />
-            </section>
+            <SearchFilters ariaLabel="Filtros de ordenes" loading={loading} onReset={resetFilters} onSubmit={applyFilters}>
+                <FilterField label="Estado">
+                    <select value={draftFilters.estado} onChange={(event) => updateDraftFilter("estado", event.target.value)}>
+                        <option value="">Todos los estados</option>
+                        <option value="pendiente">Pendientes</option>
+                        <option value="completada">Completadas</option>
+                        <option value="cancelada">Canceladas</option>
+                        <option value="facturada">Facturadas</option>
+                    </select>
+                </FilterField>
+                <FilterField label="Cliente">
+                    <select value={draftFilters.cliente_id} onChange={(event) => updateDraftFilter("cliente_id", event.target.value)}>
+                        <option value="">Todos los clientes</option>
+                        {clientes.map((cliente) => <option key={cliente.id} value={cliente.id}>{clienteNombre(cliente)}</option>)}
+                    </select>
+                </FilterField>
+                <FilterField label="Desde">
+                    <input type="date" value={draftFilters.fecha_desde} onChange={(event) => updateDraftFilter("fecha_desde", event.target.value)} />
+                </FilterField>
+                <FilterField label="Hasta">
+                    <input type="date" value={draftFilters.fecha_hasta} onChange={(event) => updateDraftFilter("fecha_hasta", event.target.value)} />
+                </FilterField>
+            </SearchFilters>
 
             {loading ? <LoadingState>Cargando ordenes...</LoadingState> : null}
             {error ? <ErrorState>{error}</ErrorState> : null}
@@ -101,9 +110,9 @@ export function OrdenesPage() {
             {!loading ? (
                 <DataTable
                     columns={["Orden", "Cliente", "Fecha", "Estado", "Total", "Acciones"]}
-                    empty={!filteredOrdenes.length ? <EmptyState title="No hay ordenes de trabajo" description="Crea una orden para programar servicios y facturarlos despues." /> : null}
+                    empty={!ordenes.length ? <EmptyState title="No hay ordenes de trabajo" description="Crea una orden para programar servicios y facturarlos despues." /> : null}
                 >
-                    {filteredOrdenes.map((orden) => (
+                    {ordenes.map((orden) => (
                         <tr key={orden.id}>
                             <td>
                                 <strong>{orden.numero || `Orden ${orden.id}`}</strong>
@@ -137,4 +146,3 @@ export function OrdenesPage() {
         </section>
     );
 }
-

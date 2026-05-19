@@ -17,8 +17,8 @@ export function useOrdenes() {
         per_page: 100,
         cliente_id: filters.cliente_id || undefined,
         estado: filters.estado || undefined,
-        fecha_desde: filters.fecha_desde || undefined,
-        fecha_hasta: filters.fecha_hasta || undefined,
+        desde: filters.fecha_desde || undefined,
+        hasta: filters.fecha_hasta || undefined,
     }), [filters]);
 
     const loadOrdenes = useCallback(async () => {
@@ -40,4 +40,3 @@ export function useOrdenes() {
 
     return { error, filters, loading, ordenes, reload: loadOrdenes, setFilters };
 }
-

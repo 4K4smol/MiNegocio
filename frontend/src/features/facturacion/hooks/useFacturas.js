@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { unwrapApiCollection } from '../../../shared/utils/apiResponse'
 import { facturasService } from '../services/facturasService'
-import { getEstadoFactura } from '../utils/facturaUtils'
 
 export function useFacturas() {
     const [rawFacturas, setRawFacturas] = useState([])
@@ -13,7 +12,10 @@ export function useFacturas() {
         setLoading(true)
         setError('')
         try {
-            const response = await facturasService.list()
+            const response = await facturasService.list({
+                search: filters.search.trim() || undefined,
+                estado: filters.estado || undefined,
+            })
             setRawFacturas(unwrapApiCollection(response))
         } catch (e) {
             setError(e?.message || 'No se pudo cargar las facturas.')
@@ -21,27 +23,11 @@ export function useFacturas() {
         } finally {
             setLoading(false)
         }
-    }, [])
+    }, [filters])
 
     useEffect(() => {
         load()
     }, [load])
 
-    const facturas = useMemo(() => {
-        let result = rawFacturas
-        if (filters.search) {
-            const q = filters.search.toLowerCase()
-            result = result.filter((f) => {
-                const num = `${f.serie || ''}-${f.numero || f.id || ''}`.toLowerCase()
-                const cliente = (f.receptor_nombre_razon_social || f.cliente?.nombre || '').toLowerCase()
-                return num.includes(q) || cliente.includes(q)
-            })
-        }
-        if (filters.estado) {
-            result = result.filter((f) => getEstadoFactura(f) === filters.estado)
-        }
-        return result
-    }, [rawFacturas, filters])
-
-    return { facturas, rawFacturas, loading, error, filters, setFilters, reload: load }
+    return { facturas: rawFacturas, rawFacturas, loading, error, filters, setFilters, reload: load }
 }

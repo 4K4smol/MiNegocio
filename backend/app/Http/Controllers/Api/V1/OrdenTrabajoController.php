@@ -94,7 +94,8 @@ class OrdenTrabajoController extends AbstractCrudController
         if (!$this->findRecord($request, $orden->id)) {
             return $this->forbidden();
         }
-        $factura = $this->facturacionDesdeOrdenService->generarDesdeOrden($orden->load(['empresa', 'cliente', 'estado', 'lineas.servicio']), $request->user());
+        $modo = $request->string('modo', 'emitir')->toString();
+        $factura = $this->facturacionDesdeOrdenService->generarDesdeOrden($orden->load(['empresa', 'cliente', 'estado', 'lineas.servicio']), $request->user(), $modo);
         return $this->created(FacturaResource::make($factura)->resolve(), 'Factura generada correctamente desde la orden.');
     }
 }

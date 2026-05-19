@@ -1,19 +1,22 @@
 import { useEffect, useState } from "react";
+import { FilterField, SearchFilters, SearchInput } from "../../../shared/components/SearchFilters";
 import { adminApi } from "../api/adminApi";
 import { AdminActionsMenu } from "../components/AdminActionsMenu";
 import { AdminDataTable } from "../components/AdminDataTable";
-import { AdminFiltersBar } from "../components/AdminFiltersBar";
 import { AdminPageHeader } from "../components/AdminPageHeader";
 import { AdminPagination } from "../components/AdminPagination";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { LoadingState } from "../components/LoadingState";
 
+const INITIAL_FILTERS = { texto: "", accion: "", fecha_desde: "", fecha_hasta: "" };
+
 const formatDateTime = (value) =>
     value ? new Intl.DateTimeFormat("es-ES", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "Sin fecha";
 
 export function AuditoriaAdminPage() {
-    const [filters, setFilters] = useState({ texto: "", accion: "", fecha_desde: "", fecha_hasta: "" });
+    const [filters, setFilters] = useState(INITIAL_FILTERS);
+    const [draftFilters, setDraftFilters] = useState(INITIAL_FILTERS);
     const [page, setPage] = useState(1);
     const [eventos, setEventos] = useState([]);
     const [meta, setMeta] = useState(null);
@@ -29,7 +32,7 @@ export function AuditoriaAdminPage() {
                 setEventos(response.items);
                 setMeta(response.meta);
             })
-            .catch((apiError) => setError(apiError.message || "No se ha podido cargar la auditoría."))
+            .catch((apiError) => setError(apiError.message || "No se ha podido cargar la auditoria."))
             .finally(() => setLoading(false));
     };
 
@@ -38,20 +41,42 @@ export function AuditoriaAdminPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filters, page]);
 
-    if (loading && !eventos.length) return <LoadingState>Cargando auditoría...</LoadingState>;
+    const updateDraftFilter = (key, value) => setDraftFilters((current) => ({ ...current, [key]: value }));
+    const applyFilters = () => {
+        setFilters(draftFilters);
+        setPage(1);
+    };
+    const resetFilters = () => {
+        setDraftFilters(INITIAL_FILTERS);
+        setFilters(INITIAL_FILTERS);
+        setPage(1);
+    };
+
+    if (loading && !eventos.length) return <LoadingState>Cargando auditoria...</LoadingState>;
 
     return (
         <section className="admin-page">
-            <AdminPageHeader title="Auditoría" description="Historial filtrable de acciones administrativas y revisiones." />
-            <AdminFiltersBar>
-                <input placeholder="Buscar acción, admin, empresa o motivo" value={filters.texto} onChange={(event) => { setFilters({ ...filters, texto: event.target.value }); setPage(1); }} />
-                <input placeholder="Acción" value={filters.accion} onChange={(event) => { setFilters({ ...filters, accion: event.target.value }); setPage(1); }} />
-                <input type="date" value={filters.fecha_desde} onChange={(event) => { setFilters({ ...filters, fecha_desde: event.target.value }); setPage(1); }} />
-                <input type="date" value={filters.fecha_hasta} onChange={(event) => { setFilters({ ...filters, fecha_hasta: event.target.value }); setPage(1); }} />
-            </AdminFiltersBar>
+            <AdminPageHeader title="Auditoria" description="Historial filtrable de acciones administrativas y revisiones." />
+            <SearchFilters ariaLabel="Filtros de auditoria" loading={loading} onReset={resetFilters} onSubmit={applyFilters}>
+                <SearchInput
+                    label="Buscar"
+                    placeholder="Accion, admin, empresa o motivo"
+                    value={draftFilters.texto}
+                    onChange={(event) => updateDraftFilter("texto", event.target.value)}
+                />
+                <FilterField label="Accion">
+                    <input placeholder="Accion" value={draftFilters.accion} onChange={(event) => updateDraftFilter("accion", event.target.value)} />
+                </FilterField>
+                <FilterField label="Desde">
+                    <input type="date" value={draftFilters.fecha_desde} onChange={(event) => updateDraftFilter("fecha_desde", event.target.value)} />
+                </FilterField>
+                <FilterField label="Hasta">
+                    <input type="date" value={draftFilters.fecha_hasta} onChange={(event) => updateDraftFilter("fecha_hasta", event.target.value)} />
+                </FilterField>
+            </SearchFilters>
             {error ? <ErrorState>{error}</ErrorState> : null}
             <AdminDataTable
-                columns={["Fecha", "Acción", "Admin", "Usuario afectado", "Empresa", "Estado", "Motivo", "Acciones"]}
+                columns={["Fecha", "Accion", "Admin", "Usuario afectado", "Empresa", "Estado", "Motivo", "Acciones"]}
                 empty={!eventos.length ? <EmptyState title="Sin eventos" description="No hay acciones con los filtros actuales." /> : null}
             >
                 {eventos.map((evento) => (
@@ -74,10 +99,10 @@ export function AuditoriaAdminPage() {
             <AdminPagination meta={meta} disabled={loading} onPageChange={setPage} />
             {selected ? (
                 <div className="admin-modal-backdrop" role="presentation">
-                    <section className="admin-modal" role="dialog" aria-modal="true" aria-label="Detalle de auditoría">
+                    <section className="admin-modal" role="dialog" aria-modal="true" aria-label="Detalle de auditoria">
                         <header>
                             <div>
-                                <span className="admin-kicker">Auditoría</span>
+                                <span className="admin-kicker">Auditoria</span>
                                 <h3>{selected.accion}</h3>
                             </div>
                             <button type="button" className="admin-icon-button admin-button-ghost" onClick={() => setSelected(null)} aria-label="Cerrar">

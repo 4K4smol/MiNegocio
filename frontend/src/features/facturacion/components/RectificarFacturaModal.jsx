@@ -18,8 +18,8 @@ export function RectificarFacturaModal({ open, onClose, onConfirm, loading }) {
     return (
         <Modal
             open={open}
-            title="Rectificar factura"
-            subtitle="Se generará una nueva factura rectificativa"
+            title="Crear rectificativa total"
+            subtitle="Se generará una factura negativa por el importe total de la original (rectificación total por diferencias). No usar para correcciones parciales."
             onClose={handleClose}
             closeDisabled={loading}
             footer={
@@ -52,7 +52,7 @@ export function RectificarFacturaModal({ open, onClose, onConfirm, loading }) {
                     onChange={(e) => setMotivo(e.target.value)}
                 />
                 <small className="field-hint">
-                    La factura rectificativa quedará vinculada a la original.
+                    La rectificativa anulará económicamente la factura original. Ambas quedarán vinculadas en el registro de facturación.
                 </small>
             </div>
         </Modal>

@@ -4,6 +4,7 @@ import { DataTable } from "../../../shared/components/DataTable";
 import { EmptyState } from "../../../shared/components/EmptyState";
 import { ErrorState } from "../../../shared/components/ErrorState";
 import { LoadingState } from "../../../shared/components/LoadingState";
+import { FilterField, SearchFilters, SearchInput } from "../../../shared/components/SearchFilters";
 import { RowActionsMenu } from "../../../shared/components/RowActionsMenu";
 import { StatusBadge } from "../../../shared/components/StatusBadge";
 import { unwrapApiCollection } from "../../../shared/utils/apiResponse";
@@ -16,8 +17,8 @@ export function ServiciosTab() {
     const [servicios, setServicios] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [search, setSearch] = useState("");
-    const [activo, setActivo] = useState("todos");
+    const [filters, setFilters] = useState({ search: "", activo: "todos" });
+    const [draftFilters, setDraftFilters] = useState(filters);
     const [saving, setSaving] = useState(false);
     const [formMode, setFormMode] = useState(null);
     const [selectedServicio, setSelectedServicio] = useState(null);
@@ -32,8 +33,8 @@ export function ServiciosTab() {
         try {
             const params = {
                 per_page: 100,
-                search: search.trim() || undefined,
-                activo: activo === "todos" ? undefined : activo === "activos",
+                search: filters.search.trim() || undefined,
+                activo: filters.activo === "todos" ? undefined : filters.activo === "activos",
             };
             const serviciosResponse = await serviciosService.list(params);
             setServicios(unwrapApiCollection(serviciosResponse));
@@ -42,7 +43,7 @@ export function ServiciosTab() {
         } finally {
             setLoading(false);
         }
-    }, [activo, search]);
+    }, [filters]);
 
     useEffect(() => {
         loadData();
@@ -110,6 +111,14 @@ export function ServiciosTab() {
         }
     };
 
+    const updateDraftFilter = (key, value) => setDraftFilters((current) => ({ ...current, [key]: value }));
+    const applyFilters = () => setFilters(draftFilters);
+    const resetFilters = () => {
+        const nextFilters = { search: "", activo: "todos" };
+        setDraftFilters(nextFilters);
+        setFilters(nextFilters);
+    };
+
     return (
         <section className="module-section">
             <div className="section-toolbar">
@@ -122,14 +131,21 @@ export function ServiciosTab() {
                 </button>
             </div>
 
-            <section className="filters-bar services-filters" aria-label="Filtros de servicios">
-                <input placeholder="Buscar por nombre, codigo o descripcion" value={search} onChange={(event) => setSearch(event.target.value)} />
-                <select value={activo} onChange={(event) => setActivo(event.target.value)}>
-                    <option value="todos">Todos</option>
-                    <option value="activos">Activos</option>
-                    <option value="inactivos">Inactivos</option>
-                </select>
-            </section>
+            <SearchFilters ariaLabel="Filtros de servicios" loading={loading} onReset={resetFilters} onSubmit={applyFilters}>
+                <SearchInput
+                    label="Buscar"
+                    placeholder="Nombre, codigo o descripcion"
+                    value={draftFilters.search}
+                    onChange={(event) => updateDraftFilter("search", event.target.value)}
+                />
+                <FilterField label="Estado">
+                    <select value={draftFilters.activo} onChange={(event) => updateDraftFilter("activo", event.target.value)}>
+                        <option value="todos">Todos</option>
+                        <option value="activos">Activos</option>
+                        <option value="inactivos">Inactivos</option>
+                    </select>
+                </FilterField>
+            </SearchFilters>
 
             {error ? <ErrorState>{error}</ErrorState> : null}
             {loading ? (

@@ -19,7 +19,7 @@ export function AnularFacturaModal({ open, onClose, onConfirm, loading }) {
         <Modal
             open={open}
             title="Anular factura"
-            subtitle="Esta acción no se puede deshacer"
+            subtitle="Esta acción no se puede deshacer. Se generará un registro técnico de anulación encadenado e irreversible en el sistema de facturación."
             onClose={handleClose}
             closeDisabled={loading}
             footer={

@@ -18,7 +18,6 @@ import {
     isFacturaAnulada,
     isFacturaBorrador,
     isFacturaEmitida,
-    isFacturaFinalizada,
     isFacturaPagada,
     isFacturaRectificada,
 } from '../utils/facturaUtils'
@@ -472,6 +471,7 @@ export function FacturaDetailPage() {
         runAction(async () => {
             await facturasService.anular(facturaId, motivo)
             setAnularOpen(false)
+            setActiveTab('tecnico')
         })
 
     const handleRectificar = (motivo) =>
@@ -551,7 +551,7 @@ export function FacturaDetailPage() {
                                     type="button"
                                     onClick={() => setRectificarOpen(true)}
                                 >
-                                    Rectificar
+                                    Crear rectificativa total
                                 </button>
                             ) : null}
 
