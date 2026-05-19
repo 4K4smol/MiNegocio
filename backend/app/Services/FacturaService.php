@@ -156,7 +156,6 @@ class FacturaService
     ): array {
         $empresa = $user->empresa_id === $empresaId ? $user->empresa : null;
         $empresa ??= \App\Models\Empresa::query()->findOrFail($empresaId);
-        $cliente->loadMissing(['localizacionPrincipal']);
 
         return [
             'empresa_id' => $empresaId,
@@ -173,11 +172,11 @@ class FacturaService
             'emisor_domicilio_fiscal' => $empresa->direccion_fiscal ?: 'N/D',
             'receptor_nif' => $cliente->dni_cif,
             'receptor_nombre_razon_social' => $cliente->razon_social ?: $cliente->nombre_completo,
-            'receptor_domicilio_fiscal' => $cliente->localizacionPrincipal?->direccion ?? 'N/D',
-            'receptor_cp' => $cliente->localizacionPrincipal?->codigo_postal,
-            'receptor_municipio' => $cliente->localizacionPrincipal?->municipio,
-            'receptor_provincia' => $cliente->localizacionPrincipal?->provincia,
-            'receptor_pais' => $cliente->localizacionPrincipal?->pais,
+            'receptor_domicilio_fiscal' => $cliente->direccion ?? 'N/D',
+            'receptor_cp' => $cliente->codigo_postal,
+            'receptor_municipio' => $cliente->ciudad,
+            'receptor_provincia' => $cliente->provincia,
+            'receptor_pais' => $cliente->pais,
             'observaciones' => $data['observaciones'] ?? $factura?->observaciones,
             'metadatos' => $data['metadatos'] ?? $factura?->metadatos,
             'created_by' => $factura?->created_by ?? $user->id,

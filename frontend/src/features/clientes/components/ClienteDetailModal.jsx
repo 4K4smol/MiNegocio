@@ -54,6 +54,11 @@ export function ClienteDetailModal({ cliente, onClose, onEdit }) {
                     </dd>
                 </div>
                 <DetailItem label="Notas" value={cliente.notas} />
+                <DetailItem label="Dirección" value={cliente.direccion} />
+                <DetailItem label="Ciudad" value={cliente.ciudad} />
+                <DetailItem label="Provincia" value={cliente.provincia} />
+                <DetailItem label="Código postal" value={cliente.codigo_postal} />
+                <DetailItem label="País" value={cliente.pais} />
                 <DetailItem label="Fecha de creacion" value={formatDateTime(cliente.created_at)} />
                 <DetailItem label="Ultima actualizacion" value={formatDateTime(cliente.updated_at)} />
             </dl>

@@ -1,8 +1,17 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { AppIcon } from "../components/ui/AppIcon";
 import { appIcons } from "../config/appIcons";
 
 export function PublicLayout() {
+    const { hash } = useLocation();
+
+    useEffect(() => {
+        if (!hash) return;
+        const el = document.querySelector(hash);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+    }, [hash]);
+
     return (
         <div className="public-shell">
             <header className="public-header">

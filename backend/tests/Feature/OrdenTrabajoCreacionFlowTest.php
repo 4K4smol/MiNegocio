@@ -6,10 +6,8 @@ namespace Tests\Feature;
 
 use App\Models\Cliente;
 use App\Models\Empresa;
-use App\Models\LocalizacionCliente;
 use App\Models\Servicio;
 use App\Models\ServicioPrecio;
-use App\Models\TipoLocalizacionCliente;
 use App\Models\TipoTarifaServicio;
 use App\Models\User;
 use App\Services\ModuloService;
@@ -147,18 +145,6 @@ class OrdenTrabajoCreacionFlowTest extends TestCase
             'activo' => true,
         ]);
 
-        $localizacion = LocalizacionCliente::query()->create([
-            'cliente_id' => $cliente->id,
-            'nombre_localizacion' => 'Sede principal',
-            'tipo_localizacion_id' => TipoLocalizacionCliente::query()->firstOrFail()->id,
-            'direccion' => 'Calle Mayor 1',
-            'ciudad' => 'Madrid',
-            'provincia' => 'Madrid',
-            'pais' => 'España',
-            'es_principal' => true,
-            'activo' => true,
-        ]);
-
         $servicio = Servicio::query()->create([
             'empresa_id' => $empresa->id,
             'codigo' => 'SERV-'.$nif,
@@ -176,6 +162,6 @@ class OrdenTrabajoCreacionFlowTest extends TestCase
             'moneda' => 'EUR',
         ]);
 
-        return [$user, $cliente, $localizacion, $servicio, $precio];
+        return [$user, $cliente, $servicio, $precio];
     }
 }

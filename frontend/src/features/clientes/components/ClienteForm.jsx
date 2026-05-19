@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SwitchInput } from "../../../shared/components/ui";
 
 const fieldError = (errors, name) => {
     const value = errors?.[name];
@@ -137,15 +138,15 @@ export function ClienteForm({
                 <input defaultValue={initialValues.pais || "España"} disabled={disabled} name="pais" />
             </label>
 
-            <label className="form-checkbox is-wide">
-                <input
+            <div className="is-wide">
+                <SwitchInput
                     defaultChecked={initialValues.activo ?? true}
                     disabled={disabled}
+                    helpText="Un cliente inactivo no puede seleccionarse en nuevas órdenes."
+                    label="Cliente activo"
                     name="activo"
-                    type="checkbox"
                 />
-                Cliente activo
-            </label>
+            </div>
         </div>
     );
 }

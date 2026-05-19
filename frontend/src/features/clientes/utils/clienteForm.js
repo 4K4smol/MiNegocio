@@ -21,6 +21,11 @@ export const clientePayloadFromForm = (form) => {
         persona_contacto: isParticular ? null : emptyToNull(formData.get("persona_contacto")),
         notas: emptyToNull(formData.get("notas")),
         activo: formData.get("activo") === "on",
+        direccion: emptyToNull(formData.get("direccion")),
+        ciudad: emptyToNull(formData.get("ciudad")),
+        codigo_postal: emptyToNull(formData.get("codigo_postal")),
+        provincia: emptyToNull(formData.get("provincia")),
+        pais: emptyToNull(formData.get("pais")),
     };
 };
 

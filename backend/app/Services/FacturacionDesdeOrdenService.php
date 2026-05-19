@@ -45,7 +45,7 @@ class FacturacionDesdeOrdenService
 
             $orden->loadMissing([
                 'empresa',
-                'cliente.localizacionPrincipal',
+                'cliente',
                 'lineas.servicio',
                 'estado',
             ]);
@@ -87,11 +87,11 @@ class FacturacionDesdeOrdenService
 
                 'receptor_nif' => $orden->cliente->dni_cif,
                 'receptor_nombre_razon_social' => $orden->cliente->razon_social ?: $orden->cliente->nombre_completo,
-                'receptor_domicilio_fiscal' => $orden->cliente->localizacionPrincipal?->direccion ?? 'N/D',
-                'receptor_cp' => $orden->cliente->localizacionPrincipal?->codigo_postal,
-                'receptor_municipio' => $orden->cliente->localizacionPrincipal?->municipio,
-                'receptor_provincia' => $orden->cliente->localizacionPrincipal?->provincia,
-                'receptor_pais' => $orden->cliente->localizacionPrincipal?->pais,
+                'receptor_domicilio_fiscal' => $orden->cliente->direccion ?? 'N/D',
+                'receptor_cp' => $orden->cliente->codigo_postal,
+                'receptor_municipio' => $orden->cliente->ciudad,
+                'receptor_provincia' => $orden->cliente->provincia,
+                'receptor_pais' => $orden->cliente->pais,
                 'created_by' => $user->id,
                 'updated_by' => $user->id,
             ]);

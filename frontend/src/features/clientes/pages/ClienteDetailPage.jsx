@@ -74,6 +74,11 @@ export function ClienteDetailPage() {
                     <DetailItem label="Persona de contacto" value={cliente.persona_contacto} />
                     <DetailItem label="Estado" value={cliente.activo ? "Activo" : "Inactivo"} />
                     <DetailItem label="Notas" value={cliente.notas} />
+                    <DetailItem label="Dirección" value={cliente.direccion} />
+                    <DetailItem label="Ciudad" value={cliente.ciudad} />
+                    <DetailItem label="Provincia" value={cliente.provincia} />
+                    <DetailItem label="Código postal" value={cliente.codigo_postal} />
+                    <DetailItem label="País" value={cliente.pais} />
                 </dl>
             </section>
         </section>

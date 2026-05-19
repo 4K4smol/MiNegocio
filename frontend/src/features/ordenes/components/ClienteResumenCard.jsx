@@ -21,8 +21,8 @@ export function ClienteResumenCard({ cliente }) {
                     <dd>{cliente.telefono || "-"}</dd>
                 </div>
                 <div>
-                    <dt>Ciudad</dt>
-                    <dd>{cliente.ciudad || "-"}</dd>
+                    <dt>Dirección</dt>
+                    <dd>{[cliente.ciudad, cliente.provincia].filter(Boolean).join(", ") || "-"}</dd>
                 </div>
             </dl>
         </aside>
