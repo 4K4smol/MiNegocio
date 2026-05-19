@@ -15,11 +15,6 @@ class InventarioUbicacion extends Model
         'nombre',
         'descripcion',
         'observaciones',
-        'activo',
-    ];
-
-    protected $casts = [
-        'activo' => 'boolean',
     ];
 
     public function empresa(): BelongsTo

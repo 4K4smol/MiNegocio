@@ -32,7 +32,6 @@ class OrdenTrabajoService
             $orden = OrdenTrabajo::query()->create([
                 'empresa_id' => $empresaId,
                 'cliente_id' => $data['cliente_id'],
-                'localizacion_cliente_id' => $data['localizacion_cliente_id'] ?? null,
                 'numero' => null,
                 'estado_id' => $estado->id,
                 'estado_codigo' => $estado->codigo,
@@ -71,9 +70,6 @@ class OrdenTrabajoService
 
             $orden->fill([
                 'cliente_id' => $data['cliente_id'] ?? $orden->cliente_id,
-                'localizacion_cliente_id' => array_key_exists('localizacion_cliente_id', $data)
-                    ? $data['localizacion_cliente_id']
-                    : $orden->localizacion_cliente_id,
                 'estado_id' => $estado->id,
                 'estado_codigo' => $estado->codigo,
                 'prioridad_id' => $prioridad?->id ?? $orden->prioridad_id,
@@ -270,8 +266,7 @@ class OrdenTrabajoService
     private function cargarRelaciones(OrdenTrabajo $orden): OrdenTrabajo
     {
         return $orden->fresh([
-            'cliente.localizaciones',
-            'localizacionCliente',
+            'cliente',
             'estado',
             'prioridad',
             'tecnicoResponsable',

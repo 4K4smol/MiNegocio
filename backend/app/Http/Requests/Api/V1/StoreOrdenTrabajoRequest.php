@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Requests\Api\V1;
 
 use App\Models\Cliente;
-use App\Models\LocalizacionCliente;
 use App\Models\Servicio;
 use App\Models\ServicioPrecio;
 use App\Models\TipoTarifaServicio;
@@ -24,7 +23,6 @@ class StoreOrdenTrabajoRequest extends FormRequest
     {
         return [
             'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
-            'localizacion_cliente_id' => ['nullable', 'integer', 'exists:localizaciones_cliente,id'],
             'prioridad_id' => ['nullable', 'integer', 'exists:orden_trabajo_prioridades,id'],
             'prioridad_codigo' => ['nullable', 'string', 'exists:orden_trabajo_prioridades,codigo'],
             'fecha_programada' => ['nullable', 'date'],
@@ -69,18 +67,6 @@ class StoreOrdenTrabajoRequest extends FormRequest
 
             if (!$clienteOk) {
                 $validator->errors()->add('cliente_id', 'El cliente no pertenece a la empresa autenticada.');
-            }
-
-            if ($this->filled('localizacion_cliente_id')) {
-                $localizacionOk = LocalizacionCliente::query()
-                    ->whereKey((int) $this->input('localizacion_cliente_id'))
-                    ->where('cliente_id', $clienteId)
-                    ->whereHas('cliente', fn ($query) => $query->where('empresa_id', $user->empresa_id))
-                    ->exists();
-
-                if (!$localizacionOk) {
-                    $validator->errors()->add('localizacion_cliente_id', 'La localización no pertenece al cliente seleccionado.');
-                }
             }
 
             $servicioIds = collect($this->input('lineas', []))->pluck('servicio_id')->filter()->unique()->values();

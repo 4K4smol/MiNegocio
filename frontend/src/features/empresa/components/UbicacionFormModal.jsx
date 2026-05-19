@@ -1,5 +1,4 @@
 import { FormModal } from "../../../shared/components/FormModal";
-import { SwitchInput } from "../../../shared/components/ui/SwitchInput";
 
 const fieldError = (errors, name) => {
     const value = errors?.[name];
@@ -64,15 +63,6 @@ export function UbicacionFormModal({
                         rows={3}
                     />
                 </label>
-                <div className="is-wide">
-                    <SwitchInput
-                        defaultChecked={ubicacion?.activo ?? true}
-                        disabled={disabled}
-                        helpText="Controla si esta ubicacion aparece disponible para nuevos movimientos."
-                        label="Ubicacion activa"
-                        name="activo"
-                    />
-                </div>
             </div>
         </FormModal>
     );

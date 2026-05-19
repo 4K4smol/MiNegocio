@@ -36,12 +36,8 @@ class StoreInventarioItemRequest extends FormRequest
             'ubicacion_id' => ['nullable','integer', Rule::exists('inventario_ubicaciones', 'id')->where(fn ($query) => $query->where('empresa_id', $empresaId))],
             'nombre' => ['required','string','max:255'],
             'descripcion' => ['nullable','string'],
-            'sku' => ['nullable','string','max:100', Rule::unique('inventario_items', 'sku')->where(fn ($query) => $query->where('empresa_id', $empresaId))],
-            'codigo_barras' => ['nullable','string','max:100'],
             'stock_actual' => ['nullable','numeric','min:0'],
             'stock_minimo' => ['nullable','numeric','min:0'],
-            'coste_unitario' => ['nullable','numeric','min:0'],
-            'activo' => ['sometimes','boolean'],
         ];
     }
 

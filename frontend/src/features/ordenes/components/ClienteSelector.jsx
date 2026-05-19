@@ -1,6 +1,6 @@
 import { clienteLabel } from "../utils/ordenDisplay";
 
-export function ClienteSelector({ clientes = [], disabled = false, errors = {}, onChange, onLocalizacionChange, value }) {
+export function ClienteSelector({ clientes = [], disabled = false, errors = {}, onChange, value }) {
     return (
         <label>
             Cliente
@@ -9,10 +9,7 @@ export function ClienteSelector({ clientes = [], disabled = false, errors = {}, 
                 name="cliente_id"
                 required
                 value={value}
-                onChange={(event) => {
-                    onChange(event.target.value);
-                    onLocalizacionChange?.("");
-                }}
+                onChange={(event) => onChange(event.target.value)}
             >
                 <option value="">Selecciona cliente</option>
                 {clientes.map((cliente) => (

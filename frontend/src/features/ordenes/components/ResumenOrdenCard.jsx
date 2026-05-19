@@ -1,7 +1,7 @@
 import { formatCurrency } from "../../../shared/utils/formatters";
 import { clienteLabel } from "../utils/ordenDisplay";
 
-export function ResumenOrdenCard({ cliente, durationMinutes = 0, error, form, lineas = [], localizacion, totals }) {
+export function ResumenOrdenCard({ cliente, durationMinutes = 0, error, form, lineas = [], totals }) {
     return (
         <>
             {error ? <div className="form-error">{error}</div> : null}
@@ -9,10 +9,6 @@ export function ResumenOrdenCard({ cliente, durationMinutes = 0, error, form, li
                 <div>
                     <dt>Cliente</dt>
                     <dd>{cliente ? clienteLabel(cliente) : "-"}</dd>
-                </div>
-                <div>
-                    <dt>Localizacion</dt>
-                    <dd>{localizacion?.direccion_completa || localizacion?.nombre || "Principal o sin especificar"}</dd>
                 </div>
                 <div>
                     <dt>Fecha prevista</dt>

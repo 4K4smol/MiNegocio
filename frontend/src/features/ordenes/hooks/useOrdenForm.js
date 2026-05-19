@@ -63,7 +63,6 @@ export function useOrdenForm(initialOrden) {
     const [catalogError, setCatalogError] = useState("");
     const [form, setForm] = useState({
         cliente_id: initialOrden?.cliente?.id || "",
-        localizacion_cliente_id: initialOrden?.localizacion?.id || initialOrden?.localizacion_cliente_id || "",
         fecha: getOrdenDate(initialOrden),
         hora_inicio: getOrdenTime(initialOrden),
         hora_fin: getOrdenEndTime(initialOrden),
@@ -164,7 +163,6 @@ export function useOrdenForm(initialOrden) {
 
         return {
             cliente_id: Number(form.cliente_id),
-            localizacion_cliente_id: form.localizacion_cliente_id ? Number(form.localizacion_cliente_id) : null,
             prioridad_codigo: form.prioridad_codigo || "normal",
             fecha_programada_inicio: fechaProgramadaInicio,
             fecha_programada_fin: fechaProgramadaFin,

@@ -50,16 +50,6 @@ class InventarioUbicacionController extends AbstractCrudController
         );
     }
 
-    public function activar(Request $request, int $id): JsonResponse
-    {
-        return $this->cambiarActivo($request, $id, true);
-    }
-
-    public function desactivar(Request $request, int $id): JsonResponse
-    {
-        return $this->cambiarActivo($request, $id, false);
-    }
-
     public function destroy(Request $request, int $id): JsonResponse
     {
         $record = $this->findRecord($request, $id);
@@ -70,30 +60,13 @@ class InventarioUbicacionController extends AbstractCrudController
 
         if ($record->items()->exists()) {
             return $this->validationError([
-                'ubicacion' => ['No se puede eliminar una ubicacion con inventario asociado. Desactivala si ya no se usa.'],
+                'ubicacion' => ['No se puede eliminar una ubicacion con inventario asociado.'],
             ]);
         }
 
         $record->delete();
 
         return $this->deleted();
-    }
-
-    private function cambiarActivo(Request $request, int $id, bool $activo): JsonResponse
-    {
-        $record = $this->findRecord($request, $id);
-
-        if ($record === null) {
-            return $this->notFound();
-        }
-
-        $record->activo = $activo;
-        $record->save();
-
-        return $this->updated(
-            InventarioUbicacionResource::make($record->fresh())->resolve(),
-            'Ubicacion actualizada correctamente.'
-        );
     }
 
 }

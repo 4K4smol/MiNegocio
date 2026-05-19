@@ -108,8 +108,8 @@ export function OrdenDetailPage() {
                             <dd>{formatDate(orden.fechas?.programada_inicio)}</dd>
                         </div>
                         <div>
-                            <dt>Localizacion</dt>
-                            <dd>{orden.localizacion?.direccion_completa || orden.localizacion?.nombre || "Principal o sin especificar"}</dd>
+                            <dt>Ciudad</dt>
+                            <dd>{orden.cliente?.ciudad || "-"}</dd>
                         </div>
                         <div>
                             <dt>Total</dt>

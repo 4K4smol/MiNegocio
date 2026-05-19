@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppIcon } from "../../../components/ui/AppIcon";
 import { appIcons } from "../../../config/appIcons";
-import { ConfirmModal } from "../../../shared/components/ConfirmModal";
 import { DataTable } from "../../../shared/components/DataTable";
 import { EmptyState } from "../../../shared/components/EmptyState";
 import { ErrorState } from "../../../shared/components/ErrorState";
@@ -10,10 +9,8 @@ import { LoadingState } from "../../../shared/components/LoadingState";
 import { PageHeader } from "../../../shared/components/PageHeader";
 import { RowActionsMenu } from "../../../shared/components/RowActionsMenu";
 import { FilterField, SearchFilters, SearchInput } from "../../../shared/components/SearchFilters";
-import { StatusBadge } from "../../../shared/components/StatusBadge";
 import { Modal } from "../../../shared/components/ui/Modal";
 import { unwrapApiCollection } from "../../../shared/utils/apiResponse";
-import { formatCurrency } from "../../../shared/utils/formatters";
 import { InventarioItemFormModal } from "../components/InventarioItemFormModal";
 import { InventarioMovimientoFormModal } from "../components/InventarioMovimientoFormModal";
 import {
@@ -42,13 +39,9 @@ const itemPayloadFromForm = (form) => {
     return {
         nombre: emptyToNull(formData.get("nombre")),
         descripcion: emptyToNull(formData.get("descripcion")),
-        sku: emptyToNull(formData.get("sku")),
-        codigo_barras: emptyToNull(formData.get("codigo_barras")),
         unidad_medida_id: numberOrNull(formData.get("unidad_medida_id")),
         ubicacion_id: numberOrNull(formData.get("ubicacion_id")),
         stock_minimo: numberOrNull(formData.get("stock_minimo")) ?? 0,
-        coste_unitario: numberOrNull(formData.get("coste_unitario")),
-        activo: formData.get("activo") === "on",
     };
 };
 
@@ -74,7 +67,6 @@ const catalogPayloadFromForm = (form) => {
         nombre: emptyToNull(formData.get("nombre")),
         descripcion: emptyToNull(formData.get("descripcion")),
         observaciones: emptyToNull(formData.get("observaciones")),
-        activo: true,
     };
 };
 
@@ -117,12 +109,11 @@ export function InventarioPage() {
     const [error, setError] = useState("");
     const [formError, setFormError] = useState("");
     const [formErrors, setFormErrors] = useState({});
-    const [filters, setFilters] = useState({ search: "", activo: "todos", ubicacionId: "todos", stockBajo: false });
+    const [filters, setFilters] = useState({ search: "", ubicacionId: "todos", stockBajo: false });
     const [draftFilters, setDraftFilters] = useState(filters);
     const [formMode, setFormMode] = useState(null);
     const [selectedItem, setSelectedItem] = useState(null);
     const [movementItem, setMovementItem] = useState(null);
-    const [confirmItem, setConfirmItem] = useState(null);
     const [ubicacionFormOpen, setUbicacionFormOpen] = useState(false);
     const [movimientosItem, setMovimientosItem] = useState(null);
     const [movimientos, setMovimientos] = useState([]);
@@ -135,7 +126,6 @@ export function InventarioPage() {
             const params = {
                 per_page: 100,
                 search: filters.search.trim() || undefined,
-                activo: filters.activo === "todos" ? undefined : filters.activo === "activos",
                 ubicacion_id: filters.ubicacionId === "todos" ? undefined : filters.ubicacionId,
                 stock_bajo: filters.stockBajo || undefined,
             };
@@ -162,7 +152,6 @@ export function InventarioPage() {
         loadData();
     }, [loadData]);
 
-    const ubicacionesActivas = useMemo(() => ubicaciones.filter((ubicacion) => ubicacion.activo), [ubicaciones]);
     const tiposMovimientoActivos = useMemo(() => tiposMovimiento.filter((tipo) => tipo.activo), [tiposMovimiento]);
 
     const resetForm = () => {
@@ -244,20 +233,6 @@ export function InventarioPage() {
         }
     };
 
-    const handleToggleActivo = async () => {
-        if (!confirmItem) return;
-        setSaving(true);
-        try {
-            await inventarioItemsService.update(confirmItem.id, { activo: !confirmItem.activo });
-            setConfirmItem(null);
-            await loadData();
-        } catch (currentError) {
-            setError(currentError?.message || "No se ha podido actualizar el estado.");
-        } finally {
-            setSaving(false);
-        }
-    };
-
     const openMovimientos = async (item) => {
         setMovimientosItem(item);
         setLoadingMovimientos(true);
@@ -273,7 +248,7 @@ export function InventarioPage() {
     const updateDraftFilter = (key, value) => setDraftFilters((current) => ({ ...current, [key]: value }));
     const applyFilters = () => setFilters(draftFilters);
     const resetFilters = () => {
-        const nextFilters = { search: "", activo: "todos", ubicacionId: "todos", stockBajo: false };
+        const nextFilters = { search: "", ubicacionId: "todos", stockBajo: false };
         setDraftFilters(nextFilters);
         setFilters(nextFilters);
     };
@@ -299,17 +274,10 @@ export function InventarioPage() {
             <SearchFilters ariaLabel="Filtros de inventario" loading={loading} onReset={resetFilters} onSubmit={applyFilters}>
                 <SearchInput
                     label="Buscar"
-                    placeholder="Nombre, SKU o codigo de barras"
+                    placeholder="Nombre"
                     value={draftFilters.search}
                     onChange={(event) => updateDraftFilter("search", event.target.value)}
                 />
-                <FilterField label="Estado">
-                    <select value={draftFilters.activo} onChange={(event) => updateDraftFilter("activo", event.target.value)}>
-                        <option value="todos">Todos</option>
-                        <option value="activos">Activos</option>
-                        <option value="inactivos">Inactivos</option>
-                    </select>
-                </FilterField>
                 <FilterField label="Ubicacion">
                     <select value={draftFilters.ubicacionId} onChange={(event) => updateDraftFilter("ubicacionId", event.target.value)}>
                         <option value="todos">Todas las ubicaciones</option>
@@ -331,7 +299,7 @@ export function InventarioPage() {
 
             {!loading ? (
                 <DataTable
-                    columns={["Item", "SKU", "Ubicacion", "Stock actual", "Stock minimo", "Coste", "Valor stock", "Estado", "Acciones"]}
+                    columns={["Item", "Ubicacion", "Stock actual", "Stock minimo", "Acciones"]}
                     empty={
                         !items.length ? (
                             <EmptyState
@@ -347,29 +315,18 @@ export function InventarioPage() {
                                 <strong>{item.nombre}</strong>
                                 {item.descripcion ? <small>{item.descripcion}</small> : null}
                             </td>
-                            <td>{item.sku || "Sin SKU"}</td>
                             <td>{item.ubicacion?.nombre || "No indicada"}</td>
                             <td>
                                 <strong>{item.stock_actual ?? 0}</strong>
                                 {item.stock_bajo ? <small>Stock bajo</small> : null}
                             </td>
                             <td>{item.stock_minimo ?? 0}</td>
-                            <td>{formatCurrency(item.coste_unitario)}</td>
-                            <td>{formatCurrency(item.valor_stock)}</td>
-                            <td>
-                                <StatusBadge status={item.activo ? "activo" : "inactivo"} />
-                            </td>
                             <td>
                                 <RowActionsMenu
                                     actions={[
                                         { label: "Editar", onClick: () => openEdit(item) },
                                         { label: "Registrar movimiento", variant: "primary", onClick: () => { setMovementItem(item); resetForm(); } },
                                         { label: "Ver movimientos", onClick: () => openMovimientos(item) },
-                                        {
-                                            label: item.activo ? "Desactivar" : "Activar",
-                                            variant: item.activo ? "danger" : "primary",
-                                            onClick: () => setConfirmItem(item),
-                                        },
                                     ]}
                                 />
                             </td>
@@ -387,7 +344,7 @@ export function InventarioPage() {
                 loading={saving}
                 mode={formMode || "create"}
                 open={Boolean(formMode)}
-                ubicaciones={ubicacionesActivas}
+                ubicaciones={ubicaciones}
                 unidades={unidades}
                 onClose={closeItemForm}
                 onSubmit={handleItemSubmit}
@@ -402,7 +359,7 @@ export function InventarioPage() {
                 loading={saving}
                 open={Boolean(movementItem)}
                 tiposMovimiento={tiposMovimientoActivos}
-                ubicaciones={ubicacionesActivas}
+                ubicaciones={ubicaciones}
                 onClose={() => !saving && setMovementItem(null)}
                 onSubmit={handleMovimientoSubmit}
             />
@@ -415,22 +372,11 @@ export function InventarioPage() {
                 onSubmit={handleCatalogSubmit}
             />
 
-            <ConfirmModal
-                confirmLabel={confirmItem?.activo ? "Desactivar" : "Activar"}
-                description="Se actualizara el estado del item para esta empresa."
-                loading={saving}
-                open={Boolean(confirmItem)}
-                title={confirmItem?.activo ? "Desactivar item" : "Activar item"}
-                tone={confirmItem?.activo ? "danger" : "success"}
-                onCancel={() => setConfirmItem(null)}
-                onConfirm={handleToggleActivo}
-            />
-
             <Modal
                 footer={<button className="button button-ghost" type="button" onClick={() => setMovimientosItem(null)}>Cerrar</button>}
                 open={Boolean(movimientosItem)}
                 size="xl"
-                subtitle={movimientosItem?.sku || "Inventario"}
+                subtitle="Inventario"
                 title={`Movimientos - ${movimientosItem?.nombre || ""}`}
                 onClose={() => setMovimientosItem(null)}
             >

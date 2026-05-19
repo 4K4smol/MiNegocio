@@ -11,7 +11,6 @@ import { LoadingState } from "../components/LoadingState";
 const TABS = [
     ["modulos", "Modulos"],
     ["tipos_cliente", "Tipos de cliente"],
-    ["tipos_localizacion", "Tipos de localizacion"],
     ["tipos_empresa", "Tipos de empresa"],
     ["tipos_documento_identidad", "Tipos de documento"],
     ["tipos_evento_facturacion", "Tipos de evento"],
@@ -124,24 +123,6 @@ export function ConfiguracionGlobalPage() {
             updateFunction: adminApi.actualizarTipoCliente,
             activateFunction: adminApi.activarTipoCliente,
             deactivateFunction: adminApi.desactivarTipoCliente,
-            searchKeys: ["codigo", "nombre", "descripcion"],
-            columns: [
-                textColumn("codigo", "Codigo"),
-                textColumn("nombre", "Nombre"),
-                textColumn("descripcion", "Descripcion"),
-                textColumn("orden", "Orden"),
-                catalogStatusColumn,
-            ],
-            fields: commonCatalogFields,
-        },
-        tipos_localizacion: {
-            title: "Tipos de localizacion",
-            singular: "tipo de localizacion",
-            listFunction: adminApi.getTiposLocalizacionCliente,
-            createFunction: adminApi.crearTipoLocalizacionCliente,
-            updateFunction: adminApi.actualizarTipoLocalizacionCliente,
-            activateFunction: adminApi.activarTipoLocalizacionCliente,
-            deactivateFunction: adminApi.desactivarTipoLocalizacionCliente,
             searchKeys: ["codigo", "nombre", "descripcion"],
             columns: [
                 textColumn("codigo", "Codigo"),

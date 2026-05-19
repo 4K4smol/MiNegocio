@@ -9,7 +9,6 @@ export function UbicacionesTab({
     loading,
     onCreate,
     onEdit,
-    onToggleActivo,
     ubicaciones,
 }) {
     return (
@@ -35,7 +34,6 @@ export function UbicacionesTab({
                 <UbicacionesTable
                     ubicaciones={ubicaciones}
                     onEdit={onEdit}
-                    onToggleActivo={onToggleActivo}
                 />
             ) : null}
         </section>

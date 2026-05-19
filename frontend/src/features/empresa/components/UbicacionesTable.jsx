@@ -1,16 +1,14 @@
 import { DataTable } from "../../../shared/components/DataTable";
 import { EmptyState } from "../../../shared/components/EmptyState";
 import { RowActionsMenu } from "../../../shared/components/RowActionsMenu";
-import { StatusBadge } from "../../../shared/components/StatusBadge";
 
-export function UbicacionesTable({ onEdit, onToggleActivo, ubicaciones = [] }) {
+export function UbicacionesTable({ onEdit, ubicaciones = [] }) {
     return (
         <DataTable
             columns={[
                 "Nombre",
                 "Descripcion",
                 "Observaciones",
-                "Estado",
                 "Acciones",
             ]}
             empty={
@@ -30,25 +28,11 @@ export function UbicacionesTable({ onEdit, onToggleActivo, ubicaciones = [] }) {
                     <td>{ubicacion.descripcion || "Sin descripcion"}</td>
                     <td>{ubicacion.observaciones || "Sin observaciones"}</td>
                     <td>
-                        <StatusBadge
-                            status={ubicacion.activo ? "activo" : "inactivo"}
-                        />
-                    </td>
-                    <td>
                         <RowActionsMenu
                             actions={[
                                 {
                                     label: "Editar",
                                     onClick: () => onEdit(ubicacion),
-                                },
-                                {
-                                    label: ubicacion.activo
-                                        ? "Desactivar"
-                                        : "Activar",
-                                    variant: ubicacion.activo
-                                        ? "danger"
-                                        : "primary",
-                                    onClick: () => onToggleActivo(ubicacion),
                                 },
                             ]}
                         />

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { ErrorState } from "../../../shared/components/ErrorState";
 import { LoadingState } from "../../../shared/components/LoadingState";
 import { ClienteSelector } from "./ClienteSelector";
-import { LocalizacionSelector } from "./LocalizacionSelector";
 import { OrdenLineasTable } from "./OrdenLineasTable";
 import { PlanificacionOrdenPanel } from "./PlanificacionOrdenPanel";
 import { ServicioSelectorModal } from "./ServicioSelectorModal";
@@ -24,8 +23,6 @@ export function OrdenForm({ disabled = false, errors = {}, initialOrden, onCance
         updateForm,
         updateLine,
     } = useOrdenForm(initialOrden);
-    const selectedCliente = clientes.find((cliente) => String(cliente.id) === String(form.cliente_id));
-
     const handleSubmit = (event) => {
         event.preventDefault();
         onSubmit(buildPayload());
@@ -43,14 +40,6 @@ export function OrdenForm({ disabled = false, errors = {}, initialOrden, onCance
                     errors={errors}
                     value={form.cliente_id}
                     onChange={(value) => updateForm("cliente_id", value)}
-                    onLocalizacionChange={(value) => updateForm("localizacion_cliente_id", value)}
-                />
-                <LocalizacionSelector
-                    cliente={selectedCliente}
-                    disabled={disabled || saving}
-                    errors={errors}
-                    value={form.localizacion_cliente_id}
-                    onChange={(value) => updateForm("localizacion_cliente_id", value)}
                 />
             </div>
 

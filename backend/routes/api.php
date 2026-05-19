@@ -38,7 +38,6 @@ use App\Http\Controllers\Api\V1\TipoEmpresaController;
 use App\Http\Controllers\Api\V1\TipoEventoFacturacionController;
 use App\Http\Controllers\Api\V1\TipoFacturaController;
 use App\Http\Controllers\Api\V1\TipoInventarioMovimientoController;
-use App\Http\Controllers\Api\V1\TipoLocalizacionClienteController;
 use App\Http\Controllers\Api\V1\TipoRectificacionController;
 use App\Http\Controllers\Api\V1\TipoRegistroFacturacionController;
 use App\Http\Controllers\Api\V1\TipoTarifaServicioController;
@@ -149,12 +148,6 @@ Route::prefix('v1')->group(function (): void {
                 ->parameters(['tipos-cliente' => 'id']);
             Route::patch('tipos-cliente/{id}/activar', [TipoClienteController::class, 'activar']);
             Route::patch('tipos-cliente/{id}/desactivar', [TipoClienteController::class, 'desactivar']);
-
-            Route::apiResource('tipos-localizacion-cliente', TipoLocalizacionClienteController::class)
-                ->except(['index', 'show'])
-                ->parameters(['tipos-localizacion-cliente' => 'id']);
-            Route::patch('tipos-localizacion-cliente/{id}/activar', [TipoLocalizacionClienteController::class, 'activar']);
-            Route::patch('tipos-localizacion-cliente/{id}/desactivar', [TipoLocalizacionClienteController::class, 'desactivar']);
 
             Route::apiResource('tipos-empresa', TipoEmpresaController::class)
                 ->except(['index', 'show'])
@@ -283,9 +276,6 @@ Route::prefix('v1')->group(function (): void {
                 Route::apiResource('inventario-movimientos', InventarioMovimientoController::class)
                     ->only(['index', 'show', 'store']);
 
-                Route::patch('inventario-ubicaciones/{id}/activar', [InventarioUbicacionController::class, 'activar']);
-                Route::patch('inventario-ubicaciones/{id}/desactivar', [InventarioUbicacionController::class, 'desactivar']);
-
                 Route::apiResource('inventario-ubicaciones', InventarioUbicacionController::class)
                     ->parameters(['inventario-ubicaciones' => 'id']);
             });
@@ -336,10 +326,6 @@ Route::prefix('v1')->group(function (): void {
         Route::apiResource('inventario-unidades-medida', InventarioUnidadMedidaController::class)
             ->only(['index', 'show'])
             ->parameters(['inventario-unidades-medida' => 'id']);
-
-        Route::apiResource('tipos-localizacion-cliente', TipoLocalizacionClienteController::class)
-            ->only(['index', 'show'])
-            ->parameters(['tipos-localizacion-cliente' => 'id']);
 
         Route::apiResource('tipos-rectificacion', TipoRectificacionController::class)
             ->only(['index', 'show'])

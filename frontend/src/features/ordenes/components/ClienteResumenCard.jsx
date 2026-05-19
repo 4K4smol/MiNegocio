@@ -1,6 +1,6 @@
 import { clienteLabel } from "../utils/ordenDisplay";
 
-export function ClienteResumenCard({ cliente, localizacion }) {
+export function ClienteResumenCard({ cliente }) {
     if (!cliente) return null;
 
     return (
@@ -21,8 +21,8 @@ export function ClienteResumenCard({ cliente, localizacion }) {
                     <dd>{cliente.telefono || "-"}</dd>
                 </div>
                 <div>
-                    <dt>Localizacion</dt>
-                    <dd>{localizacion?.direccion_completa || localizacion?.nombre || "Principal o sin especificar"}</dd>
+                    <dt>Ciudad</dt>
+                    <dd>{cliente.ciudad || "-"}</dd>
                 </div>
             </dl>
         </aside>

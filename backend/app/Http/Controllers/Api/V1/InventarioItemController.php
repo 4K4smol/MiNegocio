@@ -30,13 +30,8 @@ class InventarioItemController extends AbstractCrudController
             ->with(['unidadMedida', 'ubicacion'])
             ->when($request->filled('search'), function (Builder $query) use ($request): void {
                 $search = (string) $request->string('search');
-                $query->where(function (Builder $inner) use ($search): void {
-                    $inner->where('nombre', 'like', "%{$search}%")
-                        ->orWhere('sku', 'like', "%{$search}%")
-                        ->orWhere('codigo_barras', 'like', "%{$search}%");
-                });
+                $query->where('nombre', 'like', "%{$search}%");
             })
-            ->when($request->filled('activo'), fn (Builder $query) => $query->where('activo', $request->boolean('activo')))
             ->when($request->filled('ubicacion_id'), fn (Builder $query) => $query->where('ubicacion_id', $request->integer('ubicacion_id')))
             ->when($request->boolean('stock_bajo'), fn (Builder $query) => $query->whereColumn('stock_actual', '<=', 'stock_minimo'))
             ->when(

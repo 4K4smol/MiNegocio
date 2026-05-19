@@ -47,6 +47,12 @@ class UpdateClienteRequest extends FormRequest
             'persona_contacto' => ['nullable', 'string', 'max:255'],
             'notas' => ['nullable', 'string'],
             'activo' => ['sometimes', 'boolean'],
+            'direccion' => ['nullable', 'string', 'max:255'],
+            'direccion_linea_2' => ['nullable', 'string', 'max:255'],
+            'ciudad' => ['nullable', 'string', 'max:100'],
+            'provincia' => ['nullable', 'string', 'max:100'],
+            'codigo_postal' => ['nullable', 'string', 'max:15'],
+            'pais' => ['nullable', 'string', 'max:100'],
             'empresa_id' => ['sometimes', 'nullable', 'integer', 'exists:empresas,id'],
         ];
     }

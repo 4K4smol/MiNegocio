@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Cliente extends Model
 {
@@ -25,23 +24,18 @@ class Cliente extends Model
         'persona_contacto',
         'notas',
         'activo',
-        'empresa_id'
+        'empresa_id',
+        'direccion',
+        'direccion_linea_2',
+        'ciudad',
+        'provincia',
+        'codigo_postal',
+        'pais',
     ];
 
     protected $casts = [
         'activo' => 'boolean',
     ];
-
-    public function localizaciones(): HasMany
-    {
-        return $this->hasMany(LocalizacionCliente::class, 'cliente_id');
-    }
-
-    public function localizacionPrincipal(): HasOne
-    {
-        return $this->hasOne(LocalizacionCliente::class, 'cliente_id')
-            ->where('es_principal', true);
-    }
 
     public function empresa(): BelongsTo
     {

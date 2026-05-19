@@ -35,7 +35,7 @@ class OrdenTrabajoController extends AbstractCrudController
     {
         $perPage = min(max((int) $request->integer('per_page', 15), 1), 100);
         $items = $this->baseQuery($request)
-            ->with(['cliente', 'localizacionCliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio', 'eventosCalendario'])
+            ->with(['cliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio', 'eventosCalendario'])
             ->when($request->filled('estado'), fn ($query) => $query->where('estado_codigo', $request->string('estado')))
             ->when($request->filled('cliente_id'), fn ($query) => $query->where('cliente_id', $request->integer('cliente_id')))
             ->when($request->filled('desde'), fn ($query) => $query->whereDate('fecha_programada_inicio', '>=', $request->date('desde')))
@@ -49,7 +49,7 @@ class OrdenTrabajoController extends AbstractCrudController
     public function show(Request $request, int $orden): JsonResponse
     {
         $item = $this->baseQuery($request)
-            ->with(['cliente.localizaciones', 'localizacionCliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio', 'eventosCalendario'])
+            ->with(['cliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio', 'eventosCalendario'])
             ->whereKey($orden)
             ->first();
         if (!$item) {

@@ -19,19 +19,13 @@ class InventarioItem extends Model
         'ubicacion_id',
         'nombre',
         'descripcion',
-        'sku',
-        'codigo_barras',
         'stock_actual',
         'stock_minimo',
-        'coste_unitario',
-        'activo',
     ];
 
     protected $casts = [
         'stock_actual' => 'decimal:2',
         'stock_minimo' => 'decimal:2',
-        'coste_unitario' => 'decimal:2',
-        'activo' => 'boolean',
     ];
 
     public function empresa(): BelongsTo

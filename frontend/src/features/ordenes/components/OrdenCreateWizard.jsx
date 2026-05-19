@@ -6,7 +6,6 @@ import { Stepper } from "../../../shared/components/ui";
 import { useOrdenForm } from "../hooks/useOrdenForm";
 import { ClienteResumenCard } from "./ClienteResumenCard";
 import { ClienteSelector } from "./ClienteSelector";
-import { LocalizacionSelector } from "./LocalizacionSelector";
 import { OrdenLineasTable } from "./OrdenLineasTable";
 import { PlanificacionOrdenPanel } from "./PlanificacionOrdenPanel";
 import { ResumenOrdenCard } from "./ResumenOrdenCard";
@@ -53,9 +52,6 @@ export function OrdenCreateWizard({ error, errors = {}, onCancel, onSubmit, savi
     }, [catalogLoading, servicios, searchParams, addServiceLine]);
 
     const selectedCliente = clientes.find((cliente) => String(cliente.id) === String(form.cliente_id));
-    const selectedLocalizacion = selectedCliente?.localizaciones?.find(
-        (localizacion) => String(localizacion.id) === String(form.localizacion_cliente_id),
-    );
 
     const canGoNext =
         (step === 1 && !!form.cliente_id) ||
@@ -80,16 +76,9 @@ export function OrdenCreateWizard({ error, errors = {}, onCancel, onSubmit, savi
                                 errors={errors}
                                 value={form.cliente_id}
                                 onChange={(value) => updateForm("cliente_id", value)}
-                                onLocalizacionChange={(value) => updateForm("localizacion_cliente_id", value)}
-                            />
-                            <LocalizacionSelector
-                                cliente={selectedCliente}
-                                errors={errors}
-                                value={form.localizacion_cliente_id}
-                                onChange={(value) => updateForm("localizacion_cliente_id", value)}
                             />
                         </div>
-                        <ClienteResumenCard cliente={selectedCliente} localizacion={selectedLocalizacion} />
+                        <ClienteResumenCard cliente={selectedCliente} />
                     </div>
                 )}
 
@@ -138,7 +127,6 @@ export function OrdenCreateWizard({ error, errors = {}, onCancel, onSubmit, savi
                         error={error}
                         form={form}
                         lineas={lineas}
-                        localizacion={selectedLocalizacion}
                         totals={totals}
                     />
                 )}

@@ -16,7 +16,6 @@ export function InventarioUbicacionesTab({
     onCreate,
     onEdit,
     onMovimiento,
-    onToggleActivo,
     ubicaciones = [],
 }) {
     const [filters, setFilters] = useState({ ubicacionId: "todas", stockBajo: false });
@@ -119,25 +118,14 @@ export function InventarioUbicacionesTab({
                         <tr key={item.id}>
                             <td>
                                 <strong>{item.nombre}</strong>
-                                {item.sku ? <small>{item.sku}</small> : null}
                             </td>
                             <td>{item.ubicacion?.nombre || "Sin ubicacion"}</td>
                             <td>{item.stock_actual ?? 0}</td>
                             <td>{item.stock_minimo ?? 0}</td>
                             <td>
                                 <StatusBadge
-                                    label={
-                                        item.stock_bajo
-                                            ? "Stock bajo"
-                                            : undefined
-                                    }
-                                    status={
-                                        item.stock_bajo
-                                            ? "pendiente"
-                                            : item.activo
-                                              ? "activo"
-                                              : "inactivo"
-                                    }
+                                    label={item.stock_bajo ? "Stock bajo" : "Normal"}
+                                    status={item.stock_bajo ? "pendiente" : "activo"}
                                 />
                             </td>
                             <td>
@@ -151,16 +139,6 @@ export function InventarioUbicacionesTab({
                                             label: "Registrar movimiento",
                                             variant: "primary",
                                             onClick: () => onMovimiento(item),
-                                        },
-                                        {
-                                            label: item.activo
-                                                ? "Desactivar"
-                                                : "Activar",
-                                            variant: item.activo
-                                                ? "danger"
-                                                : "primary",
-                                            onClick: () =>
-                                                onToggleActivo(item),
                                         },
                                     ]}
                                 />

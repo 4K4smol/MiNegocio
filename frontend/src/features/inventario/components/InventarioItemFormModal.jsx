@@ -1,5 +1,4 @@
 import { FormModal } from "../../../shared/components/FormModal";
-import { SwitchInput } from "../../../shared/components/ui/SwitchInput";
 
 const fieldError = (errors, name) => {
     const value = errors?.[name];
@@ -74,27 +73,11 @@ export function InventarioItemFormModal({
                     {fieldError(errors, "stock_minimo") ? <small className="field-error">{fieldError(errors, "stock_minimo")}</small> : null}
                 </label>
 
-                <label>
-                    Coste unitario
-                    <input defaultValue={item?.coste_unitario ?? ""} disabled={disabled} min="0" name="coste_unitario" step="0.01" type="number" />
-                    {fieldError(errors, "coste_unitario") ? <small className="field-error">{fieldError(errors, "coste_unitario")}</small> : null}
-                </label>
-
                 <label className="is-wide">
                     Descripcion
                     <textarea defaultValue={item?.descripcion || ""} disabled={disabled} name="descripcion" rows={3} />
                     {fieldError(errors, "descripcion") ? <small className="field-error">{fieldError(errors, "descripcion")}</small> : null}
                 </label>
-
-                <div className="is-wide">
-                    <SwitchInput
-                        defaultChecked={item?.activo ?? true}
-                        disabled={disabled}
-                        helpText="Controla si el articulo esta disponible para movimientos y consultas operativas."
-                        label="Articulo activo"
-                        name="activo"
-                    />
-                </div>
             </div>
         </FormModal>
     );

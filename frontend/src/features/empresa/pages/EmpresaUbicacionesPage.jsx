@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ConfirmModal } from "../../../shared/components/ConfirmModal";
 import { ErrorState } from "../../../shared/components/ErrorState";
 import { LoadingState } from "../../../shared/components/LoadingState";
 import { PageHeader } from "../../../shared/components/PageHeader";
@@ -37,7 +36,6 @@ const ubicacionPayloadFromForm = (form) => {
         nombre: emptyToNull(formData.get("nombre")),
         descripcion: emptyToNull(formData.get("descripcion")),
         observaciones: emptyToNull(formData.get("observaciones")),
-        activo: formData.get("activo") === "on",
     };
 };
 
@@ -51,8 +49,6 @@ const itemPayloadFromForm = (form) => {
         ubicacion_id: numberOrNull(formData.get("ubicacion_id")),
         stock_actual: numberOrNull(formData.get("stock_actual")) ?? 0,
         stock_minimo: numberOrNull(formData.get("stock_minimo")) ?? 0,
-        coste_unitario: numberOrNull(formData.get("coste_unitario")),
-        activo: formData.get("activo") === "on",
     };
 };
 
@@ -86,10 +82,8 @@ export function EmpresaUbicacionesPage() {
     const [formErrors, setFormErrors] = useState({});
     const [ubicacionFormMode, setUbicacionFormMode] = useState(null);
     const [selectedUbicacion, setSelectedUbicacion] = useState(null);
-    const [confirmUbicacion, setConfirmUbicacion] = useState(null);
     const [itemFormMode, setItemFormMode] = useState(null);
     const [selectedItem, setSelectedItem] = useState(null);
-    const [confirmItem, setConfirmItem] = useState(null);
     const [movementItem, setMovementItem] = useState(null);
 
     const loadData = useCallback(async () => {
@@ -127,10 +121,6 @@ export function EmpresaUbicacionesPage() {
         loadData();
     }, [loadData]);
 
-    const ubicacionesActivas = useMemo(
-        () => ubicaciones.filter((ubicacion) => ubicacion.activo),
-        [ubicaciones],
-    );
     const tiposMovimientoActivos = useMemo(
         () => tiposMovimiento.filter((tipo) => tipo.activo),
         [tiposMovimiento],
@@ -234,50 +224,6 @@ export function EmpresaUbicacionesPage() {
         }
     };
 
-    const handleToggleUbicacion = async () => {
-        if (!confirmUbicacion) return;
-        setSaving(true);
-        setError("");
-        try {
-            if (confirmUbicacion.activo) {
-                await inventarioUbicacionesService.desactivar(
-                    confirmUbicacion.id,
-                );
-            } else {
-                await inventarioUbicacionesService.activar(confirmUbicacion.id);
-            }
-            setConfirmUbicacion(null);
-            await loadData();
-        } catch (currentError) {
-            setError(
-                currentError?.message ||
-                    "No se ha podido actualizar la ubicacion.",
-            );
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const handleToggleItem = async () => {
-        if (!confirmItem) return;
-        setSaving(true);
-        setError("");
-        try {
-            await inventarioItemsService.update(confirmItem.id, {
-                activo: !confirmItem.activo,
-            });
-            setConfirmItem(null);
-            await loadData();
-        } catch (currentError) {
-            setError(
-                currentError?.message ||
-                    "No se ha podido actualizar el articulo.",
-            );
-        } finally {
-            setSaving(false);
-        }
-    };
-
     const handleMovimientoSubmit = async (event) => {
         event.preventDefault();
         setSaving(true);
@@ -343,7 +289,6 @@ export function EmpresaUbicacionesPage() {
                     ubicaciones={ubicaciones}
                     onCreate={openCreateUbicacion}
                     onEdit={openEditUbicacion}
-                    onToggleActivo={setConfirmUbicacion}
                 />
             ) : null}
 
@@ -359,7 +304,6 @@ export function EmpresaUbicacionesPage() {
                         setMovementItem(item);
                         resetForm();
                     }}
-                    onToggleActivo={setConfirmItem}
                 />
             ) : null}
 
@@ -385,7 +329,7 @@ export function EmpresaUbicacionesPage() {
                 loading={saving}
                 open={Boolean(movementItem)}
                 tiposMovimiento={tiposMovimientoActivos}
-                ubicaciones={ubicacionesActivas}
+                ubicaciones={ubicaciones}
                 onClose={() => !saving && setMovementItem(null)}
                 onSubmit={handleMovimientoSubmit}
             />
@@ -399,42 +343,10 @@ export function EmpresaUbicacionesPage() {
                 loading={saving}
                 mode={itemFormMode || "create"}
                 open={Boolean(itemFormMode)}
-                ubicaciones={ubicacionesActivas}
+                ubicaciones={ubicaciones}
                 unidades={unidades}
                 onClose={closeItemForm}
                 onSubmit={handleItemSubmit}
-            />
-
-            <ConfirmModal
-                confirmLabel={
-                    confirmUbicacion?.activo ? "Desactivar" : "Activar"
-                }
-                description="Se actualizara el estado de esta ubicacion."
-                loading={saving}
-                open={Boolean(confirmUbicacion)}
-                title={
-                    confirmUbicacion?.activo
-                        ? "Desactivar ubicacion"
-                        : "Activar ubicacion"
-                }
-                tone={confirmUbicacion?.activo ? "danger" : "success"}
-                onCancel={() => setConfirmUbicacion(null)}
-                onConfirm={handleToggleUbicacion}
-            />
-
-            <ConfirmModal
-                confirmLabel={confirmItem?.activo ? "Desactivar" : "Activar"}
-                description="Se actualizara el estado de este articulo."
-                loading={saving}
-                open={Boolean(confirmItem)}
-                title={
-                    confirmItem?.activo
-                        ? "Desactivar articulo"
-                        : "Activar articulo"
-                }
-                tone={confirmItem?.activo ? "danger" : "success"}
-                onCancel={() => setConfirmItem(null)}
-                onConfirm={handleToggleItem}
             />
         </section>
     );

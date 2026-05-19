@@ -21,7 +21,6 @@ export function ClienteForm({
     const isEmpresa = selectedTipoCodigo === "empresa";
     const showCommonFields = !selectedTipoCodigo;
 
-    // TODO: anadir localizacion principal cuando exista endpoint CRUD para localizaciones de cliente.
     return (
         <div className="cliente-form form-grid">
             <input name="tipo_cliente_codigo" readOnly type="hidden" value={selectedTipoCodigo} />
@@ -111,6 +110,31 @@ export function ClienteForm({
                 Notas
                 <textarea defaultValue={initialValues.notas || ""} disabled={disabled} name="notas" rows={4} />
                 {fieldError(errors, "notas") ? <small className="field-error">{fieldError(errors, "notas")}</small> : null}
+            </label>
+
+            <label className="is-wide">
+                Direccion
+                <input defaultValue={initialValues.direccion || ""} disabled={disabled} name="direccion" />
+            </label>
+
+            <label>
+                Ciudad
+                <input defaultValue={initialValues.ciudad || ""} disabled={disabled} name="ciudad" />
+            </label>
+
+            <label>
+                Codigo postal
+                <input defaultValue={initialValues.codigo_postal || ""} disabled={disabled} name="codigo_postal" />
+            </label>
+
+            <label>
+                Provincia
+                <input defaultValue={initialValues.provincia || ""} disabled={disabled} name="provincia" />
+            </label>
+
+            <label>
+                Pais
+                <input defaultValue={initialValues.pais || "España"} disabled={disabled} name="pais" />
             </label>
 
             <label className="form-checkbox is-wide">
