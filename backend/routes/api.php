@@ -196,7 +196,7 @@ Route::prefix('v1')->group(function (): void {
         | Zona privada de empresa
         |--------------------------------------------------------------------------
         */
-        Route::middleware('empresa.user')->group(function (): void {
+        Route::middleware('empresa.user')->prefix('empresa')->group(function (): void {
             // Dashboard
             Route::get('dashboard/resumen', [DashboardController::class, 'resumen']);
             Route::get('dashboard/proximas-ordenes', [DashboardController::class, 'proximasOrdenes']);
