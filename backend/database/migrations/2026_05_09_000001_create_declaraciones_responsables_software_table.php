@@ -10,6 +10,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('declaraciones_responsables_software')) {
+            return;
+        }
+
         Schema::create('declaraciones_responsables_software', function (Blueprint $table): void {
             $table->id();
             $table->string('nombre_software', 120);
