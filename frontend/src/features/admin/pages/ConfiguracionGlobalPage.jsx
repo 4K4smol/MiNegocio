@@ -321,7 +321,7 @@ export function ConfiguracionGlobalPage() {
         const labels = Object.fromEntries(TABS);
         const descriptions = {
             roles: "Los roles son sensibles porque gobiernan el acceso de usuarios.",
-            estados_verificacion: "Estados usados por los flujos de alta, revision y subsanacion.",
+            estados_verificacion: "Estados usados por los flujos de alta, revision y decision.",
         };
 
         return (

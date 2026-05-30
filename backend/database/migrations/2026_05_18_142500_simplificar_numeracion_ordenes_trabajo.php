@@ -31,18 +31,8 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (Schema::hasTable('ordenes_trabajo')) {
-            if (Schema::hasColumn('ordenes_trabajo', 'subtotal')) {
-                DB::statement('ALTER TABLE ordenes_trabajo DROP COLUMN subtotal');
-            }
-
-            if (Schema::hasColumn('ordenes_trabajo', 'iva_total')) {
-                DB::statement('ALTER TABLE ordenes_trabajo DROP COLUMN iva_total');
-            }
-
-            if (Schema::hasColumn('ordenes_trabajo', 'total')) {
-                DB::statement('ALTER TABLE ordenes_trabajo DROP COLUMN total');
-            }
-        }
+        // subtotal, iva_total y total existen en la migración base 0001_01_01_000023_1;
+        // eliminarlos aquí rompería el schema al hacer rollback de esta migración sola.
+        // orden_trabajo_contadores se eliminó intencionalmente y no se recrea.
     }
 };

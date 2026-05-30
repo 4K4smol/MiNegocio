@@ -18,7 +18,6 @@ const INITIAL_FILTERS = {
 const SUMMARY_STATES = [
     ["pendiente", "Pendientes"],
     ["en_revision", "En revisión"],
-    ["subsanacion", "Subsanación"],
     ["aprobada", "Aprobadas"],
     ["rechazada", "Rechazadas"],
 ];
@@ -40,7 +39,6 @@ export function AdminSolicitudesPage() {
     const [success, setSuccess] = useState("");
     const [decision, setDecision] = useState(null);
     const [decisionText, setDecisionText] = useState("");
-    const [decisionDocuments, setDecisionDocuments] = useState([]);
     const [decisionError, setDecisionError] = useState("");
     const [preview, setPreview] = useState(null);
     const [previewLoading, setPreviewLoading] = useState(false);
@@ -102,14 +100,12 @@ export function AdminSolicitudesPage() {
     const openDecision = (type, empresaId = selectedId) => {
         setDecision({ type, empresaId });
         setDecisionText("");
-        setDecisionDocuments(type === "subsanacion" ? ["representacion"] : []);
         setDecisionError("");
     };
 
     const openPhaseDecision = (type, fase, label, empresaId = selectedId) => {
         setDecision({ type: `${type}_fase`, empresaId, fase, label });
         setDecisionText("");
-        setDecisionDocuments([]);
         setDecisionError("");
     };
 
@@ -149,12 +145,6 @@ export function AdminSolicitudesPage() {
             } else if (decision.type === "rechazar_fase") {
                 await adminSolicitudesApi.rechazarFase(decision.empresaId, decision.fase, { motivo });
                 setSuccess("Fase rechazada correctamente.");
-            } else {
-                await adminSolicitudesApi.solicitarSubsanacion(decision.empresaId, {
-                    motivo,
-                    documentos_requeridos: decisionDocuments,
-                });
-                    setSuccess("Subsanación solicitada correctamente.");
             }
 
             setDecision(null);
@@ -165,14 +155,6 @@ export function AdminSolicitudesPage() {
         } finally {
             setSavingDecision(false);
         }
-    };
-
-    const toggleDecisionDocument = (documentType) => {
-        setDecisionDocuments((current) =>
-            current.includes(documentType)
-                ? current.filter((item) => item !== documentType)
-                : [...current, documentType],
-        );
     };
 
     const openPreview = async (documento) => {
@@ -261,11 +243,9 @@ export function AdminSolicitudesPage() {
                 type={decision?.type}
                 contextLabel={decision?.label}
                 value={decisionText}
-                selectedDocuments={decisionDocuments}
                 loading={savingDecision}
                 error={decisionError}
                 onChange={setDecisionText}
-                onToggleDocument={toggleDecisionDocument}
                 onClose={closeDecision}
                 onSubmit={submitDecision}
             />

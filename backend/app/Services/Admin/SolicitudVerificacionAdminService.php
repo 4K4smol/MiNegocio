@@ -16,7 +16,6 @@ class SolicitudVerificacionAdminService
 {
     public const ESTADO_PENDIENTE = 'pendiente';
     public const ESTADO_EN_REVISION = 'en_revision';
-    public const ESTADO_SUBSANACION = 'subsanacion';
     public const ESTADO_APROBADA = 'aprobada';
     public const ESTADO_RECHAZADA = 'rechazada';
 
@@ -35,7 +34,7 @@ class SolicitudVerificacionAdminService
             $solicitud = $this->bloquearSolicitudActual($empresa);
             $estadoAnterior = $solicitud->estadoVerificacion?->nombre;
 
-            if (!in_array($estadoAnterior, [self::ESTADO_PENDIENTE, self::ESTADO_EN_REVISION, self::ESTADO_SUBSANACION], true)) {
+            if (!in_array($estadoAnterior, [self::ESTADO_PENDIENTE, self::ESTADO_EN_REVISION], true)) {
                 abort(422, 'La solicitud no se puede aprobar desde su estado actual.');
             }
 
@@ -109,42 +108,6 @@ class SolicitudVerificacionAdminService
             $solicitud->empresa()->update(['activa' => false]);
 
             $this->registrarEvento($admin, $solicitud, 'rechazar_solicitud', $estadoAnterior, self::ESTADO_RECHAZADA, $motivo);
-
-            return $empresa->fresh();
-        });
-    }
-
-    /**
-     * @param array{motivo: string, documentos_requeridos?: list<string>} $data
-     */
-    public function solicitarSubsanacion(Empresa $empresa, User $admin, array $data): Empresa
-    {
-        return DB::transaction(function () use ($empresa, $admin, $data): Empresa {
-            $solicitud = $this->bloquearSolicitudActual($empresa);
-            $estadoAnterior = $solicitud->estadoVerificacion?->nombre;
-
-            $motivo = $data['motivo'];
-
-            $solicitud->update([
-                'estado_verificacion_id' => $this->estadoId(self::ESTADO_SUBSANACION),
-                'observaciones' => $motivo,
-                'motivo_rechazo' => null,
-                'revisado_por' => $admin->id,
-                'fecha_revision' => now(),
-            ]);
-
-            $solicitud->user()->update(['activo' => false]);
-            $solicitud->empresa()->update(['activa' => false]);
-
-            $this->registrarEvento(
-                $admin,
-                $solicitud,
-                'solicitar_subsanacion',
-                $estadoAnterior,
-                self::ESTADO_SUBSANACION,
-                $motivo,
-                ['documentos_requeridos' => $data['documentos_requeridos'] ?? []],
-            );
 
             return $empresa->fresh();
         });

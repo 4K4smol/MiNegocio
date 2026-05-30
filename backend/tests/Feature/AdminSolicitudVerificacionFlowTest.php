@@ -31,11 +31,16 @@ class AdminSolicitudVerificacionFlowTest extends TestCase
     {
         $this->crearSolicitud('B10000001', 'sociedad');
 
-        $this->actingAs($this->crearAdmin(), 'sanctum')
+        $response = $this->actingAs($this->crearAdmin(), 'sanctum')
             ->getJson('/api/v1/admin/solicitudes-verificacion?estado=pendiente')
             ->assertOk()
             ->assertJsonPath('data.data.0.estado_verificacion', 'pendiente')
             ->assertJsonStructure(['data' => ['data' => [['empresa', 'responsable', 'acciones_disponibles']]]]);
+
+        $this->assertNotContains(
+            'solicitar_subsanacion',
+            $response->json('data.data.0.acciones_disponibles')
+        );
     }
 
     public function test_usuario_no_admin_no_puede_listar_solicitudes(): void
@@ -241,7 +246,7 @@ class AdminSolicitudVerificacionFlowTest extends TestCase
             ->assertStatus(422);
     }
 
-    public function test_admin_puede_solicitar_subsanacion(): void
+    public function test_endpoint_solicitar_subsanacion_no_existe(): void
     {
         [$user, $empresa] = $this->crearSolicitud('B10000010', 'sociedad');
 
@@ -250,11 +255,10 @@ class AdminSolicitudVerificacionFlowTest extends TestCase
                 'motivo' => 'Debe aportar documento actualizado de representacion.',
                 'documentos_requeridos' => ['representacion'],
             ])
-            ->assertOk()
-            ->assertJsonPath('data.estado_actual', 'subsanacion');
+            ->assertNotFound();
 
         $this->assertFalse($user->fresh()->activo);
-        $this->assertDatabaseHas('admin_verificacion_eventos', ['accion' => 'solicitar_subsanacion']);
+        $this->assertDatabaseMissing('admin_verificacion_eventos', ['accion' => 'solicitar_subsanacion']);
     }
 
     public function test_endpoint_moderno_no_debe_usar_id_de_solicitud(): void

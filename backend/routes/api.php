@@ -118,8 +118,6 @@ Route::prefix('v1')->group(function (): void {
 
                 Route::post('{empresa}/aprobar', 'aprobar');
                 Route::post('{empresa}/rechazar', 'rechazar');
-                Route::post('{empresa}/solicitar-subsanacion', 'solicitarSubsanacion');
-
                 Route::post('{empresa}/fases/identidad/aprobar', 'aprobarIdentidad');
                 Route::post('{empresa}/fases/identidad/rechazar', 'rechazarIdentidad');
                 Route::post('{empresa}/fases/empresa/aprobar', 'aprobarEmpresa');

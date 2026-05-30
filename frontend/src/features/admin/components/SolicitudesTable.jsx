@@ -62,7 +62,6 @@ export function SolicitudesTable({ solicitudes = [], selectedId, onSelect, onDec
                                             { label: "Ver expediente", onClick: () => onSelect?.(solicitud.id), variant: "primary" },
                                             { label: "Aprobar", onClick: () => onDecision?.("aprobar", solicitud.id), variant: "success", hidden: !onDecision || !can(solicitud, "aprobar") },
                                             { label: "Rechazar", onClick: () => onDecision?.("rechazar", solicitud.id), variant: "danger", hidden: !onDecision || !can(solicitud, "rechazar") },
-                                            { label: "Pedir subsanación", onClick: () => onDecision?.("subsanacion", solicitud.id), variant: "warning", hidden: !onDecision || !can(solicitud, "solicitar_subsanacion") },
                                         ]}
                                     />
                                 </td>

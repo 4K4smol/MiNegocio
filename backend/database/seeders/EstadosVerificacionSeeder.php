@@ -28,10 +28,6 @@ class EstadosVerificacionSeeder extends Seeder
                 'nombre' => 'rechazada',
                 'descripcion' => 'Verificación rechazada',
             ],
-            [
-                'nombre' => 'subsanacion',
-                'descripcion' => 'Pendiente de subsanación documental',
-            ],
         ];
 
         foreach ($estados as $estado) {

@@ -49,7 +49,7 @@ class AdminModernFlowTest extends TestCase
             ->assertJsonPath('data.empresa.id', $empresa->id);
     }
 
-    public function test_admin_aprueba_rechaza_y_solicita_subsanacion_con_empresa_id(): void
+    public function test_admin_aprueba_rechaza_y_no_puede_solicitar_subsanacion_con_empresa_id(): void
     {
         [$userAprobar, $empresaAprobar, $solicitudAprobar] = $this->crearSolicitud('B77000002');
         $admin = $this->crearAdmin();
@@ -84,7 +84,7 @@ class AdminModernFlowTest extends TestCase
                 'motivo' => 'Falta documento.',
                 'documentos_requeridos' => ['identidad'],
             ])
-            ->assertOk();
+            ->assertNotFound();
     }
 
     public function test_rechazo_sin_motivo_devuelve_422(): void

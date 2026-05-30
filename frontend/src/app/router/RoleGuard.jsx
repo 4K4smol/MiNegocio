@@ -1,9 +1,15 @@
 import { Navigate, Outlet } from "react-router-dom";
+import { LoadingState } from "../../shared/components/LoadingState";
 import { useAuth } from "../../shared/hooks/useAuth";
 import { hasRole } from "./roleUtils";
 
 export function RoleGuard({ allowedRoles = [], redirectTo = "/app" }) {
-    const { usuario, session } = useAuth();
+    const { usuario, session, isInitialized, isLoading } = useAuth();
+
+    if (!isInitialized || isLoading) {
+        return <LoadingState>Cargando sesion...</LoadingState>;
+    }
+
     const canAccess = hasRole(usuario, session, allowedRoles);
 
     if (!canAccess) {

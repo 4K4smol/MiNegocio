@@ -5,7 +5,19 @@ const PRIORIDADES = [
     { codigo: "urgente", nombre: "Urgente" },
 ];
 
+function minutosSiguiente(horaStr) {
+    if (!horaStr) return "";
+    const [h, m] = horaStr.split(":").map(Number);
+    const total = h * 60 + m + 1;
+    return `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+}
+
 export function PlanificacionOrdenPanel({ disabled = false, errors = {}, form, onChange }) {
+    const horaFinError =
+        form.hora_inicio && form.hora_fin && form.hora_fin <= form.hora_inicio
+            ? "La hora de fin debe ser posterior a la hora de inicio"
+            : (errors.fecha_programada_fin?.[0] ?? null);
+
     return (
         <div className="form-grid">
             <label>
@@ -33,11 +45,12 @@ export function PlanificacionOrdenPanel({ disabled = false, errors = {}, form, o
                 Hora fin
                 <input
                     disabled={disabled}
+                    min={minutosSiguiente(form.hora_inicio)}
                     type="time"
                     value={form.hora_fin}
                     onChange={(event) => onChange("hora_fin", event.target.value)}
                 />
-                {errors.fecha_programada_fin ? <small className="field-error">{errors.fecha_programada_fin[0]}</small> : null}
+                {horaFinError ? <small className="field-error">{horaFinError}</small> : null}
             </label>
 
             <label>

@@ -1,4 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
+import { LoadingState } from "../../shared/components/LoadingState";
 import { useAuth } from "../../shared/hooks/useAuth";
 import { hasRole } from "./roleUtils";
 
@@ -12,7 +13,11 @@ const hasEmpresaAccess = (usuario, session) =>
     );
 
 export function EmpresaRoute() {
-    const { usuario, session } = useAuth();
+    const { usuario, session, isInitialized, isLoading } = useAuth();
+
+    if (!isInitialized || isLoading) {
+        return <LoadingState>Cargando sesion...</LoadingState>;
+    }
 
     if (hasRole(usuario, session, ["admin"])) {
         return <Navigate to="/admin" replace />;

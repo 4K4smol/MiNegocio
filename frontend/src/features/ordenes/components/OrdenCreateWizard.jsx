@@ -53,10 +53,12 @@ export function OrdenCreateWizard({ error, errors = {}, onCancel, onSubmit, savi
 
     const selectedCliente = clientes.find((cliente) => String(cliente.id) === String(form.cliente_id));
 
+    const horaFinValida = !form.hora_inicio || !form.hora_fin || form.hora_fin > form.hora_inicio;
+
     const canGoNext =
         (step === 1 && !!form.cliente_id) ||
         (step === 2 && lineas.length > 0) ||
-        step === 3;
+        (step === 3 && horaFinValida);
 
     const handleSubmit = () => onSubmit(buildPayload());
 

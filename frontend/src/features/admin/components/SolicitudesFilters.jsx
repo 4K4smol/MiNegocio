@@ -35,7 +35,6 @@ export function SolicitudesFilters({ filters, onChange, loading }) {
                     <option value="">Todos</option>
                     <option value="pendiente">Pendiente</option>
                     <option value="en_revision">En revision</option>
-                    <option value="subsanacion">Subsanacion</option>
                     <option value="aprobada">Aprobada</option>
                     <option value="rechazada">Rechazada</option>
                 </select>

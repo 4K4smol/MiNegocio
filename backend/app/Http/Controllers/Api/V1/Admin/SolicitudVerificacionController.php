@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Http\Requests\Api\V1\Admin\AprobarSolicitudVerificacionRequest;
 use App\Http\Requests\Api\V1\Admin\RechazarSolicitudVerificacionRequest;
-use App\Http\Requests\Api\V1\Admin\SolicitarSubsanacionRequest;
 use App\Http\Resources\Api\V1\Admin\AdminSolicitudVerificacionDetalleResource;
 use App\Http\Resources\Api\V1\Admin\AdminSolicitudVerificacionResource;
 use App\Models\Empresa;
@@ -95,16 +94,6 @@ class SolicitudVerificacionController extends ApiController
         return $this->success(
             new AdminSolicitudVerificacionDetalleResource($this->cargarEmpresa($empresa)),
             'Solicitud rechazada correctamente.',
-        );
-    }
-
-    public function solicitarSubsanacion(SolicitarSubsanacionRequest $request, Empresa $empresa): JsonResponse
-    {
-        $empresa = $this->service->solicitarSubsanacion($empresa, $request->user(), $request->validated());
-
-        return $this->success(
-            new AdminSolicitudVerificacionDetalleResource($this->cargarEmpresa($empresa)),
-            'Subsanacion solicitada correctamente.',
         );
     }
 

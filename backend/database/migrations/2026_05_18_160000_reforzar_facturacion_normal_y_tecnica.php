@@ -228,6 +228,60 @@ return new class extends Migration
 
     public function down(): void
     {
+        // Primero eliminar FKs y columnas añadidas a tablas existentes,
+        // antes de dropear las tablas referenciadas.
+
+        Schema::table('registros_facturacion', function (Blueprint $table): void {
+            if (Schema::hasColumn('registros_facturacion', 'estado_remision_facturacion_id')) {
+                $table->dropConstrainedForeignId('estado_remision_facturacion_id');
+            }
+            if (Schema::hasColumn('registros_facturacion', 'registro_anterior_id')) {
+                $table->dropConstrainedForeignId('registro_anterior_id');
+            }
+            if (Schema::hasColumn('registros_facturacion', 'registro_anulado_id')) {
+                $table->dropConstrainedForeignId('registro_anulado_id');
+            }
+            foreach (['numero_completo', 'payload_json', 'qr_contenido', 'remitido_at'] as $col) {
+                if (Schema::hasColumn('registros_facturacion', $col)) {
+                    $table->dropColumn($col);
+                }
+            }
+        });
+
+        Schema::table('facturas', function (Blueprint $table): void {
+            if (Schema::hasColumn('facturas', 'orden_trabajo_id')) {
+                $table->dropConstrainedForeignId('orden_trabajo_id');
+            }
+            if (Schema::hasColumn('facturas', 'created_by')) {
+                $table->dropConstrainedForeignId('created_by');
+            }
+            if (Schema::hasColumn('facturas', 'updated_by')) {
+                $table->dropConstrainedForeignId('updated_by');
+            }
+            foreach (['numero_completo', 'fecha_vencimiento', 'base_imponible', 'total_iva',
+                      'total_retencion', 'total_descuento', 'metadatos', 'deleted_at'] as $col) {
+                if (Schema::hasColumn('facturas', $col)) {
+                    $table->dropColumn($col);
+                }
+            }
+        });
+
+        Schema::table('factura_lineas', function (Blueprint $table): void {
+            foreach (['retencion_porcentaje', 'cuota_retencion', 'total_linea'] as $col) {
+                if (Schema::hasColumn('factura_lineas', $col)) {
+                    $table->dropColumn($col);
+                }
+            }
+        });
+
+        Schema::table('factura_impuestos', function (Blueprint $table): void {
+            foreach (['tipo_impuesto', 'base', 'porcentaje'] as $col) {
+                if (Schema::hasColumn('factura_impuestos', $col)) {
+                    $table->dropColumn($col);
+                }
+            }
+        });
+
         Schema::dropIfExists('factura_documentos');
         Schema::dropIfExists('factura_historial');
         Schema::dropIfExists('factura_cobros');

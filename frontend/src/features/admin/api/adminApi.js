@@ -53,8 +53,6 @@ export const adminApi = {
     getSolicitudVerificacionDetalle: (empresaId) => apiRequest(`admin/solicitudes-verificacion/${empresaId}`).then(unwrap),
     aprobarSolicitud: (empresaId, data) => apiRequest(`admin/solicitudes-verificacion/${empresaId}/aprobar`, { method: "POST", body: data }),
     rechazarSolicitud: (empresaId, data) => apiRequest(`admin/solicitudes-verificacion/${empresaId}/rechazar`, { method: "POST", body: data }),
-    solicitarSubsanacion: (empresaId, data) =>
-        apiRequest(`admin/solicitudes-verificacion/${empresaId}/solicitar-subsanacion`, { method: "POST", body: data }),
     aprobarFaseSolicitud: (empresaId, fase) =>
         apiRequest(`admin/solicitudes-verificacion/${empresaId}/fases/${fase}/aprobar`, { method: "POST" }),
     rechazarFaseSolicitud: (empresaId, fase, data) =>

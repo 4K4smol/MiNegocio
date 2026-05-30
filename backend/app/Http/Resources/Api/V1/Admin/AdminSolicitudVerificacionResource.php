@@ -69,7 +69,7 @@ class AdminSolicitudVerificacionResource extends JsonResource
             return ['ver_detalle'];
         }
 
-        $acciones = ['ver_detalle', 'rechazar', 'solicitar_subsanacion'];
+        $acciones = ['ver_detalle', 'rechazar'];
 
         if ($this->puedeAprobar($solicitud)) {
             $acciones[] = 'aprobar';

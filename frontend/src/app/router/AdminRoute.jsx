@@ -1,4 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
+import { LoadingState } from "../../shared/components/LoadingState";
 import { useAuth } from "../../shared/hooks/useAuth";
 import { hasRole } from "./roleUtils";
 
@@ -14,7 +15,11 @@ const isAdminUser = (usuario, session) =>
     session?.rol?.nombre === "admin";
 
 export function AdminRoute() {
-    const { usuario, session } = useAuth();
+    const { usuario, session, isInitialized, isLoading } = useAuth();
+
+    if (!isInitialized || isLoading) {
+        return <LoadingState>Cargando sesion...</LoadingState>;
+    }
 
     if (!isAdminUser(usuario, session)) {
         return <Navigate to="/app" replace />;

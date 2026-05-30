@@ -188,9 +188,6 @@ export function SolicitudDetallePanel({ solicitud, loading, onPreviewDocument, o
                     <button type="button" className="admin-button admin-button-danger" onClick={() => onDecision("rechazar", solicitud.id)} disabled={solicitudCerrada}>
                         Rechazar solicitud
                     </button>
-                    <button type="button" className="admin-button admin-button-warning" onClick={() => onDecision("subsanacion", solicitud.id)} disabled={solicitudCerrada}>
-                        Pedir subsanacion
-                    </button>
                 </div>
                 {!puedeAprobarGlobal && !solicitudCerrada ? (
                     <p className="decision-hint">Aprueba primero las fases obligatorias para cerrar la solicitud.</p>
