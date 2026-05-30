@@ -3,10 +3,10 @@ import { LoadingState } from "../../shared/components/LoadingState";
 import { useAuth } from "../../shared/hooks/useAuth";
 
 export function PrivateRoute() {
-    const { isAuthenticated, isInitialized, isLoading } = useAuth();
+    const { isAuthenticated, isInitialized } = useAuth();
     const location = useLocation();
 
-    if (!isInitialized || isLoading) {
+    if (!isInitialized) {
         return <LoadingState>Cargando sesion...</LoadingState>;
     }
 

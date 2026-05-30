@@ -25,6 +25,7 @@ export function AuthProvider({ children }) {
         if (!currentToken) {
             setTokenState(null);
             setSessionState(null);
+            setIsLoading(false);
             return null;
         }
 

@@ -15,9 +15,9 @@ const isAdminUser = (usuario, session) =>
     session?.rol?.nombre === "admin";
 
 export function AdminRoute() {
-    const { usuario, session, isInitialized, isLoading } = useAuth();
+    const { usuario, session, isInitialized } = useAuth();
 
-    if (!isInitialized || isLoading) {
+    if (!isInitialized) {
         return <LoadingState>Cargando sesion...</LoadingState>;
     }
 

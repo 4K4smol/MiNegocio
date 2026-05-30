@@ -4,9 +4,9 @@ import { useAuth } from "../../shared/hooks/useAuth";
 import { hasRole } from "./roleUtils";
 
 export function RoleGuard({ allowedRoles = [], redirectTo = "/app" }) {
-    const { usuario, session, isInitialized, isLoading } = useAuth();
+    const { usuario, session, isInitialized } = useAuth();
 
-    if (!isInitialized || isLoading) {
+    if (!isInitialized) {
         return <LoadingState>Cargando sesion...</LoadingState>;
     }
 
