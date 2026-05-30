@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AppIcon } from "../../../components/ui/AppIcon";
+import { appIcons } from "../../../config/appIcons";
 import { CalendarMonth } from "../../calendario/components/CalendarMonth";
 import { getMonthRange } from "../../calendario/components/calendarUtils";
 import { calendarioService } from "../../calendario/services/calendarioService";
@@ -14,9 +17,11 @@ import { DashboardQuickActions } from "../components/DashboardQuickActions";
 import { RecentOrdersCard } from "../components/RecentOrdersCard";
 import { UpcomingOrdersCard } from "../components/UpcomingOrdersCard";
 import { getRecentCompletedOrders } from "../utils/orderFilters";
+import { printMonthlyPendingOrders } from "../utils/monthlyOrdersPdf";
 import "../styles/dashboard.css";
 
 export function DashboardPage() {
+    const navigate = useNavigate();
     const [monthDate, setMonthDate] = useState(() => new Date());
     const [businessSummary, setBusinessSummary] = useState({});
     const [loadingSummary, setLoadingSummary] = useState(true);
@@ -72,6 +77,14 @@ export function DashboardPage() {
         setMonthDate((current) => new Date(current.getFullYear(), current.getMonth() + amount, 1));
     };
 
+    const navigateToOrder = (event) => {
+        if (event?.id) navigate(`/app/ordenes-trabajo/${event.id}`);
+    };
+
+    const printMonthOrders = () => {
+        printMonthlyPendingOrders({ events: calendarEvents, monthDate });
+    };
+
     if (isDashboardLoading) {
         return (
             <section className="page dashboard-page">
@@ -98,9 +111,18 @@ export function DashboardPage() {
             ) : (
                 <CalendarMonth
                     events={calendarEvents}
+                    headerActions={(
+                        <button className="button button-ghost" type="button" onClick={printMonthOrders}>
+                            <AppIcon icon={appIcons.descargar} size={18} />
+                            PDF del mes
+                        </button>
+                    )}
+                    maxVisibleOrders={2}
                     monthDate={monthDate}
                     onNextMonth={() => changeMonth(1)}
                     onPreviousMonth={() => changeMonth(-1)}
+                    onSelectOrder={navigateToOrder}
+                    variant="compact"
                 />
             )}
 

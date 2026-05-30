@@ -5,7 +5,11 @@
 
 .dashboard-page .calendar-month-card,
 .dashboard-calendar-fallback {
-  min-height: 760px;
+  min-height: 520px;
+}
+
+.dashboard-page .calendar-month-card--compact {
+  min-height: 0;
 }
 
 .dashboard-calendar-fallback {

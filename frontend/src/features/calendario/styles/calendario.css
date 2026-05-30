@@ -9,9 +9,15 @@
   width: 100%;
 }
 
+.calendar-month-card--compact {
+  gap: 12px;
+  padding: 14px;
+}
+
 .calendar-month-header,
 .calendar-month-title,
-.calendar-month-controls {
+.calendar-month-controls,
+.calendar-month-actions {
   align-items: center;
   display: flex;
   gap: 14px;
@@ -19,6 +25,10 @@
 
 .calendar-month-header {
   justify-content: space-between;
+}
+
+.calendar-month-actions {
+  gap: 8px;
 }
 
 .calendar-month-title__icon {
@@ -50,6 +60,20 @@
   width: 38px;
 }
 
+.calendar-month-card--compact .calendar-month-title__icon {
+  height: 36px;
+  width: 36px;
+}
+
+.calendar-month-card--compact .calendar-month-title h2 {
+  font-size: 18px;
+}
+
+.calendar-month-card--compact .calendar-month-nav {
+  height: 34px;
+  width: 34px;
+}
+
 .calendar-month-grid {
   background: var(--color-border);
   border: 1px solid var(--color-border);
@@ -70,12 +94,22 @@
   text-transform: uppercase;
 }
 
+.calendar-month-card--compact .calendar-month-weekday {
+  padding: 7px 8px;
+}
+
 .calendar-day-cell {
   background: #ffffff;
   display: grid;
   gap: 8px;
   min-height: clamp(126px, 13vh, 178px);
   padding: 10px;
+}
+
+.calendar-month-card--compact .calendar-day-cell {
+  gap: 5px;
+  min-height: clamp(82px, 8vh, 106px);
+  padding: 7px;
 }
 
 .calendar-day-cell.has-orders {
@@ -104,6 +138,12 @@
   width: 26px;
 }
 
+.calendar-month-card--compact .calendar-day-cell__number {
+  font-size: 12px;
+  height: 22px;
+  width: 22px;
+}
+
 .calendar-day-cell.is-today .calendar-day-cell__number {
   background: var(--color-primary);
   border-radius: 999px;
@@ -113,6 +153,10 @@
 .calendar-day-cell__orders {
   display: grid;
   gap: 6px;
+}
+
+.calendar-month-card--compact .calendar-day-cell__orders {
+  gap: 4px;
 }
 
 .calendar-order-badge {
@@ -130,6 +174,12 @@
   width: 100%;
 }
 
+.calendar-month-card--compact .calendar-order-badge {
+  border-left-width: 3px;
+  gap: 1px;
+  padding: 4px 6px;
+}
+
 .calendar-order-badge strong {
   font-size: 12px;
   overflow: hidden;
@@ -137,9 +187,25 @@
   white-space: nowrap;
 }
 
+.calendar-month-card--compact .calendar-order-badge strong {
+  font-size: 11px;
+}
+
 .calendar-order-badge span {
   font-size: 11px;
   font-weight: 800;
+}
+
+.calendar-month-card--compact .calendar-order-badge span {
+  display: none;
+}
+
+.calendar-day-cell__more {
+  color: var(--color-muted);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  padding: 1px 2px;
 }
 
 .calendar-order-badge--pendiente {
@@ -182,7 +248,8 @@
 
 @media (max-width: 900px) {
   .calendar-month-header,
-  .calendar-month-controls {
+  .calendar-month-controls,
+  .calendar-month-actions {
     align-items: stretch;
     flex-direction: column;
   }

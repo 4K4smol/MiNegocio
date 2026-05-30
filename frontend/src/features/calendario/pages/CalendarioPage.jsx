@@ -1,18 +1,21 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ErrorState } from "../../../shared/components/ErrorState";
 import { LoadingState } from "../../../shared/components/LoadingState";
 import { PageHeader } from "../../../shared/components/PageHeader";
 import { useResourceList } from "../../../shared/hooks/useResourceList";
 import { CalendarioOrdenes } from "../components/CalendarioOrdenes";
 import { getMonthRange } from "../components/calendarUtils";
-import { OrdenCalendarModal } from "../components/OrdenCalendarModal";
 import { calendarioApi } from "../services/calendarioApi";
 
 export function CalendarioPage() {
     const [monthDate, setMonthDate] = useState(() => new Date());
-    const [selectedEvent, setSelectedEvent] = useState(null);
+    const navigate = useNavigate();
     const params = useMemo(() => getMonthRange(monthDate), [monthDate]);
     const { error, items: events, loading } = useResourceList(calendarioApi.dashboard, params);
+    const navigateToOrder = (event) => {
+        if (event?.id) navigate(`/app/ordenes-trabajo/${event.id}`);
+    };
 
     return (
         <section className="page">
@@ -30,16 +33,9 @@ export function CalendarioPage() {
                     monthDate={monthDate}
                     onNextMonth={() => setMonthDate(new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1))}
                     onPreviousMonth={() => setMonthDate(new Date(monthDate.getFullYear(), monthDate.getMonth() - 1, 1))}
-                    onSelectOrden={setSelectedEvent}
+                    onSelectOrden={navigateToOrder}
                 />
             ) : null}
-
-            <OrdenCalendarModal
-                event={selectedEvent}
-                open={Boolean(selectedEvent)}
-                onClose={() => setSelectedEvent(null)}
-            />
         </section>
     );
 }
-

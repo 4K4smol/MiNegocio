@@ -10,7 +10,16 @@ import {
 import { CalendarDayCell } from "./CalendarDayCell";
 import "../styles/calendario.css";
 
-export function CalendarMonth({ events = [], monthDate, onNextMonth, onPreviousMonth, onSelectOrder }) {
+export function CalendarMonth({
+    events = [],
+    headerActions = null,
+    maxVisibleOrders,
+    monthDate,
+    onNextMonth,
+    onPreviousMonth,
+    onSelectOrder,
+    variant = "default",
+}) {
     const days = getCalendarDays(monthDate);
     const currentMonth = monthDate.getMonth();
     const ordersByDate = groupOrdersByDate(events);
@@ -18,7 +27,7 @@ export function CalendarMonth({ events = [], monthDate, onNextMonth, onPreviousM
     const hasOrders = Object.keys(ordersByDate).length > 0;
 
     return (
-        <section className="calendar-month-card">
+        <section className={`calendar-month-card calendar-month-card--${variant}`}>
             <header className="calendar-month-header">
                 <div className="calendar-month-title">
                     <span className="calendar-month-title__icon">
@@ -49,6 +58,12 @@ export function CalendarMonth({ events = [], monthDate, onNextMonth, onPreviousM
                         <AppIcon icon={appIcons.siguiente} size={18} />
                     </button>
                 </div>
+
+                {headerActions ? (
+                    <div className="calendar-month-actions">
+                        {headerActions}
+                    </div>
+                ) : null}
             </header>
 
             <div className="calendar-month-grid" aria-label="Calendario mensual de órdenes">
@@ -65,6 +80,7 @@ export function CalendarMonth({ events = [], monthDate, onNextMonth, onPreviousM
                             date={day}
                             isCurrentMonth={day.getMonth() === currentMonth}
                             key={dateKey}
+                            maxVisibleOrders={maxVisibleOrders}
                             onSelectOrder={onSelectOrder}
                             orders={ordersByDate[dateKey] || []}
                             todayKey={todayKey}
