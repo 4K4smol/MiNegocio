@@ -9,15 +9,15 @@ export function ServicioSelectorModal({ onClose, onSelect, open, servicios = [] 
             footer={<button className="button button-ghost" type="button" onClick={onClose}>Cerrar</button>}
             open={open}
             size="xl"
-            subtitle="Catalogo de servicios"
-            title="Anadir servicio"
+            subtitle="Catálogo de servicios"
+            title="Añadir servicio"
             onClose={onClose}
         >
             <p className="field-help">
                 Selecciona un servicio activo y el precio configurado para el tipo de tarifa que corresponda.
             </p>
             <DataTable
-                columns={["Servicio", "Unidad", "Tarifa y precio", "Accion"]}
+                columns={["Servicio", "Unidad", "Tarifa y precio", "Acción"]}
                 empty={!servicios.length ? <EmptyState title="No hay servicios disponibles" /> : null}
             >
                 {servicios.map((servicio) => (

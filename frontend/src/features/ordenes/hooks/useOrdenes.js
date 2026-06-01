@@ -28,7 +28,7 @@ export function useOrdenes() {
             setOrdenes(unwrapApiCollection(await ordenesApi.list(params)));
         } catch (currentError) {
             setOrdenes([]);
-            setError(currentError?.message || "No se han podido cargar las ordenes.");
+            setError(currentError?.message || "No se han podido cargar las órdenes.");
         } finally {
             setLoading(false);
         }

@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { ConfirmModal } from "../../../shared/components/ConfirmModal";
-import { DataTable } from "../../../shared/components/DataTable";
 import { EmptyState } from "../../../shared/components/EmptyState";
 import { ErrorState } from "../../../shared/components/ErrorState";
 import { LoadingState } from "../../../shared/components/LoadingState";
-import { RowActionsMenu } from "../../../shared/components/RowActionsMenu";
 import { Modal } from "../../../shared/components/ui/Modal";
+import { formatCurrency } from "../../../shared/utils/formatters";
 import {
     servicioPrecioPayloadFromForm,
     validationErrors,
@@ -59,11 +59,8 @@ export function ServicioPreciosModal({ onClose, onChanged, open, servicio }) {
                 tiposTarifaServicioService.list(),
             ]);
 
-            const preciosData = getApiCollection(preciosResponse);
-            const tiposTarifaData = getApiCollection(tiposTarifaResponse);
-
-            setPrecios(preciosData);
-            setTiposTarifa(tiposTarifaData);
+            setPrecios(getApiCollection(preciosResponse));
+            setTiposTarifa(getApiCollection(tiposTarifaResponse));
         } catch (currentError) {
             setError(
                 currentError?.response?.data?.message ||
@@ -211,15 +208,13 @@ export function ServicioPreciosModal({ onClose, onChanged, open, servicio }) {
                 open={open}
                 size="xl"
                 subtitle={servicio?.codigo || "Servicio"}
-                title={`Precios - ${servicio?.nombre || ""}`}
+                title={`Precios de ${servicio?.nombre || ""}`}
                 onClose={onClose}
             >
                 {error ? <ErrorState>{error}</ErrorState> : null}
 
-                <p className="field-help">
-                    Configura el precio de este servicio según el tipo de
-                    tarifa: estándar, urgente, especial, fin de semana, festivo
-                    o nocturno.
+                <p className="servicio-precios-intro">
+                    Configura el importe por tipo de tarifa. Las órdenes usarán estas referencias al seleccionar el servicio.
                 </p>
 
                 {loading ? (
@@ -230,95 +225,84 @@ export function ServicioPreciosModal({ onClose, onChanged, open, servicio }) {
                         title="Sin tarifas configurables"
                     />
                 ) : (
-                    <DataTable
-                        columns={[
-                            "Tipo de tarifa",
-                            "Precio",
-                            "IVA",
-                            "Retención",
-                            "Acciones",
-                        ]}
-                    >
+                    <div className="servicio-precios-matrix">
                         {tiposTarifa.map((tipoTarifa) => {
                             const precio =
                                 preciosPorTipoTarifa[Number(tipoTarifa.id)];
 
                             return (
-                                <tr key={tipoTarifa.id}>
-                                    <td>
+                                <article className="servicio-precio-row" key={tipoTarifa.id}>
+                                    <div className="servicio-precio-row__tarifa">
                                         <strong>{tipoTarifa.nombre}</strong>
                                         <small>
                                             {tipoTarifa.descripcion ||
                                                 "Tipo de tarifa global"}
                                         </small>
-                                    </td>
+                                    </div>
 
                                     {precio ? (
                                         <>
-                                            <td>
-                                                {precio.precio_base}{" "}
-                                                {precio.moneda || "EUR"}
-                                            </td>
+                                            <div className="servicio-precio-metric">
+                                                <span>Precio</span>
+                                                <strong>{formatCurrency(precio.precio_base)}</strong>
+                                            </div>
 
-                                            <td>
-                                                {precio.iva_porcentaje ?? 0}%
-                                            </td>
+                                            <div className="servicio-precio-metric">
+                                                <span>IVA</span>
+                                                <strong>{precio.iva_porcentaje ?? 0}%</strong>
+                                            </div>
 
-                                            <td>
-                                                {precio.retencion_porcentaje ??
-                                                    0}
-                                                %
-                                            </td>
+                                            <div className="servicio-precio-metric">
+                                                <span>Retención</span>
+                                                <strong>{precio.retencion_porcentaje ?? 0}%</strong>
+                                            </div>
 
-                                            <td>
-                                                <RowActionsMenu
-                                                    actions={[
-                                                        {
-                                                            label: "Editar",
-                                                            onClick: () =>
-                                                                openEditPrecio(
-                                                                    precio,
-                                                                ),
-                                                        },
-                                                        {
-                                                            label: "Quitar",
-                                                            variant: "danger",
-                                                            onClick: () =>
-                                                                setPrecioToDelete(
-                                                                    precio,
-                                                                ),
-                                                        },
-                                                    ]}
-                                                />
-                                            </td>
+                                            <div className="servicio-card__actions">
+                                                <button
+                                                    className="servicio-action-button"
+                                                    type="button"
+                                                    onClick={() => openEditPrecio(precio)}
+                                                >
+                                                    <Pencil aria-hidden="true" size={16} />
+                                                    Editar
+                                                </button>
+                                                <button
+                                                    className="servicio-action-button servicio-action-button--danger"
+                                                    type="button"
+                                                    onClick={() => setPrecioToDelete(precio)}
+                                                >
+                                                    <Trash2 aria-hidden="true" size={16} />
+                                                    Quitar
+                                                </button>
+                                            </div>
                                         </>
                                     ) : (
                                         <>
-                                            <td colSpan={3}>
-                                                <span className="text-muted">
-                                                    Sin configurar
-                                                </span>
-                                            </td>
-
-                                            <td>
-                                                <RowActionsMenu
-                                                    actions={[
-                                                        {
-                                                            label: "Añadir precio",
-                                                            onClick: () =>
-                                                                openAddPrecio(
-                                                                    tipoTarifa.id,
-                                                                ),
-                                                        },
-                                                    ]}
-                                                />
-                                            </td>
+                                            <div className="servicio-precio-empty">Sin configurar</div>
+                                            <div className="servicio-precio-metric">
+                                                <span>IVA</span>
+                                                <strong>—</strong>
+                                            </div>
+                                            <div className="servicio-precio-metric">
+                                                <span>Retención</span>
+                                                <strong>—</strong>
+                                            </div>
+                                            <div className="servicio-card__actions">
+                                                <button
+                                                    className="servicio-action-button servicio-action-button--primary"
+                                                    type="button"
+                                                    onClick={() => openAddPrecio(tipoTarifa.id)}
+                                                >
+                                                    <Plus aria-hidden="true" size={16} />
+                                                    Añadir precio
+                                                </button>
+                                            </div>
                                         </>
                                     )}
-                                </tr>
+                                </article>
                             );
                         })}
-                    </DataTable>
+                    </div>
                 )}
             </Modal>
 

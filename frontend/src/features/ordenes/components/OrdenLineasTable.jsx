@@ -8,7 +8,7 @@ export function OrdenLineasTable({ disabled = false, errors = {}, lineas = [], o
         return (
             <EmptyState
                 title="Sin servicios"
-                description="Anade uno o varios servicios para calcular el importe de la orden."
+                description="Añade uno o varios servicios para calcular el importe de la orden."
             />
         );
     }
@@ -34,7 +34,7 @@ export function OrdenLineasTable({ disabled = false, errors = {}, lineas = [], o
                                 <input
                                     className="orden-line-input orden-line-input--description"
                                     disabled={disabled}
-                                    placeholder="Observaciones de la linea"
+                                    placeholder="Observaciones de la línea"
                                     value={linea.observaciones || ""}
                                     onChange={(event) => onUpdate(index, "observaciones", event.target.value)}
                                 />

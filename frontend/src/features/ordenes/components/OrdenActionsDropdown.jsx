@@ -16,7 +16,7 @@ export function OrdenActionsDropdown({ onCancelar, onCompletar, onFacturar, orde
                     disabled: !canCancel,
                     variant: "warning",
                     confirm: true,
-                    confirmMessage: "Quieres cancelar esta orden?",
+                    confirmMessage: "¿Quieres cancelar esta orden?",
                     onClick: () => onCancelar?.(orden),
                 },
                 {
@@ -29,4 +29,3 @@ export function OrdenActionsDropdown({ onCancelar, onCompletar, onFacturar, orde
         />
     );
 }
-

@@ -42,7 +42,7 @@ export function OrdenesPage() {
             await action();
             await reload();
         } catch (currentError) {
-            setActionError(currentError?.message || "No se ha podido completar la accion.");
+            setActionError(currentError?.message || "No se ha podido completar la acción.");
         } finally {
             setSaving(false);
         }
@@ -75,11 +75,11 @@ export function OrdenesPage() {
                         Nueva orden
                     </Link>
                 )}
-                description="Planifica trabajos, anade servicios y genera facturas al completarlos."
-                title="Ordenes"
+                description="Planifica trabajos, añade servicios y genera facturas al completarlos."
+                title="Órdenes"
             />
 
-            <SearchFilters ariaLabel="Filtros de ordenes" loading={loading} onReset={resetFilters} onSubmit={applyFilters}>
+            <SearchFilters ariaLabel="Filtros de órdenes" loading={loading} onReset={resetFilters} onSubmit={applyFilters}>
                 <FilterField label="Estado">
                     <select value={draftFilters.estado} onChange={(event) => updateDraftFilter("estado", event.target.value)}>
                         <option value="">Todos los estados</option>
@@ -103,14 +103,14 @@ export function OrdenesPage() {
                 </FilterField>
             </SearchFilters>
 
-            {loading ? <LoadingState>Cargando ordenes...</LoadingState> : null}
+            {loading ? <LoadingState>Cargando órdenes...</LoadingState> : null}
             {error ? <ErrorState>{error}</ErrorState> : null}
             {actionError ? <ErrorState>{actionError}</ErrorState> : null}
 
             {!loading ? (
                 <DataTable
                     columns={["Orden", "Cliente", "Fecha", "Estado", "Total", "Acciones"]}
-                    empty={!ordenes.length ? <EmptyState title="No hay ordenes de trabajo" description="Crea una orden para programar servicios y facturarlos despues." /> : null}
+                    empty={!ordenes.length ? <EmptyState title="No hay órdenes de trabajo" description="Crea una orden para programar servicios y facturarlos después." /> : null}
                 >
                     {ordenes.map((orden) => (
                         <tr key={orden.id}>

@@ -40,7 +40,7 @@ export function ServicioSelector({ onSelect, servicio }) {
                     type="button"
                     onClick={() => onSelect(servicio, selectedPrecio)}
                 >
-                    Anadir
+                    Añadir
                 </button>
             </td>
         </tr>

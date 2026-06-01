@@ -72,7 +72,7 @@ export function PlanificacionOrdenPanel({ disabled = false, errors = {}, form, o
                 Notas para el cliente
                 <textarea
                     disabled={disabled}
-                    placeholder="Instrucciones o informacion visible para el cliente..."
+                    placeholder="Instrucciones o información visible para el cliente..."
                     rows={3}
                     value={form.notas_cliente}
                     onChange={(event) => onChange("notas_cliente", event.target.value)}

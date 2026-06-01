@@ -1,0 +1,347 @@
+.servicios-catalog {
+  gap: 18px;
+}
+
+.servicios-toolbar {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.servicios-toolbar h2 {
+  color: var(--color-text);
+  font-size: 24px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.servicios-toolbar p {
+  color: var(--color-muted);
+  margin: 4px 0 0;
+}
+
+.servicios-primary-action svg,
+.servicio-action-button svg {
+  flex: 0 0 auto;
+}
+
+.servicios-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.servicio-card {
+  background: #ffffff;
+  border: 1px solid #dce4ea;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(270px, 0.55fr) auto;
+  padding: 18px;
+}
+
+.servicio-card__main,
+.servicio-card__pricing {
+  min-width: 0;
+}
+
+.servicio-card__header,
+.servicio-card__identity,
+.servicio-card__title-row,
+.servicio-card__actions,
+.servicio-price-chips {
+  align-items: center;
+  display: flex;
+}
+
+.servicio-card__identity {
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.servicio-card__icon {
+  align-items: center;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  color: #1e3a8a;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 42px;
+  justify-content: center;
+  width: 42px;
+}
+
+.servicio-card__title-row {
+  align-items: flex-start;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.servicio-card h3 {
+  color: #111827;
+  font-size: 18px;
+  line-height: 1.25;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.servicio-card p {
+  color: var(--color-muted);
+  line-height: 1.45;
+  margin: 6px 0 0;
+}
+
+.servicio-meta-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 14px;
+}
+
+.servicio-meta-item {
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #52677a;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-height: 64px;
+  padding: 9px 10px;
+}
+
+.servicio-meta-item svg {
+  color: #64748b;
+  grid-row: span 2;
+}
+
+.servicio-meta-item span {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.servicio-meta-item strong {
+  color: #111827;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.servicio-card__pricing {
+  align-content: start;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.servicio-card__pricing > div:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.servicio-card__kicker {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.servicio-card__pricing strong {
+  color: #111827;
+}
+
+.servicio-price-chips {
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.servicio-price-chip {
+  background: #ffffff;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  color: #1e3a8a;
+  display: grid;
+  gap: 2px;
+  min-width: 112px;
+  padding: 8px 10px;
+}
+
+.servicio-price-chip span {
+  color: #52677a;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.servicio-price-chip strong {
+  color: #1e3a8a;
+}
+
+.servicio-price-more,
+.servicio-price-empty {
+  align-items: center;
+  background: #eef2ff;
+  border-radius: 999px;
+  color: #1e3a8a;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 8px 10px;
+}
+
+.servicio-price-empty {
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.servicio-card__actions {
+  align-items: stretch;
+  border-left: 1px solid #e5e7eb;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+  padding-left: 16px;
+}
+
+.servicio-action-button {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #dce4ea;
+  border-radius: 8px;
+  color: #111827;
+  cursor: pointer;
+  display: inline-flex;
+  font-weight: 800;
+  gap: 8px;
+  justify-content: center;
+  min-height: 38px;
+  padding: 9px 12px;
+  white-space: nowrap;
+}
+
+.servicio-action-button:hover,
+.servicio-action-button:focus-visible {
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.12);
+  outline: 0;
+}
+
+.servicio-action-button--primary {
+  background: #1e3a8a;
+  border-color: #1e3a8a;
+  color: #ffffff;
+}
+
+.servicio-action-button--success {
+  color: #15803d;
+}
+
+.servicio-action-button--danger {
+  color: #b91c1c;
+}
+
+.servicio-precios-intro {
+  color: var(--color-muted);
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+
+.servicio-precios-matrix {
+  display: grid;
+  gap: 10px;
+}
+
+.servicio-precio-row {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #dce4ea;
+  border-radius: 8px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(190px, 1fr) repeat(3, minmax(90px, 0.35fr)) auto;
+  min-height: 74px;
+  padding: 12px;
+}
+
+.servicio-precio-row__tarifa {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.servicio-precio-row__tarifa strong {
+  color: #111827;
+  overflow-wrap: anywhere;
+}
+
+.servicio-precio-row__tarifa small,
+.servicio-precio-metric span {
+  color: var(--color-muted);
+}
+
+.servicio-precio-metric {
+  display: grid;
+  gap: 4px;
+}
+
+.servicio-precio-metric span {
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.servicio-precio-metric strong {
+  color: #111827;
+}
+
+.servicio-precio-empty {
+  color: #9a3412;
+  font-weight: 800;
+}
+
+.servicio-precio-row .servicio-card__actions {
+  border-left: 0;
+  justify-content: flex-end;
+  padding-left: 0;
+}
+
+@media (max-width: 1180px) {
+  .servicio-card {
+    grid-template-columns: 1fr;
+  }
+
+  .servicio-card__actions {
+    border-left: 0;
+    border-top: 1px solid #e5e7eb;
+    flex-direction: row;
+    justify-content: flex-start;
+    padding-left: 0;
+    padding-top: 14px;
+  }
+}
+
+@media (max-width: 760px) {
+  .servicios-toolbar,
+  .servicio-card__title-row,
+  .servicio-card__actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .servicio-meta-grid,
+  .servicio-precio-row {
+    grid-template-columns: 1fr;
+  }
+
+  .servicio-action-button {
+    white-space: normal;
+  }
+}

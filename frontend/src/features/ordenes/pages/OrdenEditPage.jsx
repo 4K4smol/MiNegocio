@@ -54,7 +54,7 @@ export function OrdenEditPage() {
     return (
         <section className="page">
             <PageHeader
-                description="Ajusta los datos de programacion y las lineas antes de completar la orden."
+                description="Ajusta los datos de programación y las líneas antes de completar la orden."
                 title="Editar orden"
             />
             {loading ? <LoadingState>Cargando orden...</LoadingState> : null}
@@ -71,4 +71,3 @@ export function OrdenEditPage() {
         </section>
     );
 }
-

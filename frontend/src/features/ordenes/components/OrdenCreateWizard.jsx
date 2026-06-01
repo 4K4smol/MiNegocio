@@ -7,14 +7,16 @@ import { useOrdenForm } from "../hooks/useOrdenForm";
 import { ClienteResumenCard } from "./ClienteResumenCard";
 import { ClienteSelector } from "./ClienteSelector";
 import { OrdenLineasTable } from "./OrdenLineasTable";
+import { OrdenPreviewPanel } from "./OrdenPreviewPanel";
 import { PlanificacionOrdenPanel } from "./PlanificacionOrdenPanel";
 import { ResumenOrdenCard } from "./ResumenOrdenCard";
 import { ServicioSelectorModal } from "./ServicioSelectorModal";
+import "../styles/ordenes.css";
 
 const STEPS = [
     { label: "Cliente" },
     { label: "Servicios" },
-    { label: "Planificacion" },
+    { label: "Planificación" },
     { label: "Resumen" },
 ];
 
@@ -69,69 +71,77 @@ export function OrdenCreateWizard({ error, errors = {}, onCancel, onSubmit, savi
         <div className="wizard orden-create-wizard">
             <Stepper currentStep={step} steps={STEPS} />
 
-            <div className="wizard-step-body">
-                {step === 1 && (
-                    <div className="orden-wizard-grid">
-                        <div className="form-grid orden-wizard-form">
+            <div className="orden-create-shell">
+                <div className="wizard-step-body orden-create-main">
+                    {step === 1 && (
+                        <div className="orden-wizard-form">
                             <ClienteSelector
                                 clientes={clientes}
                                 errors={errors}
                                 value={form.cliente_id}
                                 onChange={(value) => updateForm("cliente_id", value)}
                             />
+                            <ClienteResumenCard cliente={selectedCliente} />
                         </div>
-                        <ClienteResumenCard cliente={selectedCliente} />
-                    </div>
-                )}
+                    )}
 
-                {step === 2 && (
-                    <>
-                        <div className="page-header-row orden-section-header">
-                            <div>
-                                <h2>Servicios de la orden</h2>
-                                <p>Selecciona servicios configurados y ajusta cantidad, precio, descuento e IVA.</p>
+                    {step === 2 && (
+                        <>
+                            <div className="page-header-row orden-section-header">
+                                <div>
+                                    <h2>Servicios de la orden</h2>
+                                    <p>Selecciona servicios configurados y ajusta cantidad, precio, descuento e IVA.</p>
+                                </div>
+                                <button className="button" type="button" onClick={() => setSelectorOpen(true)}>
+                                    Añadir servicio
+                                </button>
                             </div>
-                            <button className="button" type="button" onClick={() => setSelectorOpen(true)}>
-                                Anadir servicio
-                            </button>
-                        </div>
-                        <OrdenLineasTable
+                            <OrdenLineasTable
+                                errors={errors}
+                                lineas={lineas}
+                                totals={totals}
+                                onRemove={removeLine}
+                                onUpdate={updateLine}
+                            />
+                            <ServicioSelectorModal
+                                open={selectorOpen}
+                                servicios={servicios}
+                                onClose={() => setSelectorOpen(false)}
+                                onSelect={(servicio, precio) => {
+                                    addServiceLine(servicio, precio);
+                                    setSelectorOpen(false);
+                                }}
+                            />
+                        </>
+                    )}
+
+                    {step === 3 && (
+                        <PlanificacionOrdenPanel
                             errors={errors}
+                            form={form}
+                            onChange={updateForm}
+                        />
+                    )}
+
+                    {step === 4 && (
+                        <ResumenOrdenCard
+                            cliente={selectedCliente}
+                            durationMinutes={durationMinutes}
+                            error={error}
+                            form={form}
                             lineas={lineas}
                             totals={totals}
-                            onRemove={removeLine}
-                            onUpdate={updateLine}
                         />
-                        <ServicioSelectorModal
-                            open={selectorOpen}
-                            servicios={servicios}
-                            onClose={() => setSelectorOpen(false)}
-                            onSelect={(servicio, precio) => {
-                                addServiceLine(servicio, precio);
-                                setSelectorOpen(false);
-                            }}
-                        />
-                    </>
-                )}
+                    )}
+                </div>
 
-                {step === 3 && (
-                    <PlanificacionOrdenPanel
-                        errors={errors}
-                        form={form}
-                        onChange={updateForm}
-                    />
-                )}
-
-                {step === 4 && (
-                    <ResumenOrdenCard
-                        cliente={selectedCliente}
-                        durationMinutes={durationMinutes}
-                        error={error}
-                        form={form}
-                        lineas={lineas}
-                        totals={totals}
-                    />
-                )}
+                <OrdenPreviewPanel
+                    cliente={selectedCliente}
+                    durationMinutes={durationMinutes}
+                    form={form}
+                    lineas={lineas}
+                    totals={totals}
+                />
             </div>
 
             <div className="wizard-actions orden-wizard-actions">

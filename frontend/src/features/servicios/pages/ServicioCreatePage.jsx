@@ -1,5 +1,5 @@
-import { Navigate } from "react-router-dom";
+import { ServiciosPage } from "./ServiciosPage";
 
 export function ServicioCreatePage() {
-    return <Navigate replace to="/app/servicios" />;
+    return <ServiciosPage initialAction="create" />;
 }

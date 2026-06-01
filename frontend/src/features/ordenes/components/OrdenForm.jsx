@@ -56,7 +56,7 @@ export function OrdenForm({ disabled = false, errors = {}, initialOrden, onCance
                     <p>Selecciona servicios configurados y ajusta cantidad, precio, descuento e IVA.</p>
                 </div>
                 <button className="button button-ghost" disabled={disabled || saving} type="button" onClick={() => setSelectorOpen(true)}>
-                    Anadir servicio
+                    Añadir servicio
                 </button>
             </div>
 

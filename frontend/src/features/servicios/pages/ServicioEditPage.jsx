@@ -1,5 +1,8 @@
-import { Navigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { ServiciosPage } from "./ServiciosPage";
 
 export function ServicioEditPage() {
-    return <Navigate replace to="/app/servicios" />;
+    const { servicioId } = useParams();
+
+    return <ServiciosPage initialAction="edit" initialServicioId={servicioId} />;
 }

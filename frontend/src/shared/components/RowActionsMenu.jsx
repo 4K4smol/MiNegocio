@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { MoreVertical } from "lucide-react";
 import { Link } from "react-router-dom";
 import "./rowActionsMenu.css";
 
@@ -74,7 +75,7 @@ export function RowActionsMenu({ actions = [] }) {
                 type="button"
                 onClick={toggleMenu}
             >
-                <span aria-hidden="true" className="row-actions__icon">⋮</span>
+                <MoreVertical aria-hidden="true" className="row-actions__icon" size={18} />
             </button>
             {isOpen ? (
                 <div

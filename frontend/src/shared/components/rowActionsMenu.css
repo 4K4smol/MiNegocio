@@ -37,9 +37,7 @@
 
 .row-actions__button .row-actions__icon {
   display: inline-block;
-  font-size: 22px;
   line-height: 1;
-  margin-top: -2px;
   transition: transform 180ms ease;
 }
 

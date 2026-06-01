@@ -22,7 +22,7 @@ export function ServicioPrecioFormModal({
             loading={loading}
             mode={mode}
             open={open}
-            submitLabel={mode === "edit" ? "Guardar precio" : "Anadir precio"}
+            submitLabel={mode === "edit" ? "Guardar precio" : "Añadir precio"}
             title={tipoTarifaPreseleccionado ? `Precio - ${tipoTarifaPreseleccionado.nombre}` : (mode === "edit" ? "Editar precio" : "Nuevo precio")}
             onClose={onClose}
             onSubmit={onSubmit}
@@ -58,7 +58,7 @@ export function ServicioPrecioFormModal({
                 </label>
 
                 <label>
-                    Retencion (%)
+                    Retención (%)
                     <input defaultValue={precio?.retencion_porcentaje ?? ""} disabled={disabled} max="100" min="0" name="retencion_porcentaje" placeholder="0" step="0.01" type="number" />
                     {fieldError(errors, "retencion_porcentaje") ? <small className="field-error">{fieldError(errors, "retencion_porcentaje")}</small> : null}
                 </label>
@@ -68,7 +68,6 @@ export function ServicioPrecioFormModal({
                     <input defaultValue={precio?.moneda || "EUR"} disabled={disabled} maxLength={3} minLength={3} name="moneda" />
                     {fieldError(errors, "moneda") ? <small className="field-error">{fieldError(errors, "moneda")}</small> : null}
                 </label>
-
             </div>
         </FormModal>
     );

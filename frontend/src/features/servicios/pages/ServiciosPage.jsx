@@ -1,7 +1,7 @@
 import { PageHeader } from "../../../shared/components/PageHeader";
 import { ServiciosTab } from "../components/ServiciosTab";
 
-export function ServiciosPage() {
+export function ServiciosPage({ initialAction = null, initialServicioId = null }) {
     return (
         <section className="page">
             <PageHeader
@@ -9,7 +9,7 @@ export function ServiciosPage() {
                 title="Servicios"
             />
 
-            <ServiciosTab />
+            <ServiciosTab initialAction={initialAction} initialServicioId={initialServicioId} />
         </section>
     );
 }
