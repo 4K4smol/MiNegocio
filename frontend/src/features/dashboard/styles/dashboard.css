@@ -218,3 +218,20 @@
     justify-items: start;
   }
 }
+
+@media (max-width: 520px) {
+  .dashboard-page .calendar-month-card,
+  .dashboard-calendar-fallback {
+    min-height: 0;
+  }
+
+  .dashboard-status-card,
+  .dashboard-quick-card,
+  .dashboard-orders-card {
+    min-height: 0;
+  }
+
+  .dashboard-status-card strong {
+    font-size: 28px;
+  }
+}

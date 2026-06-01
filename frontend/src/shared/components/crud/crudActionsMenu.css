@@ -92,3 +92,27 @@
   display: inline-flex;
   min-width: 16px;
 }
+
+@media (max-width: 760px) {
+  .crud-actions {
+    justify-content: stretch;
+    width: 100%;
+  }
+
+  .crud-actions-trigger {
+    height: 40px;
+    width: 100%;
+  }
+
+  .crud-actions-menu {
+    left: 12px !important;
+    max-width: calc(100vw - 24px);
+    min-width: 0;
+    right: 12px;
+    width: auto;
+  }
+
+  .crud-actions-item {
+    min-height: 42px;
+  }
+}

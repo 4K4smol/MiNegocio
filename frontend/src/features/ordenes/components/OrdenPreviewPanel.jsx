@@ -24,7 +24,7 @@ function PreviewMetric({ label, value }) {
     );
 }
 
-export function OrdenPreviewPanel({ cliente, durationMinutes = 0, form, lineas = [], totals }) {
+export function OrdenPreviewPanel({ cliente, durationMinutes = 0, form, lineas = [], pendingTitle = "Para crear la orden", totals }) {
     const pendingItems = getPendingItems({ cliente, form, lineas });
 
     return (
@@ -104,7 +104,7 @@ export function OrdenPreviewPanel({ cliente, durationMinutes = 0, form, lineas =
                 <div className="orden-preview-pending">
                     <Clock aria-hidden="true" size={16} />
                     <div>
-                        <strong>Para crear la orden</strong>
+                        <strong>{pendingTitle}</strong>
                         {pendingItems.map((item) => <span key={item}>{item}</span>)}
                     </div>
                 </div>

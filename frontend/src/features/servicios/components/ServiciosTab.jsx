@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Briefcase, Clock, Hash, Pencil, Plus, Power, PowerOff, Ruler, Tags } from "lucide-react";
+import { Pencil, Plus, Power, PowerOff, Tags } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ConfirmModal } from "../../../shared/components/ConfirmModal";
 import { EmptyState } from "../../../shared/components/EmptyState";
@@ -8,7 +8,6 @@ import { LoadingState } from "../../../shared/components/LoadingState";
 import { FilterField, SearchFilters, SearchInput } from "../../../shared/components/SearchFilters";
 import { StatusBadge } from "../../../shared/components/StatusBadge";
 import { unwrapApiCollection, unwrapApiData } from "../../../shared/utils/apiResponse";
-import { formatCurrency } from "../../../shared/utils/formatters";
 import { servicioPayloadFromForm, validationErrors } from "../utils/serviciosForms";
 import { serviciosService } from "../services/serviciosService";
 import { ServicioFormModal } from "./ServicioFormModal";
@@ -17,57 +16,18 @@ import "../styles/servicios.css";
 
 const serviciosIndexPath = "/app/servicios";
 
-const getPrecioList = (servicio) => {
+const getPrecioCount = (servicio) => {
     const precios = servicio?.precios?.data ?? servicio?.precios;
-    return Array.isArray(precios) ? precios : [];
+    return servicio?.precios_count ?? (Array.isArray(precios) ? precios.length : 0);
 };
 
-const getTarifaNombre = (precio) =>
-    precio?.tarifa?.nombre ||
-    precio?.tipo_tarifa_servicio?.nombre ||
-    precio?.tipo_tarifa?.nombre ||
-    "Tarifa";
-
-const getTarifaCodigo = (precio) =>
-    precio?.tarifa?.codigo ||
-    precio?.tipo_tarifa_servicio?.codigo ||
-    precio?.tipo_tarifa?.codigo ||
-    getTarifaNombre(precio);
-
-const getPrecioCount = (servicio) => servicio?.precios_count ?? getPrecioList(servicio).length ?? 0;
-
-function ServicioMetaItem({ icon, label, value }) {
-    const IconComponent = icon;
-
-    return (
-        <span className="servicio-meta-item">
-            <IconComponent aria-hidden="true" size={16} />
-            <span>{label}</span>
-            <strong>{value}</strong>
-        </span>
-    );
-}
-
-function ServicioPrecioChips({ servicio }) {
-    const precios = getPrecioList(servicio);
-    const visiblePrecios = precios.slice(0, 4);
-    const remaining = Math.max(precios.length - visiblePrecios.length, 0);
-
-    if (!precios.length) {
-        return <span className="servicio-price-empty">Sin precios configurados</span>;
-    }
-
-    return (
-        <div className="servicio-price-chips" aria-label="Precios configurados">
-            {visiblePrecios.map((precio) => (
-                <span className="servicio-price-chip" key={`${getTarifaCodigo(precio)}-${precio.id}`}>
-                    <span>{getTarifaNombre(precio)}</span>
-                    <strong>{formatCurrency(precio.precio_base)}</strong>
-                </span>
-            ))}
-            {remaining > 0 ? <span className="servicio-price-more">+{remaining}</span> : null}
-        </div>
-    );
+function buildMetaLine(servicio) {
+    const parts = [];
+    if (servicio.codigo) parts.push(servicio.codigo);
+    if (servicio.tipo_negocio) parts.push(servicio.tipo_negocio);
+    if (servicio.unidad_servicio) parts.push(servicio.unidad_servicio);
+    if (servicio.duracion_estimada_min) parts.push(`${servicio.duracion_estimada_min} min`);
+    return parts.join(" · ");
 }
 
 export function ServiciosTab({ initialAction = null, initialServicioId = null }) {
@@ -177,7 +137,6 @@ export function ServiciosTab({ initialAction = null, initialServicioId = null })
                 if (!selectedServicio?.id) {
                     throw new Error("No se ha podido identificar el servicio a editar.");
                 }
-
                 await serviciosService.update(selectedServicio.id, payload);
             } else {
                 await serviciosService.create(payload);
@@ -262,72 +221,62 @@ export function ServiciosTab({ initialAction = null, initialServicioId = null })
                 <LoadingState>Cargando servicios...</LoadingState>
             ) : servicios.length ? (
                 <div className="servicios-grid" aria-label="Catálogo de servicios">
-                    {servicios.map((servicio) => (
-                        <article className="servicio-card" key={servicio.id}>
-                            <div className="servicio-card__main">
-                                <div className="servicio-card__header">
-                                    <div className="servicio-card__identity">
-                                        <span className="servicio-card__icon" aria-hidden="true">
-                                            <Briefcase size={20} />
-                                        </span>
-                                        <div>
-                                            <div className="servicio-card__title-row">
-                                                <h3>{servicio.nombre}</h3>
-                                                <StatusBadge status={servicio.activo ? "activo" : "inactivo"} />
-                                            </div>
-                                            <p>{servicio.descripcion || "Sin descripción añadida."}</p>
-                                        </div>
+                    {servicios.map((servicio) => {
+                        const metaLine = buildMetaLine(servicio);
+                        const precioCount = getPrecioCount(servicio);
+
+                        return (
+                            <article className="servicio-card" key={servicio.id}>
+                                <div className="servicio-card__body">
+                                    <div className="servicio-card__title-row">
+                                        <h3>{servicio.nombre}</h3>
+                                        <StatusBadge status={servicio.activo ? "activo" : "inactivo"} />
                                     </div>
+
+                                    {servicio.descripcion ? (
+                                        <p className="servicio-card__desc">{servicio.descripcion}</p>
+                                    ) : null}
+
+                                    {metaLine ? (
+                                        <p className="servicio-meta-inline">{metaLine}</p>
+                                    ) : null}
+
+                                    <p className="servicio-precios-count">
+                                        {precioCount > 0
+                                            ? `${precioCount} ${precioCount === 1 ? "precio configurado" : "precios configurados"}`
+                                            : "Sin precios configurados"}
+                                    </p>
                                 </div>
 
-                                <div className="servicio-meta-grid">
-                                    <ServicioMetaItem icon={Hash} label="Código" value={servicio.codigo || "Sin código"} />
-                                    <ServicioMetaItem icon={Briefcase} label="Área" value={servicio.tipo_negocio || "No indicada"} />
-                                    <ServicioMetaItem icon={Ruler} label="Unidad" value={servicio.unidad_servicio || "servicio"} />
-                                    <ServicioMetaItem
-                                        icon={Clock}
-                                        label="Duración"
-                                        value={servicio.duracion_estimada_min ? `${servicio.duracion_estimada_min} min` : "—"}
-                                    />
+                                <div className="servicio-card__actions" aria-label={`Acciones de ${servicio.nombre}`}>
+                                    <button
+                                        className="servicio-action-button"
+                                        type="button"
+                                        onClick={() => navigate(`/app/servicios/${servicio.id}/editar`)}
+                                    >
+                                        <Pencil aria-hidden="true" size={17} />
+                                        Editar
+                                    </button>
+                                    <button
+                                        className="servicio-action-button servicio-action-button--primary"
+                                        type="button"
+                                        onClick={() => setPreciosServicio(servicio)}
+                                    >
+                                        <Tags aria-hidden="true" size={17} />
+                                        Precios
+                                    </button>
+                                    <button
+                                        className={`servicio-action-button ${servicio.activo ? "servicio-action-button--danger" : "servicio-action-button--success"}`}
+                                        type="button"
+                                        onClick={() => setConfirmAction({ servicio })}
+                                    >
+                                        {servicio.activo ? <PowerOff aria-hidden="true" size={17} /> : <Power aria-hidden="true" size={17} />}
+                                        {servicio.activo ? "Desactivar" : "Activar"}
+                                    </button>
                                 </div>
-                            </div>
-
-                            <div className="servicio-card__pricing">
-                                <div>
-                                    <span className="servicio-card__kicker">Precios</span>
-                                    <strong>{getPrecioCount(servicio)} configurados</strong>
-                                </div>
-                                <ServicioPrecioChips servicio={servicio} />
-                            </div>
-
-                            <div className="servicio-card__actions" aria-label={`Acciones de ${servicio.nombre}`}>
-                                <button
-                                    className="servicio-action-button"
-                                    type="button"
-                                    onClick={() => navigate(`/app/servicios/${servicio.id}/editar`)}
-                                >
-                                    <Pencil aria-hidden="true" size={17} />
-                                    Editar
-                                </button>
-                                <button
-                                    className="servicio-action-button servicio-action-button--primary"
-                                    type="button"
-                                    onClick={() => setPreciosServicio(servicio)}
-                                >
-                                    <Tags aria-hidden="true" size={17} />
-                                    Gestionar precios
-                                </button>
-                                <button
-                                    className={`servicio-action-button ${servicio.activo ? "servicio-action-button--danger" : "servicio-action-button--success"}`}
-                                    type="button"
-                                    onClick={() => setConfirmAction({ servicio })}
-                                >
-                                    {servicio.activo ? <PowerOff aria-hidden="true" size={17} /> : <Power aria-hidden="true" size={17} />}
-                                    {servicio.activo ? "Desactivar" : "Activar"}
-                                </button>
-                            </div>
-                        </article>
-                    ))}
+                            </article>
+                        );
+                    })}
                 </div>
             ) : (
                 <EmptyState

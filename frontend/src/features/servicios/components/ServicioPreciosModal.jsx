@@ -231,7 +231,7 @@ export function ServicioPreciosModal({ onClose, onChanged, open, servicio }) {
                                 preciosPorTipoTarifa[Number(tipoTarifa.id)];
 
                             return (
-                                <article className="servicio-precio-row" key={tipoTarifa.id}>
+                                <article className={`servicio-precio-row${precio ? "" : " servicio-precio-row--empty"}`} key={tipoTarifa.id}>
                                     <div className="servicio-precio-row__tarifa">
                                         <strong>{tipoTarifa.nombre}</strong>
                                         <small>
@@ -279,14 +279,6 @@ export function ServicioPreciosModal({ onClose, onChanged, open, servicio }) {
                                     ) : (
                                         <>
                                             <div className="servicio-precio-empty">Sin configurar</div>
-                                            <div className="servicio-precio-metric">
-                                                <span>IVA</span>
-                                                <strong>—</strong>
-                                            </div>
-                                            <div className="servicio-precio-metric">
-                                                <span>Retención</span>
-                                                <strong>—</strong>
-                                            </div>
                                             <div className="servicio-card__actions">
                                                 <button
                                                     className="servicio-action-button servicio-action-button--primary"

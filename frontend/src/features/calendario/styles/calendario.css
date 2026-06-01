@@ -260,6 +260,11 @@
 }
 
 @media (max-width: 760px) {
+  .calendar-month-card {
+    gap: 14px;
+    padding: 16px;
+  }
+
   .calendar-month-grid {
     grid-template-columns: 1fr;
   }
@@ -274,5 +279,21 @@
 
   .calendar-day-cell.is-outside-month:not(.has-orders) {
     display: none;
+  }
+
+  .calendar-order-badge {
+    min-height: 42px;
+  }
+}
+
+@media (max-width: 420px) {
+  .calendar-month-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .calendar-month-actions .button,
+  .calendar-month-controls .button {
+    width: 100%;
   }
 }

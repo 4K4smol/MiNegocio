@@ -138,6 +138,10 @@
 }
 
 @media (max-width: 760px) {
+  .search-filters {
+    padding: 12px;
+  }
+
   .search-filters__grid {
     grid-template-columns: 1fr;
   }
@@ -154,5 +158,11 @@
   .search-filters-toolbar {
     align-items: stretch;
     flex-direction: column;
+  }
+}
+
+@media (max-width: 420px) {
+  .search-filters__field--search {
+    min-width: 0;
   }
 }

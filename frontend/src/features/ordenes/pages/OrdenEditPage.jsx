@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ErrorState } from "../../../shared/components/ErrorState";
 import { LoadingState } from "../../../shared/components/LoadingState";
 import { PageHeader } from "../../../shared/components/PageHeader";
@@ -52,10 +52,15 @@ export function OrdenEditPage() {
     };
 
     return (
-        <section className="page">
+        <section className="page orden-edit-page">
             <PageHeader
-                description="Ajusta los datos de programación y las líneas antes de completar la orden."
-                title="Editar orden"
+                actions={(
+                    <Link className="button button-ghost" to={`/app/ordenes-trabajo/${ordenId}`}>
+                        Volver
+                    </Link>
+                )}
+                description="Ajusta cliente, planificación y servicios antes de completar la orden."
+                title={orden?.numero ? `Editar ${orden.numero}` : "Editar orden"}
             />
             {loading ? <LoadingState>Cargando orden...</LoadingState> : null}
             {error ? <ErrorState>{error}</ErrorState> : null}

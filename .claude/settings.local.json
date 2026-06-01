@@ -9,7 +9,9 @@
       "PowerShell(Get-ChildItem -Path \"d:\\\\PROYECTOS\\\\MiNegocio\\\\frontend\\\\src\\\\features\\\\facturacion\" -Recurse -File | ForEach-Object { $_.FullName })",
       "PowerShell(Get-ChildItem -Path \"d:\\\\PROYECTOS\\\\MiNegocio\\\\frontend\\\\src\\\\shared\" -Recurse -File | ForEach-Object { $_.FullName })",
       "PowerShell(Get-ChildItem -Path \"d:\\\\PROYECTOS\\\\MiNegocio\\\\frontend\\\\src\\\\components\" -Recurse -File | ForEach-Object { $_.FullName })",
-      "PowerShell(Get-ChildItem -Path \"d:\\\\PROYECTOS\\\\MiNegocio\\\\frontend\\\\src\\\\config\" -Recurse -File | ForEach-Object { $_.FullName })"
+      "PowerShell(Get-ChildItem -Path \"d:\\\\PROYECTOS\\\\MiNegocio\\\\frontend\\\\src\\\\config\" -Recurse -File | ForEach-Object { $_.FullName })",
+      "Bash(find d:/PROYECTOS/MiNegocio -name \"playwright\" -maxdepth 6 -type d 2>/dev/null | head -5 && which playwright 2>/dev/null && ls ~/.npm 2>/dev/null | grep play | head -3)",
+      "Read(//c/Users/Pc/**)"
     ]
   }
 }

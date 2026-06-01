@@ -43,20 +43,20 @@ export function SolicitudesTable({ solicitudes = [], selectedId, onSelect, onDec
                     <tbody>
                         {solicitudes.map((solicitud) => (
                             <tr key={solicitud.id} className={selectedId === solicitud.id ? "is-selected" : ""}>
-                                <td>
+                                <td data-label="Empresa">
                                     <strong>{getEmpresaNombre(solicitud)}</strong>
                                     <small>{getEmpresaComercial(solicitud)}</small>
                                 </td>
-                                <td>{getNif(solicitud)}</td>
-                                <td>
+                                <td data-label="NIF">{getNif(solicitud)}</td>
+                                <td data-label="Responsable">
                                     <strong>{getResponsable(solicitud)}</strong>
                                 </td>
-                                <td>{getEmail(solicitud)}</td>
-                                <td>{getTipo(solicitud)}</td>
-                                <td><EstadoSolicitudBadge estado={getEstado(solicitud)} /></td>
-                                <td>{solicitud.documentos_count ?? 0}</td>
-                                <td>{formatDate(getFecha(solicitud))}</td>
-                                <td>
+                                <td data-label="Email">{getEmail(solicitud)}</td>
+                                <td data-label="Tipo">{getTipo(solicitud)}</td>
+                                <td data-label="Estado"><EstadoSolicitudBadge estado={getEstado(solicitud)} /></td>
+                                <td data-label="Docs">{solicitud.documentos_count ?? 0}</td>
+                                <td data-label="Fecha">{formatDate(getFecha(solicitud))}</td>
+                                <td data-label="Acciones">
                                     <AdminActionsMenu
                                         actions={[
                                             { label: "Ver expediente", onClick: () => onSelect?.(solicitud.id), variant: "primary" },

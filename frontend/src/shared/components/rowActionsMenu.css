@@ -105,3 +105,27 @@
   display: inline-flex;
   min-width: 16px;
 }
+
+@media (max-width: 760px) {
+  .row-actions {
+    justify-content: stretch;
+    width: 100%;
+  }
+
+  .row-actions__button {
+    height: 40px;
+    width: 100%;
+  }
+
+  .row-actions__menu {
+    left: 12px !important;
+    max-width: calc(100vw - 24px);
+    min-width: 0;
+    right: 12px;
+    width: auto;
+  }
+
+  .row-actions__item {
+    min-height: 42px;
+  }
+}

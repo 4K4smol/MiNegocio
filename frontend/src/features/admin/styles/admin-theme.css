@@ -381,4 +381,16 @@
     align-items: stretch;
     flex-direction: column;
   }
+
+  .admin-card,
+  .admin-table-card,
+  .solicitudes-table-card,
+  .admin-modal,
+  .admin-button {
+    border-radius: 10px;
+  }
+
+  .admin-user-list li {
+    gap: 10px;
+  }
 }
