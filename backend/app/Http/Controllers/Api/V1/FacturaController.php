@@ -15,6 +15,7 @@ use App\Models\EstadoFactura;
 use App\Models\Factura;
 use App\Services\FacturaCobroService;
 use App\Services\FacturaHistorialService;
+use App\Services\FacturaPdfService;
 use App\Services\FacturaRectificativaService;
 use App\Services\FacturaService;
 use App\Services\RegistroEventoFacturacionService;
@@ -24,6 +25,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class FacturaController extends AbstractCrudController
 {
@@ -151,6 +153,26 @@ class FacturaController extends AbstractCrudController
         $factura = $this->facturaService->emitir($factura, $request->user(), $request->validated());
 
         return $this->updated(FacturaResource::make($factura)->resolve(), 'Factura emitida correctamente.');
+    }
+
+    public function descargarPdf(Request $request, Factura $factura, FacturaPdfService $facturaPdfService): BinaryFileResponse|JsonResponse
+    {
+        if (!$this->findRecord($request, $factura->id)) {
+            return $this->forbidden();
+        }
+
+        $factura->loadMissing(['estadoFactura']);
+        if ($factura->estadoFactura?->codigo === 'borrador') {
+            return $this->error('No se puede descargar el PDF de una factura en borrador.', 422);
+        }
+
+        $documento = $facturaPdfService->generar($factura, $request->user());
+
+        return response()->download(
+            $facturaPdfService->absolutePath($documento),
+            $documento->nombre_original ?: $facturaPdfService->filename($factura),
+            ['Content-Type' => 'application/pdf']
+        );
     }
 
     public function marcarPagada(Request $request, Factura $factura): JsonResponse

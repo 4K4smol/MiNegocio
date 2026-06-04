@@ -245,6 +245,7 @@ Route::prefix('v1')->group(function (): void {
                     Route::delete('{id}', 'destroy');
 
                     Route::post('{factura}/emitir', 'emitir');
+                    Route::get('{factura}/pdf', 'descargarPdf');
                     Route::post('{factura}/cobros', 'registrarCobro');
                     Route::post('{factura}/marcar-pagada', 'marcarPagada');
                     Route::post('{factura}/anular', 'anular');

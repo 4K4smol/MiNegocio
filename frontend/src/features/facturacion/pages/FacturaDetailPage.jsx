@@ -465,6 +465,11 @@ export function FacturaDetailPage() {
             setEmitirOpen(false)
         })
 
+    const handleDescargarPdf = () =>
+        runAction(async () => {
+            await facturasService.downloadPdf(facturaId)
+        })
+
     const handleMarcarPagada = () => runAction(() => facturasService.marcarPagada(facturaId))
 
     const handleAnular = (motivo) =>
@@ -498,6 +503,7 @@ export function FacturaDetailPage() {
     // anulada / rectificada → sin acciones
     const puedeEditar = isBorrador
     const puedeEmitir = isBorrador
+    const puedeDescargarPdf = !isBorrador
     const puedeMarcarPagada = isEmitida && !isPagada
     const puedeRectificar = !isBorrador && !isFinalizada
     const puedeAnular = (isEmitida || isPagada) && !isFinalizada
@@ -529,6 +535,17 @@ export function FacturaDetailPage() {
                                     onClick={() => setEmitirOpen(true)}
                                 >
                                     Emitir factura
+                                </button>
+                            ) : null}
+
+                            {puedeDescargarPdf ? (
+                                <button
+                                    className="button button-ghost"
+                                    disabled={saving}
+                                    type="button"
+                                    onClick={handleDescargarPdf}
+                                >
+                                    {saving ? 'Preparando...' : 'Descargar PDF'}
                                 </button>
                             ) : null}
 
