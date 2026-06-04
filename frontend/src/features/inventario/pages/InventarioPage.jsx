@@ -33,6 +33,20 @@ const numberOrNull = (value) => {
 
 const validationErrors = (error) => error?.errors || error?.payload?.errors || {};
 
+const unidadLabel = (item) => item.unidad_medida?.codigo || item.unidad_medida?.nombre || "-";
+
+const existenciasLabel = (item) => {
+    const existencias = (item.existencias || []).filter((existencia) => Number(existencia.cantidad || 0) > 0);
+
+    if (!existencias.length) {
+        return item.ubicacion?.nombre || "No indicada";
+    }
+
+    return existencias
+        .map((existencia) => `${existencia.ubicacion?.nombre || "Sin ubicacion"}: ${existencia.cantidad}`)
+        .join(", ");
+};
+
 const itemPayloadFromForm = (form) => {
     const formData = new FormData(form);
 
@@ -41,6 +55,7 @@ const itemPayloadFromForm = (form) => {
         descripcion: emptyToNull(formData.get("descripcion")),
         unidad_medida_id: numberOrNull(formData.get("unidad_medida_id")),
         ubicacion_id: numberOrNull(formData.get("ubicacion_id")),
+        stock_actual: numberOrNull(formData.get("stock_actual")) ?? 0,
         stock_minimo: numberOrNull(formData.get("stock_minimo")) ?? 0,
     };
 };
@@ -299,7 +314,7 @@ export function InventarioPage() {
 
             {!loading ? (
                 <DataTable
-                    columns={["Item", "Ubicacion", "Stock actual", "Stock minimo", "Acciones"]}
+                    columns={["Item", "Unidad", "Ubicaciones", "Stock actual", "Stock minimo", "Acciones"]}
                     empty={
                         !items.length ? (
                             <EmptyState
@@ -315,7 +330,8 @@ export function InventarioPage() {
                                 <strong>{item.nombre}</strong>
                                 {item.descripcion ? <small>{item.descripcion}</small> : null}
                             </td>
-                            <td>{item.ubicacion?.nombre || "No indicada"}</td>
+                            <td>{unidadLabel(item)}</td>
+                            <td>{existenciasLabel(item)}</td>
                             <td>
                                 <strong>{item.stock_actual ?? 0}</strong>
                                 {item.stock_bajo ? <small>Stock bajo</small> : null}

@@ -31,7 +31,7 @@ class InventarioMovimientoController extends AbstractCrudController
     protected function baseQuery(Request $request): Builder
     {
         return parent::baseQuery($request)
-            ->with(['item.unidadMedida', 'item.ubicacion', 'tipoMovimiento', 'ubicacionOrigen', 'ubicacionDestino', 'user'])
+            ->with(['item.unidadMedida', 'item.ubicacion', 'item.existencias.ubicacion', 'tipoMovimiento', 'ubicacionOrigen', 'ubicacionDestino', 'user'])
             ->when($request->filled('inventario_item_id'), fn (Builder $query) => $query->where('inventario_item_id', $request->integer('inventario_item_id')))
             ->when($request->filled('tipo_movimiento_id'), fn (Builder $query) => $query->where('tipo_movimiento_id', $request->integer('tipo_movimiento_id')))
             ->orderByDesc('fecha_movimiento');

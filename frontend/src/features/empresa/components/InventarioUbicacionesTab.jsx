@@ -9,6 +9,20 @@ import { RowActionsMenu } from "../../../shared/components/RowActionsMenu";
 import { FilterField, SearchFilters } from "../../../shared/components/SearchFilters";
 import { StatusBadge } from "../../../shared/components/StatusBadge";
 
+const unidadLabel = (item) => item.unidad_medida?.codigo || item.unidad_medida?.nombre || "-";
+
+const existenciasLabel = (item) => {
+    const existencias = (item.existencias || []).filter((existencia) => Number(existencia.cantidad || 0) > 0);
+
+    if (!existencias.length) {
+        return item.ubicacion?.nombre || "Sin ubicacion";
+    }
+
+    return existencias
+        .map((existencia) => `${existencia.ubicacion?.nombre || "Sin ubicacion"}: ${existencia.cantidad}`)
+        .join(", ");
+};
+
 export function InventarioUbicacionesTab({
     error,
     items = [],
@@ -27,9 +41,10 @@ export function InventarioUbicacionesTab({
                 const ubicacionOk =
                     filters.ubicacionId === "todas"
                         ? true
-                        : String(
-                              item.ubicacion?.id || item.ubicacion_id || "",
-                          ) === String(filters.ubicacionId);
+                        : (item.existencias || []).some((existencia) =>
+                              String(existencia.ubicacion_id) === String(filters.ubicacionId)
+                              && Number(existencia.cantidad || 0) > 0,
+                          );
                 const stockOk = filters.stockBajo ? item.stock_bajo : true;
                 return ubicacionOk && stockOk;
             }),
@@ -99,7 +114,8 @@ export function InventarioUbicacionesTab({
                 <DataTable
                     columns={[
                         "Articulo",
-                        "Ubicacion",
+                        "Unidad",
+                        "Ubicaciones",
                         "Cantidad",
                         "Stock minimo",
                         "Estado",
@@ -119,7 +135,8 @@ export function InventarioUbicacionesTab({
                             <td>
                                 <strong>{item.nombre}</strong>
                             </td>
-                            <td>{item.ubicacion?.nombre || "Sin ubicacion"}</td>
+                            <td>{unidadLabel(item)}</td>
+                            <td>{existenciasLabel(item)}</td>
                             <td>{item.stock_actual ?? 0}</td>
                             <td>{item.stock_minimo ?? 0}</td>
                             <td>

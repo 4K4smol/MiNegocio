@@ -27,6 +27,11 @@ class InventarioUbicacion extends Model
         return $this->hasMany(InventarioItem::class, 'ubicacion_id');
     }
 
+    public function existencias(): HasMany
+    {
+        return $this->hasMany(InventarioExistencia::class, 'ubicacion_id');
+    }
+
     public function movimientosOrigen(): HasMany
     {
         return $this->hasMany(InventarioMovimiento::class, 'ubicacion_origen_id');

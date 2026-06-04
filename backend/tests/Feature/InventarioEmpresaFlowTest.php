@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\Empresa;
+use App\Models\InventarioExistencia;
 use App\Models\InventarioItem;
 use App\Models\InventarioUbicacion;
 use App\Models\User;
@@ -29,7 +30,7 @@ class InventarioEmpresaFlowTest extends TestCase
     {
         [$user] = $this->crearUsuarioEmpresa('B33000001');
         [, $otraEmpresa] = $this->crearUsuarioEmpresa('B33000002');
-        $response = $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-items', [
+        $response = $this->actingAs($user, 'sanctum')->postJson('/api/v1/empresa/inventario-items', [
             'empresa_id' => $otraEmpresa->id,
             'unidad_medida_id' => $this->unidadId(),
             'nombre' => 'Producto propio',
@@ -48,7 +49,7 @@ class InventarioEmpresaFlowTest extends TestCase
     {
         [$user, $empresa] = $this->crearUsuarioEmpresa('B33000015');
 
-        $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-items', [
+        $this->actingAs($user, 'sanctum')->postJson('/api/v1/empresa/inventario-items', [
             'unidad_medida_id' => $this->unidadId(),
             'nombre' => 'Item simple',
             'cantidad' => 4,
@@ -68,14 +69,12 @@ class InventarioEmpresaFlowTest extends TestCase
         [$user, $empresa] = $this->crearUsuarioEmpresa('B33000027');
         $item = $this->crearItem($empresa->id);
 
-        $this->actingAs($user, 'sanctum')->putJson("/api/v1/inventario-items/{$item->id}", [
+        $this->actingAs($user, 'sanctum')->putJson("/api/v1/empresa/inventario-items/{$item->id}", [
             'nombre' => 'Item editado',
-            'sku' => $item->sku,
             'unidad_medida_id' => $item->unidad_medida_id,
             'cantidad' => 8,
         ])->assertOk()
             ->assertJsonPath('data.nombre', 'Item editado')
-            ->assertJsonPath('data.sku', $item->sku)
             ->assertJsonPath('data.cantidad', '8.00');
     }
 
@@ -83,7 +82,7 @@ class InventarioEmpresaFlowTest extends TestCase
     {
         [$user, $empresa] = $this->crearUsuarioEmpresa('B33000019');
 
-        $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-ubicaciones', [
+        $this->actingAs($user, 'sanctum')->postJson('/api/v1/empresa/inventario-ubicaciones', [
             'nombre' => 'Almacen central',
             'observaciones' => 'Material operativo',
         ])->assertCreated()
@@ -102,7 +101,7 @@ class InventarioEmpresaFlowTest extends TestCase
         [$user, $empresa] = $this->crearUsuarioEmpresa('B33000028');
         $ubicacion = $this->crearUbicacion($empresa->id, 'Almacen editable');
 
-        $this->actingAs($user, 'sanctum')->putJson("/api/v1/inventario-ubicaciones/{$ubicacion->id}", [
+        $this->actingAs($user, 'sanctum')->putJson("/api/v1/empresa/inventario-ubicaciones/{$ubicacion->id}", [
             'nombre' => 'Almacen editable',
             'descripcion' => 'Material de uso diario',
             'observaciones' => 'Acceso por puerta lateral',
@@ -119,7 +118,7 @@ class InventarioEmpresaFlowTest extends TestCase
         $this->crearItem($empresa->id, 3, $ubicacion->id);
 
         $this->actingAs($user, 'sanctum')
-            ->deleteJson("/api/v1/inventario-ubicaciones/{$ubicacion->id}")
+            ->deleteJson("/api/v1/empresa/inventario-ubicaciones/{$ubicacion->id}")
             ->assertStatus(422);
 
         $this->assertDatabaseHas('inventario_ubicaciones', [
@@ -132,7 +131,7 @@ class InventarioEmpresaFlowTest extends TestCase
         [$user] = $this->crearUsuarioEmpresa('B33000020');
         [, $otraEmpresa] = $this->crearUsuarioEmpresa('B33000021');
 
-        $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-ubicaciones', [
+        $this->actingAs($user, 'sanctum')->postJson('/api/v1/empresa/inventario-ubicaciones', [
             'empresa_id' => $otraEmpresa->id,
             'nombre' => 'Almacen ajeno',
         ])->assertStatus(422);
@@ -149,7 +148,7 @@ class InventarioEmpresaFlowTest extends TestCase
         [, $otraEmpresa] = $this->crearUsuarioEmpresa('B33000023');
         $ubicacion = $this->crearUbicacion($empresa->id, 'Almacen editable');
 
-        $this->actingAs($user, 'sanctum')->putJson("/api/v1/inventario-ubicaciones/{$ubicacion->id}", [
+        $this->actingAs($user, 'sanctum')->putJson("/api/v1/empresa/inventario-ubicaciones/{$ubicacion->id}", [
             'empresa_id' => $otraEmpresa->id,
             'nombre' => 'Almacen movido',
         ])->assertStatus(422);
@@ -167,9 +166,24 @@ class InventarioEmpresaFlowTest extends TestCase
         $item = $this->crearItem($empresa->id);
 
         $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/inventario-items?per_page=100')
+            ->getJson('/api/v1/empresa/inventario-items?per_page=100')
             ->assertOk()
             ->assertJsonFragment(['id' => $item->id]);
+    }
+
+    public function test_filtro_por_ubicacion_busca_existencias_positivas(): void
+    {
+        [$user, $empresa] = $this->crearUsuarioEmpresa('B33000029');
+        $ubicacionA = $this->crearUbicacion($empresa->id, 'Almacen filtro A');
+        $ubicacionB = $this->crearUbicacion($empresa->id, 'Almacen filtro B');
+        $itemA = $this->crearItem($empresa->id, stock: 5, ubicacionId: $ubicacionA->id);
+        $itemB = $this->crearItem($empresa->id, stock: 7, ubicacionId: $ubicacionB->id);
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson("/api/v1/empresa/inventario-items?per_page=100&ubicacion_id={$ubicacionA->id}")
+            ->assertOk()
+            ->assertJsonFragment(['id' => $itemA->id])
+            ->assertJsonMissing(['id' => $itemB->id]);
     }
 
     public function test_empresa_no_puede_usar_ubicacion_de_otra_empresa(): void
@@ -178,7 +192,7 @@ class InventarioEmpresaFlowTest extends TestCase
         [, $otraEmpresa] = $this->crearUsuarioEmpresa('B33000006');
         $ubicacionAjena = $this->crearUbicacion($otraEmpresa->id, 'Ajena');
 
-        $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-items', [
+        $this->actingAs($user, 'sanctum')->postJson('/api/v1/empresa/inventario-items', [
             'unidad_medida_id' => $this->unidadId(),
             'ubicacion_id' => $ubicacionAjena->id,
             'nombre' => 'Producto bloqueado',
@@ -188,28 +202,33 @@ class InventarioEmpresaFlowTest extends TestCase
     public function test_entrada_aumenta_stock(): void
     {
         [$user, $empresa] = $this->crearUsuarioEmpresa('B33000007');
-        $item = $this->crearItem($empresa->id, stock: 10);
+        $ubicacion = $this->crearUbicacion($empresa->id, 'Almacen entrada');
+        $item = $this->crearItem($empresa->id, stock: 10, ubicacionId: $ubicacion->id);
 
-        $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-movimientos', [
+        $this->actingAs($user, 'sanctum')->postJson('/api/v1/empresa/inventario-movimientos', [
             'inventario_item_id' => $item->id,
             'tipo_movimiento_id' => $this->tipoMovimientoId('entrada'),
             'cantidad' => 5,
+            'ubicacion_destino_id' => $ubicacion->id,
         ])->assertCreated()
             ->assertJsonPath('data.stock_anterior', '10.00')
             ->assertJsonPath('data.stock_posterior', '15.00');
 
         $this->assertDatabaseHas('inventario_items', ['id' => $item->id, 'stock_actual' => 15]);
+        $this->assertDatabaseHas('inventario_existencias', ['inventario_item_id' => $item->id, 'ubicacion_id' => $ubicacion->id, 'cantidad' => 15]);
     }
 
     public function test_movimientos_funcionan_en_item_simple(): void
     {
         [$user, $empresa] = $this->crearUsuarioEmpresa('B33000018');
-        $item = $this->crearItem($empresa->id, stock: 2);
+        $ubicacion = $this->crearUbicacion($empresa->id, 'Almacen simple');
+        $item = $this->crearItem($empresa->id, stock: 2, ubicacionId: $ubicacion->id);
 
-        $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-movimientos', [
+        $this->actingAs($user, 'sanctum')->postJson('/api/v1/empresa/inventario-movimientos', [
             'inventario_item_id' => $item->id,
             'tipo_movimiento_id' => $this->tipoMovimientoId('entrada'),
             'cantidad' => 3,
+            'ubicacion_destino_id' => $ubicacion->id,
         ])->assertCreated()
             ->assertJsonPath('data.stock_posterior', '5.00');
 
@@ -219,12 +238,14 @@ class InventarioEmpresaFlowTest extends TestCase
     public function test_salida_reduce_stock(): void
     {
         [$user, $empresa] = $this->crearUsuarioEmpresa('B33000008');
-        $item = $this->crearItem($empresa->id, stock: 10);
+        $ubicacion = $this->crearUbicacion($empresa->id, 'Almacen salida');
+        $item = $this->crearItem($empresa->id, stock: 10, ubicacionId: $ubicacion->id);
 
-        $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-movimientos', [
+        $this->actingAs($user, 'sanctum')->postJson('/api/v1/empresa/inventario-movimientos', [
             'inventario_item_id' => $item->id,
             'tipo_movimiento_id' => $this->tipoMovimientoId('salida'),
             'cantidad' => 4,
+            'ubicacion_origen_id' => $ubicacion->id,
         ])->assertCreated()
             ->assertJsonPath('data.stock_posterior', '6.00');
 
@@ -234,12 +255,14 @@ class InventarioEmpresaFlowTest extends TestCase
     public function test_salida_no_permite_stock_negativo(): void
     {
         [$user, $empresa] = $this->crearUsuarioEmpresa('B33000009');
-        $item = $this->crearItem($empresa->id, stock: 3);
+        $ubicacion = $this->crearUbicacion($empresa->id, 'Almacen negativo');
+        $item = $this->crearItem($empresa->id, stock: 3, ubicacionId: $ubicacion->id);
 
-        $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-movimientos', [
+        $this->actingAs($user, 'sanctum')->postJson('/api/v1/empresa/inventario-movimientos', [
             'inventario_item_id' => $item->id,
             'tipo_movimiento_id' => $this->tipoMovimientoId('salida'),
             'cantidad' => 4,
+            'ubicacion_origen_id' => $ubicacion->id,
         ])->assertStatus(422);
 
         $this->assertDatabaseHas('inventario_items', ['id' => $item->id, 'stock_actual' => 3]);
@@ -248,13 +271,15 @@ class InventarioEmpresaFlowTest extends TestCase
     public function test_ajuste_fija_stock_posterior(): void
     {
         [$user, $empresa] = $this->crearUsuarioEmpresa('B33000010');
-        $item = $this->crearItem($empresa->id, stock: 10);
+        $ubicacion = $this->crearUbicacion($empresa->id, 'Almacen ajuste');
+        $item = $this->crearItem($empresa->id, stock: 10, ubicacionId: $ubicacion->id);
 
-        $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-movimientos', [
+        $this->actingAs($user, 'sanctum')->postJson('/api/v1/empresa/inventario-movimientos', [
             'inventario_item_id' => $item->id,
             'tipo_movimiento_id' => $this->tipoMovimientoId('ajuste'),
             'cantidad' => 0,
             'stock_posterior' => 7,
+            'ubicacion_origen_id' => $ubicacion->id,
         ])->assertCreated()
             ->assertJsonPath('data.cantidad', '-3.00')
             ->assertJsonPath('data.stock_posterior', '7.00');
@@ -262,14 +287,14 @@ class InventarioEmpresaFlowTest extends TestCase
         $this->assertDatabaseHas('inventario_items', ['id' => $item->id, 'stock_actual' => 7]);
     }
 
-    public function test_traslado_no_cambia_stock_y_actualiza_ubicacion(): void
+    public function test_traslado_parcial_resta_origen_y_suma_destino(): void
     {
         [$user, $empresa] = $this->crearUsuarioEmpresa('B33000011');
         $origen = $this->crearUbicacion($empresa->id, 'Almacen A');
         $destino = $this->crearUbicacion($empresa->id, 'Almacen B');
         $item = $this->crearItem($empresa->id, stock: 10, ubicacionId: $origen->id);
 
-        $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-movimientos', [
+        $this->actingAs($user, 'sanctum')->postJson('/api/v1/empresa/inventario-movimientos', [
             'inventario_item_id' => $item->id,
             'tipo_movimiento_id' => $this->tipoMovimientoId('traslado'),
             'cantidad' => 2,
@@ -281,7 +306,16 @@ class InventarioEmpresaFlowTest extends TestCase
         $this->assertDatabaseHas('inventario_items', [
             'id' => $item->id,
             'stock_actual' => 10,
+        ]);
+        $this->assertDatabaseHas('inventario_existencias', [
+            'inventario_item_id' => $item->id,
+            'ubicacion_id' => $origen->id,
+            'cantidad' => 8,
+        ]);
+        $this->assertDatabaseHas('inventario_existencias', [
+            'inventario_item_id' => $item->id,
             'ubicacion_id' => $destino->id,
+            'cantidad' => 2,
         ]);
     }
 
@@ -290,20 +324,26 @@ class InventarioEmpresaFlowTest extends TestCase
         [$user, $empresa] = $this->crearUsuarioEmpresa('B33000024');
         $item = $this->crearItem($empresa->id, stock: 10);
 
-        $response = $this->actingAs($user, 'sanctum')->postJson('/api/v1/inventario-movimientos', [
+        $ubicacion = $this->crearUbicacion($empresa->id, 'Almacen bloqueo');
+        $item->ubicacion_id = $ubicacion->id;
+        $item->save();
+        $this->crearExistencia($empresa->id, $item->id, $ubicacion->id, 10);
+
+        $response = $this->actingAs($user, 'sanctum')->postJson('/api/v1/empresa/inventario-movimientos', [
             'inventario_item_id' => $item->id,
             'tipo_movimiento_id' => $this->tipoMovimientoId('entrada'),
             'cantidad' => 1,
+            'ubicacion_destino_id' => $ubicacion->id,
         ])->assertCreated();
 
         $movimientoId = (int) $response->json('data.id');
 
         $this->actingAs($user, 'sanctum')
-            ->putJson("/api/v1/inventario-movimientos/{$movimientoId}", ['motivo' => 'Cambio'])
+            ->putJson("/api/v1/empresa/inventario-movimientos/{$movimientoId}", ['motivo' => 'Cambio'])
             ->assertStatus(405);
 
         $this->actingAs($user, 'sanctum')
-            ->deleteJson("/api/v1/inventario-movimientos/{$movimientoId}")
+            ->deleteJson("/api/v1/empresa/inventario-movimientos/{$movimientoId}")
             ->assertStatus(405);
     }
 
@@ -320,7 +360,7 @@ class InventarioEmpresaFlowTest extends TestCase
             'cantidad' => 4,
         ])->assertNotFound();
 
-        $this->actingAs($admin, 'sanctum')->postJson('/api/v1/inventario-movimientos', [
+        $this->actingAs($admin, 'sanctum')->postJson('/api/v1/empresa/inventario-movimientos', [
             'inventario_item_id' => $item->id,
             'tipo_movimiento_id' => $this->tipoMovimientoId('entrada'),
             'cantidad' => 4,
@@ -332,7 +372,7 @@ class InventarioEmpresaFlowTest extends TestCase
         [$user] = $this->crearUsuarioEmpresa('B33000013', false);
 
         $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/inventario-items')
+            ->getJson('/api/v1/empresa/inventario-items')
             ->assertForbidden();
     }
 
@@ -394,7 +434,7 @@ class InventarioEmpresaFlowTest extends TestCase
 
     private function crearItem(int $empresaId, int $stock = 0, ?int $ubicacionId = null): InventarioItem
     {
-        return InventarioItem::query()->create([
+        $item = InventarioItem::query()->create([
             'empresa_id' => $empresaId,
             'unidad_medida_id' => $this->unidadId(),
             'ubicacion_id' => $ubicacionId,
@@ -404,6 +444,22 @@ class InventarioEmpresaFlowTest extends TestCase
             'stock_minimo' => 0,
             'coste_unitario' => 2,
             'activo' => true,
+        ]);
+
+        if ($stock > 0 && $ubicacionId !== null) {
+            $this->crearExistencia($empresaId, $item->id, $ubicacionId, $stock);
+        }
+
+        return $item;
+    }
+
+    private function crearExistencia(int $empresaId, int $itemId, int $ubicacionId, int $cantidad): InventarioExistencia
+    {
+        return InventarioExistencia::query()->create([
+            'empresa_id' => $empresaId,
+            'inventario_item_id' => $itemId,
+            'ubicacion_id' => $ubicacionId,
+            'cantidad' => $cantidad,
         ]);
     }
 

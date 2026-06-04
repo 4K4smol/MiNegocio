@@ -58,7 +58,12 @@ class InventarioUbicacionController extends AbstractCrudController
             return $this->notFound();
         }
 
-        if ($record->items()->exists()) {
+        if (
+            $record->items()->exists()
+            || $record->existencias()->where('cantidad', '>', 0)->exists()
+            || $record->movimientosOrigen()->exists()
+            || $record->movimientosDestino()->exists()
+        ) {
             return $this->validationError([
                 'ubicacion' => ['No se puede eliminar una ubicacion con inventario asociado.'],
             ]);

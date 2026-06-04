@@ -47,4 +47,9 @@ class InventarioItem extends Model
     {
         return $this->hasMany(InventarioMovimiento::class, 'inventario_item_id');
     }
+
+    public function existencias(): HasMany
+    {
+        return $this->hasMany(InventarioExistencia::class, 'inventario_item_id');
+    }
 }

@@ -27,6 +27,7 @@ class InventarioItemResource extends JsonResource
             'stock_bajo' => $stockActual <= $stockMinimo,
             'unidad_medida' => InventarioUnidadMedidaResource::make($this->whenLoaded('unidadMedida')),
             'ubicacion' => InventarioUbicacionResource::make($this->whenLoaded('ubicacion')),
+            'existencias' => InventarioExistenciaResource::collection($this->whenLoaded('existencias')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

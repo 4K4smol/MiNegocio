@@ -7,6 +7,16 @@ const fieldError = (errors, name) => {
     return Array.isArray(value) ? value[0] : value;
 };
 
+const positiveExistencias = (item) =>
+    (item?.existencias || []).filter((existencia) => Number(existencia.cantidad || 0) > 0);
+
+const ubicacionLabel = (ubicacion, item) => {
+    const existencia = (item?.existencias || []).find((current) => String(current.ubicacion_id) === String(ubicacion.id));
+    const cantidad = existencia ? Number(existencia.cantidad || 0) : null;
+
+    return cantidad !== null ? `${ubicacion.nombre} (${cantidad})` : ubicacion.nombre;
+};
+
 export function InventarioMovimientoFormModal({
     disabled = false,
     error,
@@ -27,6 +37,11 @@ export function InventarioMovimientoFormModal({
     const codigo = tipoSeleccionado?.codigo;
     const isAjuste = codigo === "ajuste";
     const isTraslado = codigo === "traslado";
+    const isEntrada = codigo === "entrada";
+    const isSalida = codigo === "salida";
+    const defaultUbicacionId = positiveExistencias(item)[0]?.ubicacion_id || item?.ubicacion_id || "";
+    const showOrigen = isSalida || isAjuste || isTraslado;
+    const showDestino = isEntrada || isTraslado;
 
     return (
         <FormModal
@@ -54,7 +69,7 @@ export function InventarioMovimientoFormModal({
                 </label>
 
                 <label>
-                    {isAjuste ? "Nuevo stock" : "Cantidad"}
+                    {isAjuste ? "Nuevo stock en ubicacion" : "Cantidad"}
                     <input disabled={disabled} min={isAjuste ? "0" : "0.01"} name="cantidad" required step="0.01" type="number" />
                     {fieldError(errors, "cantidad") ? <small className="field-error">{fieldError(errors, "cantidad")}</small> : null}
                 </label>
@@ -68,30 +83,30 @@ export function InventarioMovimientoFormModal({
                     </label>
                 ) : null}
 
-                {isTraslado ? (
-                    <>
-                        <label>
-                            Ubicacion origen
-                            <select disabled={disabled} name="ubicacion_origen_id" required defaultValue={item?.ubicacion_id || ""}>
-                                <option value="">Selecciona origen</option>
-                                {ubicaciones.map((ubicacion) => (
-                                    <option key={ubicacion.id} value={ubicacion.id}>{ubicacion.nombre}</option>
-                                ))}
-                            </select>
-                            {fieldError(errors, "ubicacion_origen_id") ? <small className="field-error">{fieldError(errors, "ubicacion_origen_id")}</small> : null}
-                        </label>
+                {showOrigen ? (
+                    <label>
+                        {isAjuste ? "Ubicacion" : "Ubicacion origen"}
+                        <select disabled={disabled} name="ubicacion_origen_id" required defaultValue={defaultUbicacionId}>
+                            <option value="">{isAjuste ? "Selecciona ubicacion" : "Selecciona origen"}</option>
+                            {ubicaciones.map((ubicacion) => (
+                                <option key={ubicacion.id} value={ubicacion.id}>{ubicacionLabel(ubicacion, item)}</option>
+                            ))}
+                        </select>
+                        {fieldError(errors, "ubicacion_origen_id") ? <small className="field-error">{fieldError(errors, "ubicacion_origen_id")}</small> : null}
+                    </label>
+                ) : null}
 
-                        <label>
-                            Ubicacion destino
-                            <select disabled={disabled} name="ubicacion_destino_id" required>
-                                <option value="">Selecciona destino</option>
-                                {ubicaciones.map((ubicacion) => (
-                                    <option key={ubicacion.id} value={ubicacion.id}>{ubicacion.nombre}</option>
-                                ))}
-                            </select>
-                            {fieldError(errors, "ubicacion_destino_id") ? <small className="field-error">{fieldError(errors, "ubicacion_destino_id")}</small> : null}
-                        </label>
-                    </>
+                {showDestino ? (
+                    <label>
+                        Ubicacion destino
+                        <select disabled={disabled} name="ubicacion_destino_id" required defaultValue={isEntrada ? defaultUbicacionId : ""}>
+                            <option value="">Selecciona destino</option>
+                            {ubicaciones.map((ubicacion) => (
+                                <option key={ubicacion.id} value={ubicacion.id}>{ubicacionLabel(ubicacion, item)}</option>
+                            ))}
+                        </select>
+                        {fieldError(errors, "ubicacion_destino_id") ? <small className="field-error">{fieldError(errors, "ubicacion_destino_id")}</small> : null}
+                    </label>
                 ) : null}
 
                 <label>

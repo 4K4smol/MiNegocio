@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\InventarioItem;
+use App\Models\InventarioExistencia;
 use App\Models\InventarioMovimiento;
 use App\Models\InventarioUbicacion;
 use App\Models\TipoInventarioMovimiento;
@@ -50,23 +51,15 @@ class InventarioMovimientoService
             $cantidadMovimiento = $cantidadEntrada;
             $stockPosterior = $stockAnterior;
 
-            match ($tipo->codigo) {
-                'entrada' => $stockPosterior = $this->calcularEntrada($stockAnterior, $cantidadEntrada),
-                'salida' => $stockPosterior = $this->calcularSalida($stockAnterior, $cantidadEntrada),
-                'ajuste' => [$stockPosterior, $cantidadMovimiento] = $this->calcularAjuste($stockAnterior, $data),
-                'traslado' => $this->validarTraslado($origenId, $destinoId, $cantidadEntrada),
+            [$stockPosterior, $cantidadMovimiento] = match ($tipo->codigo) {
+                'entrada' => $this->registrarEntrada($item, $destinoId, $cantidadEntrada),
+                'salida' => $this->registrarSalida($item, $origenId, $cantidadEntrada),
+                'ajuste' => $this->registrarAjuste($item, $origenId ?? $destinoId, $data),
+                'traslado' => $this->registrarTraslado($item, $origenId, $destinoId, $cantidadEntrada),
                 default => throw ValidationException::withMessages([
                     'tipo_movimiento_id' => ['Tipo de movimiento de inventario no soportado.'],
                 ]),
             };
-
-            if ($tipo->codigo !== 'traslado') {
-                $item->stock_actual = $stockPosterior;
-            } elseif ($destinoId !== null) {
-                $item->ubicacion_id = $destinoId;
-            }
-
-            $item->save();
 
             return InventarioMovimiento::query()
                 ->create([
@@ -82,7 +75,7 @@ class InventarioMovimientoService
                     'fecha_movimiento' => $data['fecha_movimiento'] ?? now(),
                     'user_id' => $user->id,
                 ])
-                ->load(['item.unidadMedida', 'item.ubicacion', 'tipoMovimiento', 'ubicacionOrigen', 'ubicacionDestino', 'user']);
+                ->load(['item.unidadMedida', 'item.ubicacion', 'item.existencias.ubicacion', 'tipoMovimiento', 'ubicacionOrigen', 'ubicacionDestino', 'user']);
         });
     }
 
@@ -95,47 +88,73 @@ class InventarioMovimientoService
         return (int) $user->empresa_id;
     }
 
-    private function calcularEntrada(float $stockAnterior, float $cantidad): float
+    /**
+     * @return array{0: float, 1: float}
+     */
+    private function registrarEntrada(InventarioItem $item, ?int $destinoId, float $cantidad): array
     {
+        $this->validarUbicacionRequerida($destinoId, 'ubicacion_destino_id', 'La entrada requiere ubicacion de destino.');
         $this->validarCantidadPositiva($cantidad, 'cantidad');
 
-        return $stockAnterior + $cantidad;
-    }
+        $existencia = $this->existenciaParaActualizar($item, $destinoId, true);
+        $existencia->cantidad = (float) $existencia->cantidad + $cantidad;
+        $existencia->save();
 
-    private function calcularSalida(float $stockAnterior, float $cantidad): float
-    {
-        $this->validarCantidadPositiva($cantidad, 'cantidad');
-
-        $stockPosterior = $stockAnterior - $cantidad;
-
-        if ($stockPosterior < 0) {
-            throw ValidationException::withMessages([
-                'cantidad' => ['La salida no puede dejar el stock en negativo.'],
-            ]);
-        }
-
-        return $stockPosterior;
+        return [$this->sincronizarStockTotal($item), $cantidad];
     }
 
     /**
      * @return array{0: float, 1: float}
      */
-    private function calcularAjuste(float $stockAnterior, array $data): array
+    private function registrarSalida(InventarioItem $item, ?int $origenId, float $cantidad): array
     {
-        $stockPosterior = array_key_exists('stock_posterior', $data) && $data['stock_posterior'] !== null
+        $this->validarUbicacionRequerida($origenId, 'ubicacion_origen_id', 'La salida requiere ubicacion de origen.');
+        $this->validarCantidadPositiva($cantidad, 'cantidad');
+
+        $existencia = $this->existenciaParaActualizar($item, $origenId, false);
+        $stockUbicacion = (float) ($existencia?->cantidad ?? 0);
+
+        if ($stockUbicacion - $cantidad < 0) {
+            throw ValidationException::withMessages([
+                'cantidad' => ['La salida no puede dejar el stock de la ubicacion en negativo.'],
+            ]);
+        }
+
+        $existencia->cantidad = $stockUbicacion - $cantidad;
+        $existencia->save();
+
+        return [$this->sincronizarStockTotal($item), $cantidad];
+    }
+
+    /**
+     * @return array{0: float, 1: float}
+     */
+    private function registrarAjuste(InventarioItem $item, ?int $ubicacionId, array $data): array
+    {
+        $this->validarUbicacionRequerida($ubicacionId, 'ubicacion_origen_id', 'El ajuste requiere ubicacion.');
+
+        $stockUbicacionPosterior = array_key_exists('stock_posterior', $data) && $data['stock_posterior'] !== null
             ? (float) $data['stock_posterior']
             : (float) $data['cantidad'];
 
-        if ($stockPosterior < 0) {
+        if ($stockUbicacionPosterior < 0) {
             throw ValidationException::withMessages([
                 'stock_posterior' => ['El stock ajustado no puede ser negativo.'],
             ]);
         }
 
-        return [$stockPosterior, $stockPosterior - $stockAnterior];
+        $existencia = $this->existenciaParaActualizar($item, $ubicacionId, true);
+        $stockUbicacionAnterior = (float) $existencia->cantidad;
+        $existencia->cantidad = $stockUbicacionPosterior;
+        $existencia->save();
+
+        return [$this->sincronizarStockTotal($item), $stockUbicacionPosterior - $stockUbicacionAnterior];
     }
 
-    private function validarTraslado(?int $origenId, ?int $destinoId, float $cantidad): void
+    /**
+     * @return array{0: float, 1: float}
+     */
+    private function registrarTraslado(InventarioItem $item, ?int $origenId, ?int $destinoId, float $cantidad): array
     {
         $this->validarCantidadPositiva($cantidad, 'cantidad');
 
@@ -150,6 +169,74 @@ class InventarioMovimientoService
                 'ubicacion_destino_id' => ['La ubicacion de destino debe ser distinta de la de origen.'],
             ]);
         }
+
+        $origen = $this->existenciaParaActualizar($item, $origenId, false);
+        $stockOrigen = (float) ($origen?->cantidad ?? 0);
+
+        if ($stockOrigen - $cantidad < 0) {
+            throw ValidationException::withMessages([
+                'cantidad' => ['El traslado no puede dejar el stock de origen en negativo.'],
+            ]);
+        }
+
+        $destino = $this->existenciaParaActualizar($item, $destinoId, true);
+
+        $origen->cantidad = $stockOrigen - $cantidad;
+        $origen->save();
+
+        $destino->cantidad = (float) $destino->cantidad + $cantidad;
+        $destino->save();
+
+        return [$this->sincronizarStockTotal($item), $cantidad];
+    }
+
+    private function validarUbicacionRequerida(?int $ubicacionId, string $field, string $message): void
+    {
+        if ($ubicacionId === null) {
+            throw ValidationException::withMessages([
+                $field => [$message],
+            ]);
+        }
+    }
+
+    private function existenciaParaActualizar(InventarioItem $item, int $ubicacionId, bool $crear): ?InventarioExistencia
+    {
+        $existencia = InventarioExistencia::query()
+            ->where('inventario_item_id', $item->id)
+            ->where('ubicacion_id', $ubicacionId)
+            ->lockForUpdate()
+            ->first();
+
+        if ($existencia !== null || !$crear) {
+            return $existencia;
+        }
+
+        return InventarioExistencia::query()->create([
+            'empresa_id' => $item->empresa_id,
+            'inventario_item_id' => $item->id,
+            'ubicacion_id' => $ubicacionId,
+            'cantidad' => 0,
+        ]);
+    }
+
+    private function sincronizarStockTotal(InventarioItem $item): float
+    {
+        $stockTotal = (float) InventarioExistencia::query()
+            ->where('inventario_item_id', $item->id)
+            ->sum('cantidad');
+
+        $ubicacionPrincipal = InventarioExistencia::query()
+            ->where('inventario_item_id', $item->id)
+            ->where('cantidad', '>', 0)
+            ->orderByDesc('cantidad')
+            ->orderBy('ubicacion_id')
+            ->first();
+
+        $item->stock_actual = $stockTotal;
+        $item->ubicacion_id = $ubicacionPrincipal?->ubicacion_id;
+        $item->save();
+
+        return $stockTotal;
     }
 
     private function validarCantidadPositiva(float $cantidad, string $field): void
