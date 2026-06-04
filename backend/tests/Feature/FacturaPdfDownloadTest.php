@@ -50,11 +50,14 @@ class FacturaPdfDownloadTest extends TestCase
 
         $pdfContent = Storage::disk('local')->get($documento->ruta);
         $searchableContent = $this->pdfSearchableContent($pdfContent);
-        $this->assertStringContainsString('/Subtype /Image', $searchableContent);
         $this->assertStringNotContainsString('Datos QR', $searchableContent);
         $this->assertStringNotContainsString('url_interna', $searchableContent);
         $this->assertStringNotContainsString('Hash registro', $searchableContent);
         $this->assertStringNotContainsString('Registro VeriFactu', $searchableContent);
+        $this->assertStringStartsWith(
+            'https://prewww2.aeat.es/wlpl/TIKE-CONT/ValidarQR?',
+            app(FacturaPdfService::class)->generarQrUrl($factura)
+        );
     }
 
     public function test_url_qr_usa_entorno_de_pruebas_en_modo_simulado(): void

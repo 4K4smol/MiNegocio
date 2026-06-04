@@ -13,7 +13,7 @@ use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel;
 use Endroid\QrCode\RoundBlockSizeMode;
-use Endroid\QrCode\Writer\PngWriter;
+use Endroid\QrCode\Writer\SvgWriter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 use RuntimeException;
@@ -53,8 +53,8 @@ class FacturaPdfService
             'registro' => $registro,
             'qrImageDataUri' => $qrImageDataUri,
             'qrLegalText' => $remisionReal
-                ? 'Factura verificable en la sede electrónica de la AEAT'
-                : 'Entorno de pruebas - no válido fiscalmente',
+                ? 'Factura verificable en la sede electronica de la AEAT'
+                : 'Entorno de pruebas - no valido fiscalmente',
             'qrUrl' => $qrUrl,
         ])
             ->setPaper('a4')
@@ -132,7 +132,10 @@ class FacturaPdfService
     private function generarQrImageDataUri(string $qrUrl): string
     {
         $builder = new Builder(
-            writer: new PngWriter(),
+            writer: new SvgWriter(),
+            writerOptions: [
+                SvgWriter::WRITER_OPTION_EXCLUDE_XML_DECLARATION => true,
+            ],
             validateResult: false,
             data: $qrUrl,
             encoding: new Encoding('ISO-8859-1'),
