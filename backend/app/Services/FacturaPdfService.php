@@ -9,6 +9,11 @@ use App\Models\Factura;
 use App\Models\FacturaDocumento;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\RoundBlockSizeMode;
+use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 use RuntimeException;
@@ -16,10 +21,6 @@ use RuntimeException;
 class FacturaPdfService
 {
     private const DEFAULT_TEMPLATE = 'base';
-
-    public function __construct(
-        private readonly RegistroFacturacionService $registroFacturacionService
-    ) {}
 
     public function generar(Factura $factura, ?User $user = null): FacturaDocumento
     {
@@ -40,9 +41,9 @@ class FacturaPdfService
         }
 
         $registro = $factura->registrosFacturacion->sortByDesc('id')->first();
-        $datosQr = $registro
-            ? $this->registroFacturacionService->generarPayloadQrInterno($factura, $registro)
-            : null;
+        $qrUrl = $registro ? $this->generarQrUrl($factura) : null;
+        $qrImageDataUri = $qrUrl ? $this->generarQrImageDataUri($qrUrl) : null;
+        $remisionReal = $this->remisionReal();
 
         $template = $this->templateForFactura($factura);
         $view = 'pdf.facturas.'.$template;
@@ -50,7 +51,11 @@ class FacturaPdfService
         $pdfContent = Pdf::loadView($view, [
             'factura' => $factura,
             'registro' => $registro,
-            'datosQr' => $datosQr,
+            'qrImageDataUri' => $qrImageDataUri,
+            'qrLegalText' => $remisionReal
+                ? 'Factura verificable en la sede electrónica de la AEAT'
+                : 'Entorno de pruebas - no válido fiscalmente',
+            'qrUrl' => $qrUrl,
         ])
             ->setPaper('a4')
             ->output();
@@ -89,6 +94,24 @@ class FacturaPdfService
         return 'factura-'.$safeNumero.'.pdf';
     }
 
+    public function generarQrUrl(Factura $factura): string
+    {
+        $baseUrl = $this->remisionReal()
+            ? 'https://www2.agenciatributaria.gob.es/wlpl/TIKE-CONT/ValidarQR'
+            : 'https://prewww2.aeat.es/wlpl/TIKE-CONT/ValidarQR';
+
+        $numero = $factura->numero_completo ?: trim((string) $factura->serie.'-'.(string) $factura->numero, '-');
+
+        $params = [
+            'nif' => (string) $factura->emisor_nif,
+            'numserie' => $numero,
+            'fecha' => $factura->fecha_emision?->format('d-m-Y') ?? now()->format('d-m-Y'),
+            'importe' => number_format((float) $factura->total, 2, '.', ''),
+        ];
+
+        return $baseUrl.'?'.http_build_query($params, '', '&', PHP_QUERY_RFC3986);
+    }
+
     private function templateForFactura(Factura $factura): string
     {
         $config = EmpresaFacturacionConfig::query()
@@ -104,5 +127,26 @@ class FacturaPdfService
         return View::exists('pdf.facturas.'.$template)
             ? $template
             : self::DEFAULT_TEMPLATE;
+    }
+
+    private function generarQrImageDataUri(string $qrUrl): string
+    {
+        $builder = new Builder(
+            writer: new PngWriter(),
+            validateResult: false,
+            data: $qrUrl,
+            encoding: new Encoding('ISO-8859-1'),
+            errorCorrectionLevel: ErrorCorrectionLevel::Medium,
+            size: 320,
+            margin: 24,
+            roundBlockSizeMode: RoundBlockSizeMode::Margin,
+        );
+
+        return $builder->build()->getDataUri();
+    }
+
+    private function remisionReal(): bool
+    {
+        return filter_var(config('services.verifactu.remision_real', false), FILTER_VALIDATE_BOOL);
     }
 }

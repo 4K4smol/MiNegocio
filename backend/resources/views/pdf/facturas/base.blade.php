@@ -18,9 +18,30 @@
             margin-bottom: 24px;
             padding-bottom: 18px;
         }
-        .brand { width: 58%; }
-        .invoice-meta { text-align: right; width: 42%; }
-        .brand, .invoice-meta { display: inline-block; vertical-align: top; }
+        .brand { width: 42%; }
+        .qr-block {
+            text-align: center;
+            width: 24%;
+        }
+        .invoice-meta { text-align: right; width: 32%; }
+        .brand, .qr-block, .invoice-meta { display: inline-block; vertical-align: top; }
+        .qr-title {
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .qr-image {
+            display: block;
+            height: 34mm;
+            margin: 0 auto 4px;
+            width: 34mm;
+        }
+        .qr-legal {
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1.25;
+            margin: 0;
+        }
         h1 {
             font-size: 26px;
             letter-spacing: 0;
@@ -75,18 +96,6 @@
             font-size: 15px;
             font-weight: 700;
         }
-        .technical {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            margin-top: 24px;
-            padding: 12px;
-        }
-        code {
-            color: #374151;
-            font-family: DejaVu Sans Mono, monospace;
-            font-size: 10px;
-            word-break: break-all;
-        }
     </style>
 </head>
 <body>
@@ -108,6 +117,13 @@
                 @endif
                 @if($factura->empresa?->telefono)
                     <p>{{ $factura->empresa->telefono }}</p>
+                @endif
+            </div>
+            <div class="qr-block">
+                @if($qrImageDataUri)
+                    <p class="qr-title">QR tributario:</p>
+                    <img class="qr-image" src="{{ $qrImageDataUri }}" alt="QR tributario">
+                    <p class="qr-legal">{{ $qrLegalText }}</p>
                 @endif
             </div>
             <div class="invoice-meta">
@@ -209,22 +225,6 @@
             <div class="box">
                 <h2>Observaciones</h2>
                 <p>{{ $factura->observaciones }}</p>
-            </div>
-        @endif
-
-        @if($registro || $datosQr)
-            <div class="technical">
-                <h2>Registro VeriFactu</h2>
-                @if($registro)
-                    <p>Estado remision: {{ $registro->estadoRemisionFacturacion?->codigo ?? $registro->estado_remision ?? 'pendiente' }}</p>
-                    @if($registro->hash_actual)
-                        <p>Hash registro:<br><code>{{ $registro->hash_actual }}</code></p>
-                    @endif
-                @endif
-                @if($datosQr)
-                    <p>Datos QR:</p>
-                    <code>{{ json_encode($datosQr, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</code>
-                @endif
             </div>
         @endif
     </div>

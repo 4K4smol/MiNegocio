@@ -11,6 +11,7 @@ use App\Models\FacturaDocumento;
 use App\Models\Servicio;
 use App\Models\TipoCliente;
 use App\Models\User;
+use App\Services\FacturaPdfService;
 use App\Services\ModuloService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -26,6 +27,7 @@ class FacturaPdfDownloadTest extends TestCase
         parent::setUp();
         $this->seed(DatabaseSeeder::class);
         Storage::fake('local');
+        config(['services.verifactu.remision_real' => false]);
     }
 
     public function test_descarga_pdf_de_factura_emitida_y_registra_documento(): void
@@ -45,6 +47,41 @@ class FacturaPdfDownloadTest extends TestCase
         $this->assertNotNull($documento);
         $this->assertSame('application/pdf', $documento->mime_type);
         Storage::disk('local')->assertExists($documento->ruta);
+
+        $pdfContent = Storage::disk('local')->get($documento->ruta);
+        $searchableContent = $this->pdfSearchableContent($pdfContent);
+        $this->assertStringContainsString('/Subtype /Image', $searchableContent);
+        $this->assertStringNotContainsString('Datos QR', $searchableContent);
+        $this->assertStringNotContainsString('url_interna', $searchableContent);
+        $this->assertStringNotContainsString('Hash registro', $searchableContent);
+        $this->assertStringNotContainsString('Registro VeriFactu', $searchableContent);
+    }
+
+    public function test_url_qr_usa_entorno_de_pruebas_en_modo_simulado(): void
+    {
+        config(['services.verifactu.remision_real' => false]);
+        [$user, $cliente] = $this->crearContextoEmpresa();
+        $factura = $this->crearFacturaEmitida($user, $cliente);
+
+        $url = app(FacturaPdfService::class)->generarQrUrl($factura);
+        $params = $this->queryParams($url);
+
+        $this->assertStringStartsWith('https://prewww2.aeat.es/wlpl/TIKE-CONT/ValidarQR?', $url);
+        $this->assertSame($factura->emisor_nif, $params['nif'] ?? null);
+        $this->assertSame($factura->numero_completo, $params['numserie'] ?? null);
+        $this->assertSame($factura->fecha_emision->format('d-m-Y'), $params['fecha'] ?? null);
+        $this->assertSame(number_format((float) $factura->total, 2, '.', ''), $params['importe'] ?? null);
+    }
+
+    public function test_url_qr_usa_entorno_de_produccion_en_modo_real(): void
+    {
+        config(['services.verifactu.remision_real' => true]);
+        [$user, $cliente] = $this->crearContextoEmpresa();
+        $factura = $this->crearFacturaEmitida($user, $cliente);
+
+        $url = app(FacturaPdfService::class)->generarQrUrl($factura);
+
+        $this->assertStringStartsWith('https://www2.agenciatributaria.gob.es/wlpl/TIKE-CONT/ValidarQR?', $url);
     }
 
     public function test_no_descarga_pdf_de_factura_en_borrador(): void
@@ -200,5 +237,40 @@ class FacturaPdfDownloadTest extends TestCase
         ]);
 
         return [$user, $cliente, $servicio];
+    }
+
+    private function pdfSearchableContent(string $pdfContent): string
+    {
+        $decoded = '';
+        preg_match_all('/(\d+\s+\d+\s+obj.*?stream\r?\n)(.*?)(\r?\nendstream)/s', $pdfContent, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            $decoded .= $match[1];
+            if (stripos($match[1], '/FlateDecode') === false) {
+                $decoded .= $match[2];
+                continue;
+            }
+
+            $stream = @gzuncompress($match[2]);
+            if ($stream === false) {
+                $stream = @gzinflate($match[2]);
+            }
+
+            if ($stream !== false) {
+                $decoded .= $stream;
+            }
+        }
+
+        return $pdfContent."\n".$decoded;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function queryParams(string $url): array
+    {
+        parse_str((string) parse_url($url, PHP_URL_QUERY), $params);
+
+        return $params;
     }
 }
