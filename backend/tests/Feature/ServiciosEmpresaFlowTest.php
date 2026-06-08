@@ -49,6 +49,20 @@ class ServiciosEmpresaFlowTest extends TestCase
             ->assertJsonPath('data.tipo_negocio', 'LIMP');
     }
 
+    public function test_empresa_puede_consultar_un_servicio_con_precios(): void
+    {
+        [$user, $empresa] = $this->crearUsuarioEmpresa('B32000028');
+        $servicio = $this->crearServicio($empresa->id, 'LIMP');
+        $precio = $this->crearPrecio($servicio->id, $this->tipoTarifa('estandar')->id, 45);
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson("/api/v1/empresa/servicios/{$servicio->id}?include=precios")
+            ->assertOk()
+            ->assertJsonPath('data.id', $servicio->id)
+            ->assertJsonPath('data.precios.0.id', $precio->id)
+            ->assertJsonPath('data.precios.0.tarifa.codigo', 'estandar');
+    }
+
     public function test_empresa_no_ve_servicios_de_otra_empresa(): void
     {
         [$user] = $this->crearUsuarioEmpresa('B32000002');

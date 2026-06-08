@@ -50,7 +50,7 @@ abstract class AbstractCrudController extends ApiController
         $resourceClass = $this->resourceClass();
 
         if ($resourceClass !== null) {
-            return $this->success((new $resourceClass($record))->toArray($request));
+            return $this->success($resourceClass::make($record)->resolve($request));
         }
 
         return $this->success($record->toArray());
