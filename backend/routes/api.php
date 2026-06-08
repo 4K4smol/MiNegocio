@@ -140,16 +140,6 @@ Route::prefix('v1')->group(function (): void {
 
             Route::apiResource('roles', RoleController::class)->only(['index', 'show']);
 
-            Route::apiResource('tipos-cliente', TipoClienteController::class)
-                ->except(['index', 'show'])
-                ->parameters(['tipos-cliente' => 'id']);
-            Route::patch('tipos-cliente/{id}/activar', [TipoClienteController::class, 'activar']);
-            Route::patch('tipos-cliente/{id}/desactivar', [TipoClienteController::class, 'desactivar']);
-
-            Route::apiResource('tipos-empresa', TipoEmpresaController::class)
-                ->except(['index', 'show'])
-                ->parameters(['tipos-empresa' => 'id']);
-
             Route::apiResource('tipos-documento-identidad', TipoDocumentoIdentidadController::class)
                 ->except(['index', 'show'])
                 ->parameters(['tipos-documento-identidad' => 'id']);

@@ -122,13 +122,46 @@ class AdminCatalogosCrudFlowTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_tipos_cliente_y_tipos_empresa_son_solo_lectura_para_admin(): void
+    {
+        $admin = $this->crearAdmin();
+
+        $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/v1/tipos-cliente')
+            ->assertOk();
+
+        $this->actingAs($admin, 'sanctum')
+            ->postJson('/api/v1/tipos-cliente', $this->payload(['endpoint' => '/api/v1/tipos-cliente', 'codigo' => 'tc_ro', 'orden_min' => 1], 'tc_ro', 'Solo lectura'))
+            ->assertStatus(405);
+
+        $this->actingAs($admin, 'sanctum')
+            ->patchJson('/api/v1/tipos-cliente/1/activar')
+            ->assertNotFound();
+
+        $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/v1/tipos-empresa')
+            ->assertOk();
+
+        $this->actingAs($admin, 'sanctum')
+            ->postJson('/api/v1/tipos-empresa', [
+                'nombre' => 'Tipo Empresa Solo Lectura',
+                'descripcion' => 'No editable',
+            ])
+            ->assertStatus(405);
+
+        $this->actingAs($admin, 'sanctum')
+            ->putJson('/api/v1/tipos-empresa/1', [
+                'nombre' => 'Tipo Empresa Editada',
+            ])
+            ->assertStatus(405);
+    }
+
     /**
      * @return array<int, array{endpoint: string, codigo: string, orden_min: int}>
      */
     private function catalogosConCodigo(): array
     {
         return [
-            ['endpoint' => '/api/v1/tipos-cliente', 'codigo' => 'tc_test', 'orden_min' => 1],
             ['endpoint' => '/api/v1/tipos-evento-facturacion', 'codigo' => 'tef_test', 'orden_min' => 1],
             ['endpoint' => '/api/v1/tipos-factura', 'codigo' => 'tf_test', 'orden_min' => 1],
             ['endpoint' => '/api/v1/tipos-inventario-movimiento', 'codigo' => 'tim_test', 'orden_min' => 1],
@@ -145,7 +178,6 @@ class AdminCatalogosCrudFlowTest extends TestCase
     private function catalogosSinCodigo(): array
     {
         return [
-            ['endpoint' => '/api/v1/tipos-empresa', 'nombre' => 'Tipo Empresa Test'],
             ['endpoint' => '/api/v1/tipos-documento-identidad', 'nombre' => 'Tipo Documento Test'],
         ];
     }

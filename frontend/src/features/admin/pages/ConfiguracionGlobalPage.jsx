@@ -83,6 +83,8 @@ export function ConfiguracionGlobalPage() {
     const [readonlyCatalogs, setReadonlyCatalogs] = useState({
         roles: [],
         estados_verificacion: [],
+        tipos_cliente: [],
+        tipos_empresa: [],
     });
     const [loadingReadonly, setLoadingReadonly] = useState(true);
     const [error, setError] = useState("");
@@ -115,24 +117,6 @@ export function ConfiguracionGlobalPage() {
                 { name: "activo", label: "Modulo activo", type: "checkbox", defaultValue: true },
             ],
         },
-        tipos_cliente: {
-            title: "Tipos de cliente",
-            singular: "tipo de cliente",
-            listFunction: adminApi.getTiposCliente,
-            createFunction: adminApi.crearTipoCliente,
-            updateFunction: adminApi.actualizarTipoCliente,
-            activateFunction: adminApi.activarTipoCliente,
-            deactivateFunction: adminApi.desactivarTipoCliente,
-            searchKeys: ["codigo", "nombre", "descripcion"],
-            columns: [
-                textColumn("codigo", "Codigo"),
-                textColumn("nombre", "Nombre"),
-                textColumn("descripcion", "Descripcion"),
-                textColumn("orden", "Orden"),
-                catalogStatusColumn,
-            ],
-            fields: commonCatalogFields,
-        },
         tipos_tarifa_servicio: {
             title: "Tipos de tarifa de servicio",
             singular: "tipo de tarifa",
@@ -157,19 +141,6 @@ export function ConfiguracionGlobalPage() {
                 { name: "orden", label: "Orden", type: "number", min: 0, defaultValue: 0 },
                 { name: "activo", label: "Activo", type: "checkbox", defaultValue: true },
             ],
-        },
-        tipos_empresa: {
-            title: "Tipos de empresa",
-            singular: "tipo de empresa",
-            listFunction: adminApi.getTiposEmpresa,
-            createFunction: adminApi.crearTipoEmpresa,
-            updateFunction: adminApi.actualizarTipoEmpresa,
-            searchKeys: ["nombre", "descripcion"],
-            columns: [
-                textColumn("nombre", "Nombre"),
-                textColumn("descripcion", "Descripcion"),
-            ],
-            fields: nameCatalogFields,
         },
         tipos_documento_identidad: {
             title: "Tipos de documento",
@@ -289,11 +260,17 @@ export function ConfiguracionGlobalPage() {
             setLoadingReadonly(true);
             setError("");
             try {
-                const catalogos = await adminApi.getAdminCatalogos();
+                const [catalogos, tiposCliente, tiposEmpresa] = await Promise.all([
+                    adminApi.getAdminCatalogos(),
+                    adminApi.getTiposCliente({ per_page: 100 }),
+                    adminApi.getTiposEmpresa({ per_page: 100 }),
+                ]);
 
                 setReadonlyCatalogs({
                     roles: catalogos?.roles || [],
                     estados_verificacion: catalogos?.estados_verificacion || [],
+                    tipos_cliente: tiposCliente?.items || [],
+                    tipos_empresa: tiposEmpresa?.items || [],
                 });
             } catch (apiError) {
                 setError(apiError.message || "No se ha podido cargar la configuracion.");
@@ -305,11 +282,41 @@ export function ConfiguracionGlobalPage() {
         loadReadonly();
     }, []);
 
-    const readonlyColumns = [
-        textColumn("nombre", "Nombre"),
-        textColumn("descripcion", "Descripcion"),
-        { key: "created_at", label: "Fecha creacion", render: (item) => formatDate(item.created_at) },
-    ];
+    const readonlyCatalogConfigs = {
+        tipos_cliente: {
+            description: "Catalogo base usado para clasificar clientes. No se modifica desde administracion.",
+            columns: [
+                textColumn("codigo", "Codigo"),
+                textColumn("nombre", "Nombre"),
+                textColumn("descripcion", "Descripcion"),
+                textColumn("orden", "Orden"),
+                catalogStatusColumn,
+            ],
+        },
+        tipos_empresa: {
+            description: "Catalogo base usado durante el registro de empresas. No se modifica desde administracion.",
+            columns: [
+                textColumn("nombre", "Nombre"),
+                textColumn("descripcion", "Descripcion"),
+            ],
+        },
+        roles: {
+            description: "Los roles son sensibles porque gobiernan el acceso de usuarios.",
+            columns: [
+                textColumn("nombre", "Nombre"),
+                textColumn("descripcion", "Descripcion"),
+                { key: "created_at", label: "Fecha creacion", render: (item) => formatDate(item.created_at) },
+            ],
+        },
+        estados_verificacion: {
+            description: "Estados usados por los flujos de alta, revision y decision.",
+            columns: [
+                textColumn("nombre", "Nombre"),
+                textColumn("descripcion", "Descripcion"),
+                { key: "created_at", label: "Fecha creacion", render: (item) => formatDate(item.created_at) },
+            ],
+        },
+    };
 
     const renderTab = () => {
         if (catalogConfigs[activeTab]) {
@@ -319,17 +326,14 @@ export function ConfiguracionGlobalPage() {
         if (loadingReadonly) return <LoadingState>Cargando catalogos...</LoadingState>;
 
         const labels = Object.fromEntries(TABS);
-        const descriptions = {
-            roles: "Los roles son sensibles porque gobiernan el acceso de usuarios.",
-            estados_verificacion: "Estados usados por los flujos de alta, revision y decision.",
-        };
+        const readonlyConfig = readonlyCatalogConfigs[activeTab];
 
         return (
             <ReadonlyCatalog
                 title={labels[activeTab]}
-                description={descriptions[activeTab]}
+                description={readonlyConfig?.description}
                 items={readonlyCatalogs[activeTab] || []}
-                columns={readonlyColumns}
+                columns={readonlyConfig?.columns || []}
             />
         );
     };
