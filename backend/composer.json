@@ -1,9 +1,9 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "minegocio/backend",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "API backend de MiNegocio para gestion de clientes, ordenes, facturacion e inventario.",
+    "keywords": ["laravel", "api", "minegocio"],
     "license": "MIT",
     "require": {
         "php": "^8.3",
