@@ -63,7 +63,6 @@ export const adminApi = {
     getAdminUsuarioDetalle: (userId) => apiRequest(`admin/usuarios/${userId}`).then(unwrap),
     activarUsuario: (userId) => apiRequest(`admin/usuarios/${userId}/activar`, { method: "PATCH" }),
     desactivarUsuario: (userId) => apiRequest(`admin/usuarios/${userId}/desactivar`, { method: "PATCH" }),
-    cambiarRolUsuario: (userId, roleId) => apiRequest(`admin/usuarios/${userId}/rol`, { method: "PATCH", body: { role_id: roleId } }),
 
     getAdminEmpresas: (params) => paginated(apiRequest("admin/empresas", { params })),
     getAdminEmpresaDetalle: (empresaId) => apiRequest(`admin/empresas/${empresaId}`).then(unwrap),

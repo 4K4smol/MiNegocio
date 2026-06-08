@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal } from "../../../shared/components/ui/Modal";
 import { FilterField, SearchFilters, SearchInput } from "../../../shared/components/SearchFilters";
 import { useAuth } from "../../../shared/hooks/useAuth";
@@ -68,7 +68,6 @@ export function UsuariosAdminPage() {
         }
     };
 
-    const roleOptions = useMemo(() => roles.map((role) => ({ value: role.id, label: role.nombre })), [roles]);
     const updateDraftFilter = (key, value) => setDraftFilters((current) => ({ ...current, [key]: value }));
     const applyFilters = () => {
         setFilters(draftFilters);
@@ -139,17 +138,6 @@ export function UsuariosAdminPage() {
                                         action: () => user.activo ? adminApi.desactivarUsuario(user.id) : adminApi.activarUsuario(user.id),
                                     }),
                                 },
-                                ...roleOptions
-                                    .filter((role) => role.value !== user.role?.id)
-                                    .slice(0, 4)
-                                    .map((role) => ({
-                                        label: `Cambiar rol a ${role.label}`,
-                                        onClick: () => setConfirm({
-                                            title: "Cambiar rol",
-                                            description: `${fullName(user)} pasará a ${role.label}.`,
-                                            action: () => adminApi.cambiarRolUsuario(user.id, role.value),
-                                        }),
-                                    })),
                             ]} />
                         </td>
                     </tr>
