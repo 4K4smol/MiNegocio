@@ -117,7 +117,7 @@ class FacturacionLegalFlowTest extends TestCase
         $factura = $this->generarFacturaDesdeOrden($orden, $user);
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/anular', [
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/anular', [
                 'motivo_anulacion' => 'Cliente solicita anulación',
             ])
             ->assertOk();
@@ -133,7 +133,7 @@ class FacturacionLegalFlowTest extends TestCase
         ]);
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/anular')
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/anular')
             ->assertStatus(500);
     }
 
@@ -144,7 +144,7 @@ class FacturacionLegalFlowTest extends TestCase
         $this->generarFacturaDesdeOrden($orden, $user);
 
         $response = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/verifactu/enviar-pendientes')
+            ->postJson('/api/v1/empresa/verifactu/enviar-pendientes')
             ->assertOk();
 
         $this->assertGreaterThan(0, $response->json('data.enviados'));
@@ -165,11 +165,11 @@ class FacturacionLegalFlowTest extends TestCase
         $this->generarFacturaDesdeOrden($orden, $user);
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/verifactu/enviar-pendientes')
+            ->postJson('/api/v1/empresa/verifactu/enviar-pendientes')
             ->assertOk();
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/verifactu/enviar-pendientes')
+            ->postJson('/api/v1/empresa/verifactu/enviar-pendientes')
             ->assertOk()
             ->assertJsonPath('data.enviados', 0);
     }
@@ -181,7 +181,7 @@ class FacturacionLegalFlowTest extends TestCase
         $this->generarFacturaDesdeOrden($orden, $user);
 
         $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/registros-facturacion/validar-cadena')
+            ->getJson('/api/v1/empresa/registros-facturacion/validar-cadena')
             ->assertOk()
             ->assertJsonPath('data.valida', true);
     }
@@ -310,7 +310,7 @@ class FacturacionLegalFlowTest extends TestCase
         $factura = $this->generarFacturaDesdeOrden($orden, $user);
 
         $response = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/rectificar', [
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/rectificar', [
                 'motivo_rectificacion' => 'Corrección completa',
             ])
             ->assertCreated();
@@ -359,11 +359,11 @@ class FacturacionLegalFlowTest extends TestCase
         app(ModuloService::class)->activarModulo((int) $empresaB->id, 'facturacion');
 
         $this->actingAs($userEmpresaB, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/anular')
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/anular')
             ->assertForbidden();
 
         $this->actingAs($userEmpresaB, 'sanctum')
-            ->postJson('/api/v1/verifactu/enviar-pendientes')
+            ->postJson('/api/v1/empresa/verifactu/enviar-pendientes')
             ->assertOk()
             ->assertJsonPath('data.enviados', 0);
 
@@ -388,7 +388,7 @@ class FacturacionLegalFlowTest extends TestCase
             'estado',
             'lineas',
             'empresa',
-            'cliente.localizacionPrincipal',
+            'cliente',
         ]);
 
         if (!$ordenFresh instanceof OrdenTrabajo) {

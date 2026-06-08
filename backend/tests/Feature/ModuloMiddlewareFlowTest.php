@@ -31,7 +31,7 @@ class ModuloMiddlewareFlowTest extends TestCase
         app(ModuloService::class)->activarModulo((int) $user->empresa_id, 'clientes');
 
         $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/clientes')
+            ->getJson('/api/v1/empresa/clientes')
             ->assertOk();
     }
 
@@ -40,7 +40,7 @@ class ModuloMiddlewareFlowTest extends TestCase
         [$user] = $this->crearUsuarioEmpresa('B20000002');
 
         $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/clientes')
+            ->getJson('/api/v1/empresa/clientes')
             ->assertForbidden()
             ->assertJsonPath(
                 'message',
@@ -53,7 +53,7 @@ class ModuloMiddlewareFlowTest extends TestCase
         $admin = $this->crearAdmin();
 
         $this->actingAs($admin, 'sanctum')
-            ->getJson('/api/v1/clientes')
+            ->getJson('/api/v1/empresa/clientes')
             ->assertForbidden()
             ->assertJsonPath('message', 'El administrador global no puede acceder al CRM de empresa.');
     }
@@ -64,7 +64,7 @@ class ModuloMiddlewareFlowTest extends TestCase
         $admin = $this->crearAdmin();
 
         $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/clientes')
+            ->getJson('/api/v1/empresa/clientes')
             ->assertForbidden();
 
         $this->actingAs($admin, 'sanctum')
@@ -73,7 +73,7 @@ class ModuloMiddlewareFlowTest extends TestCase
             ->assertJsonPath('data.activo', true);
 
         $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/clientes')
+            ->getJson('/api/v1/empresa/clientes')
             ->assertOk();
     }
 
@@ -85,7 +85,7 @@ class ModuloMiddlewareFlowTest extends TestCase
         app(ModuloService::class)->activarModulo((int) $empresa->id, 'clientes');
 
         $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/clientes')
+            ->getJson('/api/v1/empresa/clientes')
             ->assertOk();
 
         $this->actingAs($admin, 'sanctum')
@@ -94,7 +94,7 @@ class ModuloMiddlewareFlowTest extends TestCase
             ->assertJsonPath('data.activo', false);
 
         $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/clientes')
+            ->getJson('/api/v1/empresa/clientes')
             ->assertForbidden()
             ->assertJsonPath(
                 'message',

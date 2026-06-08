@@ -90,7 +90,7 @@ class CalendarioDashboardFlowTest extends TestCase
         ]), $userB);
 
         $response = $this->actingAs($userA, 'sanctum')
-            ->getJson('/api/v1/calendario-eventos')
+            ->getJson('/api/v1/empresa/calendario-eventos')
             ->assertOk();
 
         $this->assertCount(1, $response->json('data.data'));
@@ -157,7 +157,7 @@ class CalendarioDashboardFlowTest extends TestCase
         ]);
 
         $this->actingAs($userA, 'sanctum')
-            ->getJson('/api/v1/dashboard/resumen')
+            ->getJson('/api/v1/empresa/dashboard/resumen')
             ->assertOk()
             ->assertJsonPath('data.clientes_activos', 1)
             ->assertJsonPath('data.ordenes_pendientes', 1)
@@ -166,12 +166,12 @@ class CalendarioDashboardFlowTest extends TestCase
             ->assertJsonPath('data.registros_facturacion_pendientes', 1);
 
         $this->actingAs($userA, 'sanctum')
-            ->getJson('/api/v1/dashboard/proximas-ordenes')
+            ->getJson('/api/v1/empresa/dashboard/proximas-ordenes')
             ->assertOk()
             ->assertJsonPath('data.0.id', $ordenA->id);
 
         $this->actingAs($userA, 'sanctum')
-            ->getJson('/api/v1/dashboard/calendario')
+            ->getJson('/api/v1/empresa/dashboard/calendario')
             ->assertOk()
             ->assertJsonCount(1, 'data');
     }

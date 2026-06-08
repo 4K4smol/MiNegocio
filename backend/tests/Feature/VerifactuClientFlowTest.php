@@ -31,7 +31,7 @@ class VerifactuClientFlowTest extends TestCase
         [$user, $registro] = $this->crearRegistroPendiente('B30000001');
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/verifactu/enviar-pendientes')
+            ->postJson('/api/v1/empresa/verifactu/enviar-pendientes')
             ->assertOk()
             ->assertJsonPath('data.modo', 'simulado')
             ->assertJsonPath('data.enviados', 1);
@@ -54,7 +54,7 @@ class VerifactuClientFlowTest extends TestCase
         [$user, $registro] = $this->crearRegistroPendiente('B30000002');
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/verifactu/enviar-pendientes')
+            ->postJson('/api/v1/empresa/verifactu/enviar-pendientes')
             ->assertStatus(409)
             ->assertJsonPath('success', false)
             ->assertJsonPath(

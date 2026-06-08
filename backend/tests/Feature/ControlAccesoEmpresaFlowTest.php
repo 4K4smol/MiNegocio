@@ -25,7 +25,7 @@ class ControlAccesoEmpresaFlowTest extends TestCase
     public function test_admin_es_bloqueado_en_dashboard_de_empresa(): void
     {
         $this->actingAs($this->crearAdmin(), 'sanctum')
-            ->getJson('/api/v1/dashboard/resumen')
+            ->getJson('/api/v1/empresa/dashboard/resumen')
             ->assertForbidden()
             ->assertJsonPath('message', 'El administrador global no puede acceder al CRM de empresa.');
     }
@@ -33,7 +33,7 @@ class ControlAccesoEmpresaFlowTest extends TestCase
     public function test_admin_es_bloqueado_en_clientes(): void
     {
         $this->actingAs($this->crearAdmin(), 'sanctum')
-            ->getJson('/api/v1/clientes')
+            ->getJson('/api/v1/empresa/clientes')
             ->assertForbidden()
             ->assertJsonPath('message', 'El administrador global no puede acceder al CRM de empresa.');
     }
@@ -41,7 +41,7 @@ class ControlAccesoEmpresaFlowTest extends TestCase
     public function test_admin_es_bloqueado_en_ordenes_de_trabajo(): void
     {
         $this->actingAs($this->crearAdmin(), 'sanctum')
-            ->getJson('/api/v1/ordenes-trabajo')
+            ->getJson('/api/v1/empresa/ordenes-trabajo')
             ->assertForbidden()
             ->assertJsonPath('message', 'El administrador global no puede acceder al CRM de empresa.');
     }
@@ -51,7 +51,7 @@ class ControlAccesoEmpresaFlowTest extends TestCase
         $usuario = $this->crearUsuarioConEmpresa('B40000001');
 
         $this->actingAs($usuario, 'sanctum')
-            ->getJson('/api/v1/dashboard/resumen')
+            ->getJson('/api/v1/empresa/dashboard/resumen')
             ->assertOk()
             ->assertJsonPath('success', true);
     }
@@ -61,7 +61,7 @@ class ControlAccesoEmpresaFlowTest extends TestCase
         $usuario = $this->crearUsuarioSinEmpresa();
 
         $this->actingAs($usuario, 'sanctum')
-            ->getJson('/api/v1/dashboard/resumen')
+            ->getJson('/api/v1/empresa/dashboard/resumen')
             ->assertStatus(422)
             ->assertJsonPath('success', false)
             ->assertJsonPath('message', 'El usuario no tiene empresa asociada.');
@@ -70,7 +70,7 @@ class ControlAccesoEmpresaFlowTest extends TestCase
     public function test_bloqueo_admin_devuelve_estructura_json_coherente(): void
     {
         $this->actingAs($this->crearAdmin(), 'sanctum')
-            ->getJson('/api/v1/dashboard/resumen')
+            ->getJson('/api/v1/empresa/dashboard/resumen')
             ->assertForbidden()
             ->assertJsonStructure(['success', 'message', 'errors'])
             ->assertJsonPath('success', false);
@@ -79,7 +79,7 @@ class ControlAccesoEmpresaFlowTest extends TestCase
     public function test_bloqueo_sin_empresa_devuelve_estructura_json_coherente(): void
     {
         $this->actingAs($this->crearUsuarioSinEmpresa(), 'sanctum')
-            ->getJson('/api/v1/dashboard/resumen')
+            ->getJson('/api/v1/empresa/dashboard/resumen')
             ->assertStatus(422)
             ->assertJsonStructure(['success', 'message', 'errors'])
             ->assertJsonPath('success', false);

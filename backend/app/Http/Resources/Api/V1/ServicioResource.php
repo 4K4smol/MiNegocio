@@ -25,7 +25,7 @@ class ServicioResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'empresa' => $this->whenLoaded('empresa'),
-            'precios' => ServicioPrecioResource::collection($this->whenLoaded('precios')),
+            'precios' => $this->whenLoaded('precios', fn () => ServicioPrecioResource::collection($this->precios)),
             'precios_count' => $this->whenCounted('precios'),
         ];
     }

@@ -26,17 +26,16 @@ class OrdenTrabajoCreacionFlowTest extends TestCase
         $this->seed(DatabaseSeeder::class);
     }
 
-    public function test_empresa_crea_orden_con_localizacion_precio_y_evento_de_calendario(): void
+    public function test_empresa_crea_orden_con_direccion_cliente_precio_y_evento_de_calendario(): void
     {
-        [$user, $cliente, $localizacion, $servicio, $precio] = $this->crearContexto();
+        [$user, $cliente, $servicio, $precio] = $this->crearContexto();
 
         $inicio = now()->addDay()->setTime(10, 0)->format('Y-m-d\TH:i:s');
         $fin = now()->addDay()->setTime(11, 30)->format('Y-m-d\TH:i:s');
 
         $response = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/ordenes-trabajo', [
+            ->postJson('/api/v1/empresa/ordenes-trabajo', [
                 'cliente_id' => $cliente->id,
-                'localizacion_cliente_id' => $localizacion->id,
                 'prioridad_codigo' => 'alta',
                 'fecha_programada_inicio' => $inicio,
                 'fecha_programada_fin' => $fin,
@@ -54,7 +53,6 @@ class OrdenTrabajoCreacionFlowTest extends TestCase
                 ]],
             ])
             ->assertCreated()
-            ->assertJsonPath('data.localizacion_cliente_id', $localizacion->id)
             ->assertJsonPath('data.estado', 'programada')
             ->assertJsonPath('data.prioridad', 'alta')
             ->assertJsonPath('data.totales.subtotal', 144)
@@ -69,19 +67,18 @@ class OrdenTrabajoCreacionFlowTest extends TestCase
             'orden_trabajo_id' => $ordenId,
             'cliente_id' => $cliente->id,
             'tipo' => 'ORDEN_TRABAJO',
-            'ubicacion' => $localizacion->direccion_completa,
+            'ubicacion' => 'Calle Test 123, Madrid, Madrid',
         ]);
     }
 
-    public function test_empresa_no_puede_usar_localizacion_de_otro_cliente(): void
+    public function test_empresa_no_puede_usar_cliente_de_otra_empresa(): void
     {
-        [$user, $cliente, , $servicio, $precio] = $this->crearContexto();
-        [, , $localizacionAjena] = $this->crearContexto('B99900002');
+        [$user, , $servicio, $precio] = $this->crearContexto();
+        [, $clienteAjeno] = $this->crearContexto('B99900002');
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/ordenes-trabajo', [
-                'cliente_id' => $cliente->id,
-                'localizacion_cliente_id' => $localizacionAjena->id,
+            ->postJson('/api/v1/empresa/ordenes-trabajo', [
+                'cliente_id' => $clienteAjeno->id,
                 'lineas' => [[
                     'servicio_id' => $servicio->id,
                     'servicio_precio_id' => $precio->id,
@@ -91,12 +88,12 @@ class OrdenTrabajoCreacionFlowTest extends TestCase
                 ]],
             ])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors('localizacion_cliente_id');
+            ->assertJsonValidationErrors('cliente_id');
     }
 
     public function test_numeracion_de_orden_usa_id_autoincremental(): void
     {
-        [$user, $cliente, , $servicio, $precio] = $this->crearContexto();
+        [$user, $cliente, $servicio, $precio] = $this->crearContexto();
 
         $payload = [
             'cliente_id' => $cliente->id,
@@ -110,12 +107,12 @@ class OrdenTrabajoCreacionFlowTest extends TestCase
         ];
 
         $first = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/ordenes-trabajo', $payload)
+            ->postJson('/api/v1/empresa/ordenes-trabajo', $payload)
             ->assertCreated()
             ->json('data.numero');
 
         $second = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/ordenes-trabajo', $payload)
+            ->postJson('/api/v1/empresa/ordenes-trabajo', $payload)
             ->assertCreated()
             ->json('data.numero');
 
@@ -143,6 +140,9 @@ class OrdenTrabajoCreacionFlowTest extends TestCase
             'nombre' => 'Cliente '.$nif,
             'dni_cif' => 'C'.$nif,
             'activo' => true,
+            'direccion' => 'Calle Test 123',
+            'ciudad' => 'Madrid',
+            'provincia' => 'Madrid',
         ]);
 
         $servicio = Servicio::query()->create([

@@ -32,9 +32,21 @@ class ServiciosEmpresaFlowTest extends TestCase
         $this->crearServicio($empresa->id, 'LIMP');
 
         $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/servicios')
+            ->getJson('/api/v1/empresa/servicios')
             ->assertOk()
             ->assertJsonPath('data.data.0.tipo_negocio', 'LIMP');
+    }
+
+    public function test_empresa_puede_consultar_un_servicio_para_editar(): void
+    {
+        [$user, $empresa] = $this->crearUsuarioEmpresa('B32000008');
+        $servicio = $this->crearServicio($empresa->id, 'LIMP');
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson("/api/v1/empresa/servicios/{$servicio->id}")
+            ->assertOk()
+            ->assertJsonPath('data.id', $servicio->id)
+            ->assertJsonPath('data.tipo_negocio', 'LIMP');
     }
 
     public function test_empresa_no_ve_servicios_de_otra_empresa(): void
@@ -44,7 +56,7 @@ class ServiciosEmpresaFlowTest extends TestCase
         $this->crearServicio($otraEmpresa->id, 'AJENA');
 
         $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/servicios')
+            ->getJson('/api/v1/empresa/servicios')
             ->assertOk()
             ->assertJsonMissing(['tipo_negocio' => 'AJENA']);
     }
@@ -54,7 +66,7 @@ class ServiciosEmpresaFlowTest extends TestCase
         [$user, $empresa] = $this->crearUsuarioEmpresa('B32000004');
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/servicios', [
+            ->postJson('/api/v1/empresa/servicios', [
                 'tipo_negocio' => 'Limpieza',
                 'codigo' => 'CRIST',
                 'nombre' => 'Limpieza de cristales',
@@ -71,7 +83,7 @@ class ServiciosEmpresaFlowTest extends TestCase
         $servicioAjeno = $this->crearServicio($otraEmpresa->id, 'AJENA');
 
         $this->actingAs($user, 'sanctum')
-            ->putJson("/api/v1/servicios/{$servicioAjeno->id}", ['nombre' => 'No permitido'])
+            ->putJson("/api/v1/empresa/servicios/{$servicioAjeno->id}", ['nombre' => 'No permitido'])
             ->assertNotFound();
     }
 
@@ -95,7 +107,7 @@ class ServiciosEmpresaFlowTest extends TestCase
         $tipoTarifa = $this->tipoTarifa('estandar');
 
         $this->actingAs($user, 'sanctum')
-            ->postJson("/api/v1/servicios/{$servicio->id}/precios", [
+            ->postJson("/api/v1/empresa/servicios/{$servicio->id}/precios", [
                 'tipo_tarifa_servicio_id' => $tipoTarifa->id,
                 'precio_base' => 30,
             ])
@@ -112,7 +124,7 @@ class ServiciosEmpresaFlowTest extends TestCase
         $tipoTarifa = $this->tipoTarifa('estandar');
 
         $this->actingAs($user, 'sanctum')
-            ->postJson("/api/v1/servicios/{$servicioAjeno->id}/precios", [
+            ->postJson("/api/v1/empresa/servicios/{$servicioAjeno->id}/precios", [
                 'tipo_tarifa_servicio_id' => $tipoTarifa->id,
                 'precio_base' => 30,
             ])
@@ -127,7 +139,7 @@ class ServiciosEmpresaFlowTest extends TestCase
         $tipoTarifa->update(['activo' => false]);
 
         $this->actingAs($user, 'sanctum')
-            ->postJson("/api/v1/servicios/{$servicio->id}/precios", [
+            ->postJson("/api/v1/empresa/servicios/{$servicio->id}/precios", [
                 'tipo_tarifa_servicio_id' => $tipoTarifa->id,
                 'precio_base' => 30,
             ])
@@ -142,7 +154,7 @@ class ServiciosEmpresaFlowTest extends TestCase
         $precioAjeno = $this->crearPrecio($servicioAjeno->id, $this->tipoTarifa('estandar')->id);
 
         $this->actingAs($user, 'sanctum')
-            ->putJson("/api/v1/servicio-precios/{$precioAjeno->id}", ['precio_base' => 99])
+            ->putJson("/api/v1/empresa/servicio-precios/{$precioAjeno->id}", ['precio_base' => 99])
             ->assertNotFound();
     }
 
@@ -154,12 +166,12 @@ class ServiciosEmpresaFlowTest extends TestCase
         $servicioA = $this->crearServicio($empresaA->id, 'Limpieza', 'SERVA');
         $servicioB = $this->crearServicio($empresaB->id, 'Limpieza', 'SERVB');
 
-        $this->actingAs($userA, 'sanctum')->postJson("/api/v1/servicios/{$servicioA->id}/precios", [
+        $this->actingAs($userA, 'sanctum')->postJson("/api/v1/empresa/servicios/{$servicioA->id}/precios", [
             'tipo_tarifa_servicio_id' => $tipo->id,
             'precio_base' => 30,
         ])->assertCreated();
 
-        $this->actingAs($userB, 'sanctum')->postJson("/api/v1/servicios/{$servicioB->id}/precios", [
+        $this->actingAs($userB, 'sanctum')->postJson("/api/v1/empresa/servicios/{$servicioB->id}/precios", [
             'tipo_tarifa_servicio_id' => $tipo->id,
             'precio_base' => 50,
         ])->assertCreated();
@@ -176,7 +188,7 @@ class ServiciosEmpresaFlowTest extends TestCase
         $this->crearPrecio($servicio->id, $tipo->id, 30);
 
         $this->actingAs($user, 'sanctum')
-            ->postJson("/api/v1/servicios/{$servicio->id}/precios", [
+            ->postJson("/api/v1/empresa/servicios/{$servicio->id}/precios", [
                 'tipo_tarifa_servicio_id' => $tipo->id,
                 'precio_base' => 40,
             ])
@@ -191,7 +203,7 @@ class ServiciosEmpresaFlowTest extends TestCase
         $precio = $this->crearPrecio($servicio->id, $tipo->id, 30);
 
         $this->actingAs($user, 'sanctum')
-            ->putJson("/api/v1/servicio-precios/{$precio->id}", [
+            ->putJson("/api/v1/empresa/servicio-precios/{$precio->id}", [
                 'precio_base' => 40,
             ])
             ->assertOk()
@@ -203,7 +215,7 @@ class ServiciosEmpresaFlowTest extends TestCase
         [$user] = $this->crearUsuarioEmpresa('B32000024', false);
 
         $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/servicios')
+            ->getJson('/api/v1/empresa/servicios')
             ->assertForbidden();
     }
 

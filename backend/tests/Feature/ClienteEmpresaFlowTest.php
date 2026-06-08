@@ -28,7 +28,7 @@ class ClienteEmpresaFlowTest extends TestCase
         [$usuario, $empresa] = $this->crearUsuarioConEmpresa('B50000001');
 
         $this->actingAs($usuario, 'sanctum')
-            ->postJson('/api/v1/clientes', [
+            ->postJson('/api/v1/empresa/clientes', [
                 'tipo_cliente_id' => $this->tipoClienteId(),
                 'nombre'          => 'Carlos',
                 'apellidos'       => 'García Pérez',
@@ -55,7 +55,7 @@ class ClienteEmpresaFlowTest extends TestCase
         ]);
 
         $this->actingAs($usuario, 'sanctum')
-            ->postJson('/api/v1/clientes', [
+            ->postJson('/api/v1/empresa/clientes', [
                 'tipo_cliente_id' => $this->tipoClienteId(),
                 'nombre'          => 'Laura',
                 'apellidos'       => 'Martínez',
@@ -69,7 +69,7 @@ class ClienteEmpresaFlowTest extends TestCase
     public function test_admin_no_puede_crear_clientes(): void
     {
         $this->actingAs($this->crearAdmin(), 'sanctum')
-            ->postJson('/api/v1/clientes', [
+            ->postJson('/api/v1/empresa/clientes', [
                 'tipo_cliente_id' => $this->tipoClienteId(),
                 'nombre'          => 'Test Admin',
                 'dni_cif'         => 'X3333333C',
@@ -81,7 +81,7 @@ class ClienteEmpresaFlowTest extends TestCase
     public function test_admin_no_puede_listar_clientes(): void
     {
         $this->actingAs($this->crearAdmin(), 'sanctum')
-            ->getJson('/api/v1/clientes')
+            ->getJson('/api/v1/empresa/clientes')
             ->assertForbidden()
             ->assertJsonPath('message', 'El administrador global no puede acceder al CRM de empresa.');
     }
@@ -91,7 +91,7 @@ class ClienteEmpresaFlowTest extends TestCase
         [$usuario] = $this->crearUsuarioConEmpresa('B50000003');
 
         $this->actingAs($usuario, 'sanctum')
-            ->postJson('/api/v1/clientes', [
+            ->postJson('/api/v1/empresa/clientes', [
                 'tipo_cliente_id' => $this->tipoClienteId(),
                 'nombre'          => 'Pedro',
                 'dni_cif'         => 'X4444444D',
@@ -99,7 +99,7 @@ class ClienteEmpresaFlowTest extends TestCase
             ->assertCreated();
 
         $this->actingAs($usuario, 'sanctum')
-            ->postJson('/api/v1/clientes', [
+            ->postJson('/api/v1/empresa/clientes', [
                 'tipo_cliente_id' => $this->tipoClienteId(),
                 'nombre'          => 'Otro Pedro',
                 'dni_cif'         => 'X4444444D',
@@ -114,7 +114,7 @@ class ClienteEmpresaFlowTest extends TestCase
         [$usuario2] = $this->crearUsuarioConEmpresa('B50000005');
 
         $this->actingAs($usuario1, 'sanctum')
-            ->postJson('/api/v1/clientes', [
+            ->postJson('/api/v1/empresa/clientes', [
                 'tipo_cliente_id' => $this->tipoClienteId(),
                 'nombre'          => 'Ana',
                 'dni_cif'         => 'X5555555E',
@@ -122,7 +122,7 @@ class ClienteEmpresaFlowTest extends TestCase
             ->assertCreated();
 
         $this->actingAs($usuario2, 'sanctum')
-            ->postJson('/api/v1/clientes', [
+            ->postJson('/api/v1/empresa/clientes', [
                 'tipo_cliente_id' => $this->tipoClienteId(),
                 'nombre'          => 'Ana Copia',
                 'dni_cif'         => 'X5555555E',
@@ -136,7 +136,7 @@ class ClienteEmpresaFlowTest extends TestCase
         [$usuario2] = $this->crearUsuarioConEmpresa('B50000007');
 
         $this->actingAs($usuario1, 'sanctum')
-            ->postJson('/api/v1/clientes', [
+            ->postJson('/api/v1/empresa/clientes', [
                 'tipo_cliente_id' => $this->tipoClienteId(),
                 'nombre'          => 'Cliente Privado',
                 'dni_cif'         => 'X6666666F',
@@ -144,7 +144,7 @@ class ClienteEmpresaFlowTest extends TestCase
             ->assertCreated();
 
         $respuesta = $this->actingAs($usuario2, 'sanctum')
-            ->getJson('/api/v1/clientes')
+            ->getJson('/api/v1/empresa/clientes')
             ->assertOk();
 
         $ids = collect($respuesta->json('data.data'))->pluck('empresa_id')->unique();

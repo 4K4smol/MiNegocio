@@ -40,7 +40,7 @@ class FacturaFlujoCRUDTest extends TestCase
         [$user, $cliente] = $this->contexto();
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas', $this->payloadBase($cliente))
+            ->postJson('/api/v1/empresa/facturas', $this->payloadBase($cliente))
             ->assertCreated()
             ->assertJsonPath('data.estado_factura', 'borrador')
             ->assertJsonPath('data.numero', null);
@@ -58,7 +58,7 @@ class FacturaFlujoCRUDTest extends TestCase
         $factura = $this->crearBorrador($user, $cliente);
 
         $this->actingAs($user, 'sanctum')
-            ->putJson('/api/v1/facturas/' . $factura->id, [
+            ->putJson('/api/v1/empresa/facturas/' . $factura->id, [
                 'observaciones' => 'Texto actualizado',
                 'lineas' => [[
                     'descripcion' => 'Servicio actualizado',
@@ -78,7 +78,7 @@ class FacturaFlujoCRUDTest extends TestCase
         $this->emitir($user, $factura);
 
         $this->actingAs($user, 'sanctum')
-            ->putJson('/api/v1/facturas/' . $factura->id, [
+            ->putJson('/api/v1/empresa/facturas/' . $factura->id, [
                 'observaciones' => 'Intento de edición ilegal',
             ])
             ->assertStatus(500);
@@ -90,7 +90,7 @@ class FacturaFlujoCRUDTest extends TestCase
         $factura = $this->crearBorrador($user, $cliente);
 
         $this->actingAs($user, 'sanctum')
-            ->deleteJson('/api/v1/facturas/' . $factura->id)
+            ->deleteJson('/api/v1/empresa/facturas/' . $factura->id)
             ->assertOk();
 
         // El modelo usa SoftDeletes: el registro queda con deleted_at relleno
@@ -104,7 +104,7 @@ class FacturaFlujoCRUDTest extends TestCase
         $this->emitir($user, $factura);
 
         $this->actingAs($user, 'sanctum')
-            ->deleteJson('/api/v1/facturas/' . $factura->id)
+            ->deleteJson('/api/v1/empresa/facturas/' . $factura->id)
             ->assertStatus(500);
     }
 
@@ -116,7 +116,7 @@ class FacturaFlujoCRUDTest extends TestCase
 
         // Aunque no debería llegarse aquí por el check de estado, lo verificamos explícitamente
         $this->actingAs($user, 'sanctum')
-            ->deleteJson('/api/v1/facturas/' . $factura->id)
+            ->deleteJson('/api/v1/empresa/facturas/' . $factura->id)
             ->assertStatus(500);
 
         $this->assertDatabaseHas('facturas', ['id' => $factura->id]);
@@ -132,7 +132,7 @@ class FacturaFlujoCRUDTest extends TestCase
         $factura = $this->crearBorrador($user, $cliente);
 
         $response = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/emitir')
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/emitir')
             ->assertOk()
             ->assertJsonPath('data.estado_factura', 'emitida');
 
@@ -156,7 +156,7 @@ class FacturaFlujoCRUDTest extends TestCase
         $this->emitir($user, $factura);
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/anular', [
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/anular', [
                 'motivo_anulacion' => 'Cliente solicita anulación',
             ])
             ->assertOk()
@@ -174,7 +174,7 @@ class FacturaFlujoCRUDTest extends TestCase
         $factura = $this->crearBorrador($user, $cliente);
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/anular', [
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/anular', [
                 'motivo_anulacion' => 'Intento ilegal',
             ])
             ->assertStatus(500);
@@ -194,7 +194,7 @@ class FacturaFlujoCRUDTest extends TestCase
         $factura->saveQuietly();
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/anular', [
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/anular', [
                 'motivo_anulacion' => 'Sin registro de alta',
             ])
             ->assertStatus(500);
@@ -207,11 +207,11 @@ class FacturaFlujoCRUDTest extends TestCase
         $this->emitir($user, $factura);
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/anular', ['motivo_anulacion' => 'Primera anulación'])
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/anular', ['motivo_anulacion' => 'Primera anulación'])
             ->assertOk();
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/anular', ['motivo_anulacion' => 'Segunda anulación'])
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/anular', ['motivo_anulacion' => 'Segunda anulación'])
             ->assertStatus(500);
     }
 
@@ -223,13 +223,13 @@ class FacturaFlujoCRUDTest extends TestCase
 
         // Generar rectificativa (marca la original como rectificada)
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/rectificar', [
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/rectificar', [
                 'motivo_rectificacion' => 'Corrección de importes',
             ])
             ->assertCreated();
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/anular', ['motivo_anulacion' => 'Intento'])
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/anular', ['motivo_anulacion' => 'Intento'])
             ->assertStatus(500);
     }
 
@@ -244,7 +244,7 @@ class FacturaFlujoCRUDTest extends TestCase
         $this->emitir($user, $factura);
 
         $response = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/rectificar', [
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/rectificar', [
                 'motivo_rectificacion' => 'Error en importe',
             ])
             ->assertCreated();
@@ -275,7 +275,7 @@ class FacturaFlujoCRUDTest extends TestCase
         $factura = $this->crearBorrador($user, $cliente);
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/rectificar', [
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/rectificar', [
                 'motivo_rectificacion' => 'Intento',
             ])
             ->assertStatus(500);
@@ -288,11 +288,11 @@ class FacturaFlujoCRUDTest extends TestCase
         $this->emitir($user, $factura);
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/anular', ['motivo_anulacion' => 'Anulada primero'])
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/anular', ['motivo_anulacion' => 'Anulada primero'])
             ->assertOk();
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/rectificar', [
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/rectificar', [
                 'motivo_rectificacion' => 'Intento sobre anulada',
             ])
             ->assertStatus(500);
@@ -305,14 +305,14 @@ class FacturaFlujoCRUDTest extends TestCase
         $this->emitir($user, $factura);
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/rectificar', [
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/rectificar', [
                 'motivo_rectificacion' => 'Primera rectificación',
             ])
             ->assertCreated();
 
         // La original ya está marcada como rectificada; intentamos rectificarla de nuevo
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/rectificar', [
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/rectificar', [
                 'motivo_rectificacion' => 'Segunda rectificación',
             ])
             ->assertStatus(500);
@@ -325,7 +325,7 @@ class FacturaFlujoCRUDTest extends TestCase
         $this->emitir($user, $factura);
 
         $response = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/rectificar', [
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/rectificar', [
                 'motivo_rectificacion' => 'Rectificación original',
             ])
             ->assertCreated();
@@ -334,7 +334,7 @@ class FacturaFlujoCRUDTest extends TestCase
 
         // Intentar rectificar la rectificativa
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $rectificativa_id . '/rectificar', [
+            ->postJson('/api/v1/empresa/facturas/' . $rectificativa_id . '/rectificar', [
                 'motivo_rectificacion' => 'Rectificar una rectificativa',
             ])
             ->assertStatus(500);
@@ -352,19 +352,19 @@ class FacturaFlujoCRUDTest extends TestCase
         $f1 = $this->crearBorrador($user, $cliente);
         $this->emitir($user, $f1);
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $f1->id . '/anular', ['motivo_anulacion' => 'Anulación'])
+            ->postJson('/api/v1/empresa/facturas/' . $f1->id . '/anular', ['motivo_anulacion' => 'Anulación'])
             ->assertOk();
 
         // Factura 2: emitir y rectificar
         $f2 = $this->crearBorrador($user, $cliente);
         $this->emitir($user, $f2);
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $f2->id . '/rectificar', ['motivo_rectificacion' => 'Rectificación'])
+            ->postJson('/api/v1/empresa/facturas/' . $f2->id . '/rectificar', ['motivo_rectificacion' => 'Rectificación'])
             ->assertCreated();
 
         // Validar cadena completa
         $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/registros-facturacion/validar-cadena')
+            ->getJson('/api/v1/empresa/registros-facturacion/validar-cadena')
             ->assertOk()
             ->assertJsonPath('data.valida', true);
     }
@@ -376,7 +376,7 @@ class FacturaFlujoCRUDTest extends TestCase
     private function crearBorrador(User $user, Cliente $cliente): Factura
     {
         $id = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas', $this->payloadBase($cliente))
+            ->postJson('/api/v1/empresa/facturas', $this->payloadBase($cliente))
             ->assertCreated()
             ->json('data.id');
 
@@ -386,7 +386,7 @@ class FacturaFlujoCRUDTest extends TestCase
     private function emitir(User $user, Factura $factura): void
     {
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/emitir')
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/emitir')
             ->assertOk();
     }
 

@@ -115,6 +115,13 @@ class AdminCatalogosCrudFlowTest extends TestCase
         }
     }
 
+    public function test_endpoint_legacy_de_tipos_localizacion_cliente_no_existe(): void
+    {
+        $this->actingAs($this->crearAdmin(), 'sanctum')
+            ->getJson('/api/v1/tipos-localizacion-cliente')
+            ->assertNotFound();
+    }
+
     /**
      * @return array<int, array{endpoint: string, codigo: string, orden_min: int}>
      */
@@ -122,7 +129,6 @@ class AdminCatalogosCrudFlowTest extends TestCase
     {
         return [
             ['endpoint' => '/api/v1/tipos-cliente', 'codigo' => 'tc_test', 'orden_min' => 1],
-            ['endpoint' => '/api/v1/tipos-localizacion-cliente', 'codigo' => 'tl_test', 'orden_min' => 1],
             ['endpoint' => '/api/v1/tipos-evento-facturacion', 'codigo' => 'tef_test', 'orden_min' => 1],
             ['endpoint' => '/api/v1/tipos-factura', 'codigo' => 'tf_test', 'orden_min' => 1],
             ['endpoint' => '/api/v1/tipos-inventario-movimiento', 'codigo' => 'tim_test', 'orden_min' => 1],
@@ -172,4 +178,3 @@ class AdminCatalogosCrudFlowTest extends TestCase
         ]);
     }
 }
-

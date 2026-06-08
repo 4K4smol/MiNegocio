@@ -30,7 +30,7 @@ class FacturacionNormalFlowTest extends TestCase
         [$user, $cliente] = $this->crearContextoEmpresa();
 
         $facturaId = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas', [
+            ->postJson('/api/v1/empresa/facturas', [
                 'cliente_id' => $cliente->id,
                 'tipo_factura_codigo' => 'ordinaria',
                 'lineas' => [[
@@ -48,7 +48,7 @@ class FacturacionNormalFlowTest extends TestCase
         $this->assertDatabaseMissing('registros_facturacion', ['factura_id' => $facturaId]);
 
         $this->actingAs($user, 'sanctum')
-            ->putJson('/api/v1/facturas/' . $facturaId, [
+            ->putJson('/api/v1/empresa/facturas/' . $facturaId, [
                 'lineas' => [[
                     'descripcion' => 'Servicio mensual ajustado',
                     'cantidad' => 2,
@@ -66,7 +66,7 @@ class FacturacionNormalFlowTest extends TestCase
         $factura = $this->crearBorrador($user, $cliente);
 
         $response = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/emitir')
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/emitir')
             ->assertOk()
             ->assertJsonPath('data.estado_factura', 'emitida');
 
@@ -89,7 +89,7 @@ class FacturacionNormalFlowTest extends TestCase
         [$user, $cliente] = $this->crearContextoEmpresa();
 
         $facturaId = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas', [
+            ->postJson('/api/v1/empresa/facturas', [
                 'cliente_id' => $cliente->id,
                 'tipo_factura_codigo' => 'proforma',
                 'lineas' => [[
@@ -102,7 +102,7 @@ class FacturacionNormalFlowTest extends TestCase
             ->json('data.id');
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $facturaId . '/emitir')
+            ->postJson('/api/v1/empresa/facturas/' . $facturaId . '/emitir')
             ->assertOk()
             ->assertJsonPath('data.estado_factura', 'enviada')
             ->assertJsonPath('data.numero', null);
@@ -116,13 +116,13 @@ class FacturacionNormalFlowTest extends TestCase
         $factura = $this->crearBorrador($user, $cliente);
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/emitir')
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/emitir')
             ->assertOk();
 
         $registrosAntes = $factura->registrosFacturacion()->count();
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/cobros', [
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/cobros', [
                 'importe' => 50,
                 'metodo_pago' => 'transferencia',
             ])
@@ -130,7 +130,7 @@ class FacturacionNormalFlowTest extends TestCase
             ->assertJsonPath('data.estado_factura', 'pagada_parcial');
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas/' . $factura->id . '/cobros', [
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/cobros', [
                 'importe' => 71,
                 'metodo_pago' => 'transferencia',
             ])
@@ -151,7 +151,7 @@ class FacturacionNormalFlowTest extends TestCase
         $factura = $this->crearBorrador($userA, $clienteA);
 
         $this->actingAs($userB, 'sanctum')
-            ->getJson('/api/v1/facturas/' . $factura->id)
+            ->getJson('/api/v1/empresa/facturas/' . $factura->id)
             ->assertNotFound();
     }
 
@@ -164,7 +164,7 @@ class FacturacionNormalFlowTest extends TestCase
     private function crearBorrador(User $user, Cliente $cliente): Factura
     {
         $id = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/facturas', [
+            ->postJson('/api/v1/empresa/facturas', [
                 'cliente_id' => $cliente->id,
                 'tipo_factura_codigo' => 'ordinaria',
                 'lineas' => [[
