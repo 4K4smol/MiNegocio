@@ -78,11 +78,6 @@ class User extends Authenticatable
         return $this->hasMany(Tarea::class, 'responsable_id');
     }
 
-        public function informesGenerados(): HasMany
-    {
-        return $this->hasMany(Informe::class, 'generado_por');
-    }
-
     public function calendarioEventosCreados(): HasMany
     {
         return $this->hasMany(CalendarioEvento::class, 'creado_por');

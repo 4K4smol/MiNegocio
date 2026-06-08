@@ -43,19 +43,18 @@ class FacturaPdfService
         $registro = $factura->registrosFacturacion->sortByDesc('id')->first();
         $qrUrl = $registro ? $this->generarQrUrl($factura) : null;
         $qrImageDataUri = $qrUrl ? $this->generarQrImageDataUri($qrUrl) : null;
-        $remisionReal = $this->remisionReal();
+        $config = $this->facturacionConfig($factura);
 
-        $template = $this->templateForFactura($factura);
+        $template = $this->templateForFactura($factura, $config);
         $view = 'pdf.facturas.'.$template;
 
         $pdfContent = Pdf::loadView($view, [
             'factura' => $factura,
             'registro' => $registro,
             'qrImageDataUri' => $qrImageDataUri,
-            'qrLegalText' => $remisionReal
-                ? 'Factura verificable en la sede electronica de la AEAT'
-                : 'Entorno de pruebas - no valido fiscalmente',
+            'qrLegalText' => $this->qrLegalText(),
             'qrUrl' => $qrUrl,
+            'datosPago' => $this->datosPago($factura, $config),
         ])
             ->setPaper('a4')
             ->output();
@@ -112,12 +111,13 @@ class FacturaPdfService
         return $baseUrl.'?'.http_build_query($params, '', '&', PHP_QUERY_RFC3986);
     }
 
-    private function templateForFactura(Factura $factura): string
+    public function qrLegalText(): string
     {
-        $config = EmpresaFacturacionConfig::query()
-            ->where('empresa_id', $factura->empresa_id)
-            ->first();
+        return 'Factura verificable en la sede electrónica de la AEAT';
+    }
 
+    private function templateForFactura(Factura $factura, ?EmpresaFacturacionConfig $config): string
+    {
         $template = (string) ($config?->metadatos['plantilla_pdf'] ?? self::DEFAULT_TEMPLATE);
 
         if (!preg_match('/^[a-z0-9_-]+$/', $template)) {
@@ -138,7 +138,7 @@ class FacturaPdfService
             ],
             validateResult: false,
             data: $qrUrl,
-            encoding: new Encoding('ISO-8859-1'),
+            encoding: new Encoding('UTF-8'),
             errorCorrectionLevel: ErrorCorrectionLevel::Medium,
             size: 320,
             margin: 24,
@@ -151,5 +151,42 @@ class FacturaPdfService
     private function remisionReal(): bool
     {
         return filter_var(config('services.verifactu.remision_real', false), FILTER_VALIDATE_BOOL);
+    }
+
+    private function facturacionConfig(Factura $factura): ?EmpresaFacturacionConfig
+    {
+        return EmpresaFacturacionConfig::query()
+            ->where('empresa_id', $factura->empresa_id)
+            ->first();
+    }
+
+    /**
+     * @return array{iban?: string, bic?: string, titular?: string, concepto?: string, instrucciones?: string}
+     */
+    private function datosPago(Factura $factura, ?EmpresaFacturacionConfig $config): array
+    {
+        $pago = $config?->metadatos['pago'] ?? null;
+
+        if (!is_array($pago)) {
+            return [];
+        }
+
+        $datos = [];
+        foreach (['iban', 'bic', 'titular', 'concepto', 'instrucciones'] as $clave) {
+            $valor = trim((string) ($pago[$clave] ?? ''));
+            if ($valor !== '') {
+                $datos[$clave] = $valor;
+            }
+        }
+
+        if ($datos === []) {
+            return [];
+        }
+
+        $datos['concepto'] ??= $factura->numero_completo
+            ?: trim((string) $factura->serie.'-'.(string) $factura->numero, '-')
+            ?: (string) $factura->id;
+
+        return $datos;
     }
 }

@@ -94,11 +94,6 @@ class Empresa extends Model
         return $this->hasMany(PaginaWebContacto::class, 'empresa_id');
     }
 
-    public function informes(): HasMany
-    {
-        return $this->hasMany(Informe::class, 'empresa_id');
-    }
-
     public function calendarioEventos(): HasMany
     {
         return $this->hasMany(CalendarioEvento::class, 'empresa_id');

@@ -31,11 +31,6 @@ const modules = [
         title: "Calendario",
         description: "Visualiza servicios programados y tareas pendientes.",
     },
-    {
-        icon: appIcons.informes,
-        title: "Informes",
-        description: "Consulta métricas mensuales y evolución del negocio.",
-    },
 ];
 
 export function HomePage() {
@@ -46,8 +41,8 @@ export function HomePage() {
                     <span className="eyebrow">CRM para autónomos y PYMES</span>
                     <h1>Gestiona tu negocio desde una sola plataforma</h1>
                     <p>
-                        Clientes, órdenes de trabajo, facturas, inventario,
-                        calendario e informes en un único sistema pensado para
+                        Clientes, órdenes de trabajo, facturas, inventario y
+                        calendario en un único sistema pensado para
                         autónomos y pequeñas empresas.
                     </p>
                     <div className="actions">
@@ -112,7 +107,7 @@ export function HomePage() {
                     <article>
                         <span>03</span>
                         <h3>Analiza</h3>
-                        <p>Consulta el calendario, el estado de ventas y los informes clave.</p>
+                        <p>Consulta el calendario y el estado de ventas desde el mismo flujo.</p>
                     </article>
                 </div>
             </section>

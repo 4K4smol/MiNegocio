@@ -1,5 +1,4 @@
 import {
-    BarChart3,
     Boxes,
     BriefcaseBusiness,
     Building2,
@@ -36,7 +35,6 @@ export const appIcons = {
     anterior: ChevronLeft,
     facturas: FileText,
     inventario: Boxes,
-    informes: BarChart3,
     configuracion: Settings,
     admin: UserCog,
     auditoria: FileSearch,

@@ -89,7 +89,7 @@ export function LoginPage() {
                 <h1>Iniciar sesión</h1>
                 <p>
                     Accede al panel privado para gestionar clientes, ordenes,
-                    facturas e informes.
+                    facturas y operaciones.
                 </p>
                 {message ? <div className="form-alert">{message}</div> : null}
                 <form className="auth-form" onSubmit={handleSubmit}>
@@ -125,7 +125,7 @@ export function LoginPage() {
             </div>
             <aside className="auth-side">
                 <strong>MiNegocio</strong>
-                <span>Operaciones, facturación e informes conectados.</span>
+                <span>Operaciones, facturación y calendario conectados.</span>
             </aside>
         </section>
     );

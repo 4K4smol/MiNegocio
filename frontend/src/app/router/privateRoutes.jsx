@@ -13,7 +13,6 @@ import { FacturaDetailPage } from "../../features/facturacion/pages/FacturaDetai
 import { FacturasPage } from "../../features/facturacion/pages/FacturasPage";
 import { RegistrosFacturacionPage } from "../../features/facturacion/pages/RegistrosFacturacionPage";
 import { VerifactuPage } from "../../features/facturacion/pages/VerifactuPage";
-import { InformesPage } from "../../features/informes/pages/InformesPage";
 import { InventarioCreatePage } from "../../features/inventario/pages/InventarioCreatePage";
 import { InventarioEditPage } from "../../features/inventario/pages/InventarioEditPage";
 import { OrdenCreatePage } from "../../features/ordenes/pages/OrdenCreatePage";
@@ -54,7 +53,6 @@ export const privateRoutes = (
                 <Route path="inventario" element={<Navigate to="/app/ubicaciones" replace />} />
                 <Route path="inventario/nuevo" element={<InventarioCreatePage />} />
                 <Route path="inventario/:itemId/editar" element={<InventarioEditPage />} />
-                <Route path="informes" element={<InformesPage />} />
                 <Route path="configuracion" element={<ConfiguracionPage />} />
             </Route>
         </Route>

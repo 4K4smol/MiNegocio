@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Models\Cliente;
 use App\Models\Empresa;
+use App\Models\EmpresaFacturacionConfig;
 use App\Models\Factura;
 use App\Models\FacturaDocumento;
 use App\Models\Servicio;
@@ -54,6 +55,13 @@ class FacturaPdfDownloadTest extends TestCase
         $this->assertStringNotContainsString('url_interna', $searchableContent);
         $this->assertStringNotContainsString('Hash registro', $searchableContent);
         $this->assertStringNotContainsString('Registro VeriFactu', $searchableContent);
+        $this->assertStringNotContainsString('Entorno de pruebas', $searchableContent);
+        $this->assertStringNotContainsString('no valido fiscalmente', $searchableContent);
+        $this->assertStringNotContainsString('no válido fiscalmente', $searchableContent);
+        $this->assertSame(
+            'Factura verificable en la sede electrónica de la AEAT',
+            app(FacturaPdfService::class)->qrLegalText()
+        );
         $this->assertStringStartsWith(
             'https://prewww2.aeat.es/wlpl/TIKE-CONT/ValidarQR?',
             app(FacturaPdfService::class)->generarQrUrl($factura)
@@ -76,6 +84,26 @@ class FacturaPdfDownloadTest extends TestCase
         $this->assertSame(number_format((float) $factura->total, 2, '.', ''), $params['importe'] ?? null);
     }
 
+    public function test_pdf_mantiene_texto_final_verifactu_en_modo_simulado(): void
+    {
+        config(['services.verifactu.remision_real' => false]);
+        [$user, $cliente] = $this->crearContextoEmpresa();
+        $factura = $this->crearFacturaEmitida($user, $cliente);
+
+        $this->actingAs($user, 'sanctum')
+            ->get('/api/v1/empresa/facturas/'.$factura->id.'/pdf')
+            ->assertOk();
+
+        $documento = FacturaDocumento::query()->where('factura_id', $factura->id)->where('tipo', 'pdf')->firstOrFail();
+        $searchableContent = $this->pdfSearchableContent(Storage::disk('local')->get($documento->ruta));
+
+        $this->assertSame('Factura verificable en la sede electrónica de la AEAT', app(FacturaPdfService::class)->qrLegalText());
+        $this->assertStringStartsWith('https://prewww2.aeat.es/wlpl/TIKE-CONT/ValidarQR?', app(FacturaPdfService::class)->generarQrUrl($factura));
+        $this->assertStringNotContainsString('Entorno de pruebas', $searchableContent);
+        $this->assertStringNotContainsString('no valido fiscalmente', $searchableContent);
+        $this->assertStringNotContainsString('no válido fiscalmente', $searchableContent);
+    }
+
     public function test_url_qr_usa_entorno_de_produccion_en_modo_real(): void
     {
         config(['services.verifactu.remision_real' => true]);
@@ -85,6 +113,57 @@ class FacturaPdfDownloadTest extends TestCase
         $url = app(FacturaPdfService::class)->generarQrUrl($factura);
 
         $this->assertStringStartsWith('https://www2.agenciatributaria.gob.es/wlpl/TIKE-CONT/ValidarQR?', $url);
+    }
+
+    public function test_plantilla_muestra_datos_de_pago_configurados(): void
+    {
+        [$user, $cliente] = $this->crearContextoEmpresa();
+        $factura = $this->crearFacturaEmitida($user, $cliente)->loadMissing([
+            'empresa',
+            'cliente',
+            'lineas',
+            'impuestos',
+            'estadoFactura',
+            'tipoFactura',
+        ]);
+
+        EmpresaFacturacionConfig::query()->updateOrCreate(
+            ['empresa_id' => $user->empresa_id],
+            [
+                'serie_default' => 'A',
+                'modo_facturacion' => 'mvp_interno',
+                'emitir_desde_borrador' => true,
+                'metadatos' => [
+                    'pago' => [
+                        'iban' => 'ES9121000418450200051332',
+                        'bic' => 'CAIXESBBXXX',
+                        'titular' => 'Empresa PDF',
+                        'instrucciones' => 'Pago por transferencia bancaria.',
+                    ],
+                ],
+            ],
+        );
+
+        $html = view('pdf.facturas.base', [
+            'factura' => $factura,
+            'registro' => $factura->registrosFacturacion()->latest('id')->first(),
+            'qrImageDataUri' => null,
+            'qrLegalText' => app(FacturaPdfService::class)->qrLegalText(),
+            'qrUrl' => null,
+            'datosPago' => [
+                'iban' => 'ES9121000418450200051332',
+                'bic' => 'CAIXESBBXXX',
+                'titular' => 'Empresa PDF',
+                'concepto' => $factura->numero_completo,
+                'instrucciones' => 'Pago por transferencia bancaria.',
+            ],
+        ])->render();
+
+        $this->assertStringContainsString('Datos de pago', $html);
+        $this->assertStringContainsString('ES9121000418450200051332', $html);
+        $this->assertStringContainsString('CAIXESBBXXX', $html);
+        $this->assertStringContainsString($factura->numero_completo, $html);
+        $this->assertStringContainsString('Pago por transferencia bancaria.', $html);
     }
 
     public function test_no_descarga_pdf_de_factura_en_borrador(): void

@@ -61,19 +61,11 @@ class ModulosSeeder extends Seeder
                 'icono' => 'boxes',
             ],
             [
-                'codigo' => 'informes',
-                'nombre' => 'Informes',
-                'descripcion' => 'Informes operativos por empresa.',
-                'activo' => true,
-                'orden_visual' => 7,
-                'icono' => 'bar-chart',
-            ],
-            [
                 'codigo' => 'paginas_web',
                 'nombre' => 'Paginas web',
                 'descripcion' => 'Gestion futura de paginas web y contactos.',
                 'activo' => true,
-                'orden_visual' => 8,
+                'orden_visual' => 7,
                 'icono' => 'globe',
             ],
         ];

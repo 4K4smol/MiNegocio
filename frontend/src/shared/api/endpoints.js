@@ -35,7 +35,6 @@ export const endpoints = {
         tiposMovimiento: "tipos-inventario-movimiento",
     },
     calendario: "empresa/calendario-eventos",
-    informes: "empresa/informes",
     empresa: "empresa",
     admin: "admin",
 };

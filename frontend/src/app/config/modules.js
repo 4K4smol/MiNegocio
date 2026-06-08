@@ -6,7 +6,6 @@ export const appModules = [
     "facturacion",
     "inventario",
     "calendario",
-    "informes",
     "empresa",
     "admin",
 ];

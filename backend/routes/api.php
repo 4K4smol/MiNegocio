@@ -18,7 +18,6 @@ use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeclaracionResponsableSoftwareController;
 use App\Http\Controllers\Api\V1\EstadoFacturaController;
 use App\Http\Controllers\Api\V1\FacturaController;
-use App\Http\Controllers\Api\V1\InformeController;
 use App\Http\Controllers\Api\V1\InventarioItemController;
 use App\Http\Controllers\Api\V1\InventarioMovimientoController;
 use App\Http\Controllers\Api\V1\InventarioUbicacionController;
@@ -277,11 +276,6 @@ Route::prefix('v1')->group(function (): void {
 
                 Route::apiResource('inventario-ubicaciones', InventarioUbicacionController::class)
                     ->parameters(['inventario-ubicaciones' => 'id']);
-            });
-
-            // Informes
-            Route::middleware('modulo:informes')->group(function (): void {
-                Route::apiResource('informes', InformeController::class);
             });
 
             // Auditoría, eventos y declaraciones técnicas

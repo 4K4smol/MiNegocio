@@ -207,6 +207,27 @@
             </tbody>
         </table>
 
+        @if(!empty($datosPago))
+            <div class="box" style="margin-top: 18px;">
+                <h2>Datos de pago</h2>
+                @if(!empty($datosPago['titular']))
+                    <p><strong>Titular:</strong> {{ $datosPago['titular'] }}</p>
+                @endif
+                @if(!empty($datosPago['iban']))
+                    <p><strong>IBAN:</strong> {{ $datosPago['iban'] }}</p>
+                @endif
+                @if(!empty($datosPago['bic']))
+                    <p><strong>BIC/SWIFT:</strong> {{ $datosPago['bic'] }}</p>
+                @endif
+                @if(!empty($datosPago['concepto']))
+                    <p><strong>Concepto:</strong> {{ $datosPago['concepto'] }}</p>
+                @endif
+                @if(!empty($datosPago['instrucciones']))
+                    <p>{{ $datosPago['instrucciones'] }}</p>
+                @endif
+            </div>
+        @endif
+
         @if($factura->impuestos->count())
             <div class="box" style="margin-top: 18px;">
                 <h2>Desglose de impuestos</h2>
