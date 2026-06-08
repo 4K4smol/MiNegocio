@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pencil, Plus, Power, PowerOff, Tags } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useMatch, useNavigate } from "react-router-dom";
 import { ConfirmModal } from "../../../shared/components/ConfirmModal";
 import { EmptyState } from "../../../shared/components/EmptyState";
 import { ErrorState } from "../../../shared/components/ErrorState";
@@ -33,6 +33,8 @@ function buildMetaLine(servicio) {
 export function ServiciosTab({ initialAction = null, initialServicioId = null }) {
     const navigate = useNavigate();
     const location = useLocation();
+    const createMatch = useMatch("/app/servicios/nuevo");
+    const editMatch = useMatch("/app/servicios/:servicioId/editar");
     const [servicios, setServicios] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loadingServicio, setLoadingServicio] = useState(false);
@@ -48,6 +50,8 @@ export function ServiciosTab({ initialAction = null, initialServicioId = null })
     const [preciosServicio, setPreciosServicio] = useState(null);
 
     const isRouteModal = location.pathname !== serviciosIndexPath;
+    const routeAction = initialAction ?? (createMatch ? "create" : editMatch ? "edit" : null);
+    const routeServicioId = initialServicioId ?? editMatch?.params?.servicioId ?? null;
 
     const goToIndex = useCallback(() => {
         if (isRouteModal) navigate(serviciosIndexPath, { replace: true });
@@ -108,15 +112,22 @@ export function ServiciosTab({ initialAction = null, initialServicioId = null })
     }, [resetForm]);
 
     useEffect(() => {
-        if (initialAction === "create") {
+        if (routeAction === "create") {
             openCreate();
             return;
         }
 
-        if (initialAction === "edit" && initialServicioId) {
-            openEditById(initialServicioId);
+        if (routeAction === "edit" && routeServicioId) {
+            openEditById(routeServicioId);
+            return;
         }
-    }, [initialAction, initialServicioId, openCreate, openEditById]);
+
+        if (!routeAction) {
+            setFormMode(null);
+            setSelectedServicio(null);
+            resetForm();
+        }
+    }, [routeAction, routeServicioId, openCreate, openEditById, resetForm]);
 
     const closeForm = () => {
         if (saving) return;

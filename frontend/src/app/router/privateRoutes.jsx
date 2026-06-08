@@ -19,8 +19,6 @@ import { OrdenCreatePage } from "../../features/ordenes/pages/OrdenCreatePage";
 import { OrdenDetailPage } from "../../features/ordenes/pages/OrdenDetailPage";
 import { OrdenEditPage } from "../../features/ordenes/pages/OrdenEditPage";
 import { OrdenesPage } from "../../features/ordenes/pages/OrdenesPage";
-import { ServicioCreatePage } from "../../features/servicios/pages/ServicioCreatePage";
-import { ServicioEditPage } from "../../features/servicios/pages/ServicioEditPage";
 import { ServiciosPage } from "../../features/servicios/pages/ServiciosPage";
 import { EmpresaRoute } from "./EmpresaRoute";
 import { PrivateRoute } from "./PrivateRoute";
@@ -34,9 +32,7 @@ export const privateRoutes = (
                 <Route path="clientes/nuevo" element={<ClienteCreatePage />} />
                 <Route path="clientes/:clienteId" element={<ClienteDetailPage />} />
                 <Route path="clientes/:clienteId/editar" element={<ClienteEditPage />} />
-                <Route path="servicios" element={<ServiciosPage />} />
-                <Route path="servicios/nuevo" element={<ServicioCreatePage />} />
-                <Route path="servicios/:servicioId/editar" element={<ServicioEditPage />} />
+                <Route path="servicios/*" element={<ServiciosPage />} />
                 <Route path="ordenes" element={<Navigate to="/app/ordenes-trabajo" replace />} />
                 <Route path="ordenes-trabajo" element={<OrdenesPage />} />
                 <Route path="ordenes-trabajo/nueva" element={<OrdenCreatePage />} />
