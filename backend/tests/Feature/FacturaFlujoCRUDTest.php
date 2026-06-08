@@ -269,6 +269,33 @@ class FacturaFlujoCRUDTest extends TestCase
         ]);
     }
 
+    public function test_factura_rectificativa_se_puede_marcar_como_pagada(): void
+    {
+        [$user, $cliente] = $this->contexto();
+        $factura = $this->crearBorrador($user, $cliente);
+        $this->emitir($user, $factura);
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->postJson('/api/v1/empresa/facturas/' . $factura->id . '/rectificar', [
+                'motivo_rectificacion' => 'Abono total',
+            ])
+            ->assertCreated();
+
+        $rectificativaId = $response->json('data.id');
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson('/api/v1/empresa/facturas/' . $rectificativaId . '/marcar-pagada')
+            ->assertOk()
+            ->assertJsonPath('data.estado_factura', 'pagada')
+            ->assertJsonPath('data.pagada', true)
+            ->assertJsonPath('data.cobros.0.importe', 121);
+
+        $this->assertDatabaseHas('factura_cobros', [
+            'factura_id' => $rectificativaId,
+            'importe' => 121,
+        ]);
+    }
+
     public function test_no_se_puede_rectificar_factura_en_borrador(): void
     {
         [$user, $cliente] = $this->contexto();

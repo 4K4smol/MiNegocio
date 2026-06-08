@@ -70,7 +70,7 @@ class FacturaCobroService
 
     private function estadoPorCobro(float $totalCobrado, float $totalFactura): EstadoFactura
     {
-        $codigo = $totalCobrado + 0.0001 >= $totalFactura ? 'pagada' : 'pagada_parcial';
+        $codigo = abs($totalCobrado) + 0.0001 >= abs($totalFactura) ? 'pagada' : 'pagada_parcial';
         $estado = EstadoFactura::query()->where('codigo', $codigo)->first();
 
         if (!$estado) {

@@ -181,10 +181,12 @@ class FacturaController extends AbstractCrudController
             return $this->forbidden();
         }
 
-        $pendiente = max(0, round((float) $factura->total - (float) $factura->cobros()->sum('importe'), 2));
+        $total = abs((float) $factura->total);
+        $totalCobrado = abs((float) $factura->cobros()->sum('importe'));
+        $pendiente = max(0, round($total - $totalCobrado, 2));
 
         $factura = $this->facturaCobroService->registrarCobro($factura, [
-            'importe' => $pendiente > 0 ? $pendiente : (float) $factura->total,
+            'importe' => $pendiente > 0 ? $pendiente : $total,
             'fecha_cobro' => now()->toDateString(),
             'metodo_pago' => $request->input('metodo_pago', 'manual'),
             'observaciones' => $request->input('observaciones_pago', 'Marcada como pagada manualmente.'),
