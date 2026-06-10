@@ -4,6 +4,7 @@ const STATUS_CONFIG = {
     aprobada: { label: "Aprobada", tone: "success", legacy: "estado-aprobada" },
     aprobado: { label: "Aprobado", tone: "success", legacy: "estado-aprobada" },
     completada: { label: "Completada", tone: "success", legacy: "estado-aprobada" },
+    abonada: { label: "Abonada", tone: "success", legacy: "estado-aprobada" },
     pagada: { label: "Pagada", tone: "success", legacy: "estado-aprobada" },
     validado: { label: "Validado", tone: "success", legacy: "estado-aprobada" },
     en_revision: { label: "En revisión", tone: "info", legacy: "estado-revision" },

@@ -16,7 +16,14 @@ import { FacturasKPIs } from '../components/FacturasKPIs'
 import { RectificarFacturaModal } from '../components/RectificarFacturaModal'
 import { useFacturas } from '../hooks/useFacturas'
 import { facturasService } from '../services/facturasService'
-import { getEstadoFactura, getNumeroFactura, isFacturaEditable, isFacturaFinalizada } from '../utils/facturaUtils'
+import {
+    getEstadoFactura,
+    getNumeroFactura,
+    puedeAnularFactura,
+    puedeMarcarComoPagada,
+    puedeRectificarFactura,
+    puedeRegistrarDevolucion,
+} from '../utils/facturaUtils'
 
 export function FacturasPage() {
     const { facturas, rawFacturas, loading, error, filters, setFilters, reload } = useFacturas()
@@ -53,28 +60,31 @@ export function FacturasPage() {
     const handleMarcarPagada = (id) => runAction(() => facturasService.marcarPagada(id))
 
     const getActions = (factura) => {
-        const estado = getEstadoFactura(factura)
-        const editable = isFacturaEditable(factura)
-        const finalizada = isFacturaFinalizada(factura)
         return [
             { label: 'Ver detalle', to: `/app/facturas/${factura.id}` },
             {
                 label: 'Marcar como pagada',
-                disabled: factura.pagada || estado !== 'emitida',
-                hidden: finalizada || editable,
+                disabled: saving,
+                hidden: !puedeMarcarComoPagada(factura),
+                onClick: () => handleMarcarPagada(factura.id),
+            },
+            {
+                label: 'Registrar devolución',
+                disabled: saving,
+                hidden: !puedeRegistrarDevolucion(factura),
                 onClick: () => handleMarcarPagada(factura.id),
             },
             {
                 label: 'Anular',
                 disabled: saving,
-                hidden: finalizada || editable,
+                hidden: !puedeAnularFactura(factura),
                 variant: 'danger',
                 onClick: () => setAnularId(factura.id),
             },
             {
                 label: 'Rectificar',
                 disabled: saving,
-                hidden: finalizada || editable,
+                hidden: !puedeRectificarFactura(factura),
                 onClick: () => setRectificarId(factura.id),
             },
         ]

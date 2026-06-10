@@ -15,11 +15,11 @@ import { facturasService } from '../services/facturasService'
 import {
     getEstadoFactura,
     getNumeroFactura,
-    isFacturaAnulada,
     isFacturaBorrador,
-    isFacturaEmitida,
-    isFacturaPagada,
-    isFacturaRectificada,
+    puedeAnularFactura,
+    puedeMarcarComoPagada,
+    puedeRectificarFactura,
+    puedeRegistrarDevolucion,
 } from '../utils/facturaUtils'
 
 const TABS = [
@@ -487,26 +487,16 @@ export function FacturaDetailPage() {
             else reload()
         })
 
-    // Cálculo de estados
     const isBorrador = factura ? isFacturaBorrador(factura) : false
-    const isEmitida = factura ? isFacturaEmitida(factura) : false
-    const isPagada = factura ? isFacturaPagada(factura) : false
-    const isAnulada = factura ? isFacturaAnulada(factura) : false
-    const isRectificada = factura ? isFacturaRectificada(factura) : false
-    const isFinalizada = isAnulada || isRectificada
     const estado = factura ? getEstadoFactura(factura) : ''
 
-    // Reglas de acciones:
-    // borrador → editar + emitir
-    // emitida → marcar pagada (si no pagada) + rectificar + anular
-    // pagada → rectificar (MVP; el backend puede rechazarlo)
-    // anulada / rectificada → sin acciones
     const puedeEditar = isBorrador
     const puedeEmitir = isBorrador
     const puedeDescargarPdf = !isBorrador
-    const puedeMarcarPagada = isEmitida && !isPagada
-    const puedeRectificar = !isBorrador && !isFinalizada
-    const puedeAnular = (isEmitida || isPagada) && !isFinalizada
+    const puedePagar = factura ? puedeMarcarComoPagada(factura) : false
+    const puedeRegistrarAbono = factura ? puedeRegistrarDevolucion(factura) : false
+    const puedeRectificar = factura ? puedeRectificarFactura(factura) : false
+    const puedeAnular = factura ? puedeAnularFactura(factura) : false
 
     return (
         <section className="page">
@@ -549,7 +539,7 @@ export function FacturaDetailPage() {
                                 </button>
                             ) : null}
 
-                            {puedeMarcarPagada ? (
+                            {puedePagar ? (
                                 <button
                                     className="button"
                                     disabled={saving}
@@ -560,11 +550,21 @@ export function FacturaDetailPage() {
                                 </button>
                             ) : null}
 
+                            {puedeRegistrarAbono ? (
+                                <button
+                                    className="button"
+                                    disabled={saving}
+                                    type="button"
+                                    onClick={handleMarcarPagada}
+                                >
+                                    {saving ? 'Guardando…' : 'Registrar devolución'}
+                                </button>
+                            ) : null}
+
                             {puedeRectificar ? (
                                 <button
                                     className="button button-ghost"
                                     disabled={saving}
-                                    title={isPagada ? 'La rectificación de facturas pagadas puede requerir confirmación adicional.' : undefined}
                                     type="button"
                                     onClick={() => setRectificarOpen(true)}
                                 >
