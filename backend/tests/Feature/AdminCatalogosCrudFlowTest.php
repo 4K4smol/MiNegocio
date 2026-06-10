@@ -115,6 +115,72 @@ class AdminCatalogosCrudFlowTest extends TestCase
         }
     }
 
+    public function test_admin_no_puede_crear_tipo_documento_con_nombre_duplicado(): void
+    {
+        $this->actingAs($this->crearAdmin(), 'sanctum')
+            ->postJson('/api/v1/tipos-documento-identidad', [
+                'nombre' => 'dni',
+                'descripcion' => 'Duplicado',
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('nombre');
+    }
+
+    public function test_admin_no_puede_editar_tipo_documento_con_nombre_de_otro_registro(): void
+    {
+        $admin = $this->crearAdmin();
+
+        $id = $this->actingAs($admin, 'sanctum')
+            ->postJson('/api/v1/tipos-documento-identidad', [
+                'nombre' => 'documento auxiliar',
+                'descripcion' => 'Documento auxiliar',
+            ])
+            ->assertCreated()
+            ->json('data.id');
+
+        $this->actingAs($admin, 'sanctum')
+            ->putJson("/api/v1/tipos-documento-identidad/{$id}", [
+                'nombre' => 'dni',
+                'descripcion' => 'Intento duplicado',
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('nombre');
+    }
+
+    public function test_admin_registra_auditoria_al_crear_y_editar_tipo_documento(): void
+    {
+        $admin = $this->crearAdmin();
+
+        $id = $this->actingAs($admin, 'sanctum')
+            ->postJson('/api/v1/tipos-documento-identidad', [
+                'nombre' => 'documento auditoria',
+                'descripcion' => 'Descripcion inicial',
+            ])
+            ->assertCreated()
+            ->json('data.id');
+
+        $this->assertDatabaseHas('admin_verificacion_eventos', [
+            'user_admin_id' => $admin->id,
+            'accion' => 'crear_tipo_documento_identidad',
+            'estado_anterior' => null,
+            'estado_nuevo' => 'creado',
+        ]);
+
+        $this->actingAs($admin, 'sanctum')
+            ->putJson("/api/v1/tipos-documento-identidad/{$id}", [
+                'nombre' => 'documento auditoria',
+                'descripcion' => 'Descripcion editada',
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('admin_verificacion_eventos', [
+            'user_admin_id' => $admin->id,
+            'accion' => 'actualizar_tipo_documento_identidad',
+            'estado_anterior' => 'actualizado',
+            'estado_nuevo' => 'actualizado',
+        ]);
+    }
+
     public function test_endpoint_legacy_de_tipos_localizacion_cliente_no_existe(): void
     {
         $this->actingAs($this->crearAdmin(), 'sanctum')

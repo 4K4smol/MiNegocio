@@ -16,7 +16,7 @@ class StoreTipoDocumentoIdentidadRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => ['required', 'string', 'max:50'],
+            'nombre' => ['required', 'string', 'max:50', 'unique:tipos_documento_identidad,nombre'],
             'descripcion' => ['nullable', 'string', 'max:255'],
         ];
     }

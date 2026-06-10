@@ -11,6 +11,7 @@ use App\Models\AdminVerificacionEvento;
 use App\Models\TipoDocumentoIdentidad;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TipoDocumentoIdentidadController extends AbstractCrudController
 {
@@ -26,10 +27,14 @@ class TipoDocumentoIdentidadController extends AbstractCrudController
 
     public function store(StoreTipoDocumentoIdentidadRequest $request): JsonResponse
     {
-        $tipo_documento_identidad = TipoDocumentoIdentidad::query()
-            ->create($request->validated());
+        $tipo_documento_identidad = DB::transaction(function () use ($request): TipoDocumentoIdentidad {
+            $tipo_documento_identidad = TipoDocumentoIdentidad::query()
+                ->create($request->validated());
 
-        $this->registrarEventoCatalogo($request, 'crear_tipo_documento_identidad', null, 'creado', $tipo_documento_identidad);
+            $this->registrarEventoCatalogo($request, 'crear_tipo_documento_identidad', null, 'creado', $tipo_documento_identidad);
+
+            return $tipo_documento_identidad;
+        });
 
         return $this->created(
             TipoDocumentoIdentidadResource::make($tipo_documento_identidad)->resolve()
@@ -38,20 +43,28 @@ class TipoDocumentoIdentidadController extends AbstractCrudController
 
     public function update(UpdateTipoDocumentoIdentidadRequest $request, int $id): JsonResponse
     {
-        $tipo_documento_identidad = TipoDocumentoIdentidad::query()->find($id);
+        $tipo_documento_identidad = DB::transaction(function () use ($request, $id): ?TipoDocumentoIdentidad {
+            $tipo_documento_identidad = TipoDocumentoIdentidad::query()->find($id);
+
+            if ($tipo_documento_identidad === null) {
+                return null;
+            }
+
+            $estadoAnterior = $tipo_documento_identidad->only(['nombre', 'descripcion']);
+            $tipo_documento_identidad->fill($request->validated());
+            $tipo_documento_identidad->save();
+
+            $this->registrarEventoCatalogo($request, 'actualizar_tipo_documento_identidad', 'actualizado', 'actualizado', $tipo_documento_identidad, [
+                'anterior' => $estadoAnterior,
+                'nuevo' => $tipo_documento_identidad->only(['nombre', 'descripcion']),
+            ]);
+
+            return $tipo_documento_identidad;
+        });
 
         if ($tipo_documento_identidad === null) {
             return $this->notFound();
         }
-
-        $estadoAnterior = $tipo_documento_identidad->only(['nombre', 'descripcion']);
-        $tipo_documento_identidad->fill($request->validated());
-        $tipo_documento_identidad->save();
-
-        $this->registrarEventoCatalogo($request, 'actualizar_tipo_documento_identidad', 'actualizado', 'actualizado', $tipo_documento_identidad, [
-            'anterior' => $estadoAnterior,
-            'nuevo' => $tipo_documento_identidad->only(['nombre', 'descripcion']),
-        ]);
 
         return $this->updated(
             TipoDocumentoIdentidadResource::make($tipo_documento_identidad)->resolve()
