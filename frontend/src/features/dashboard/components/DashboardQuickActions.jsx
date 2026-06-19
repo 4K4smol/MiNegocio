@@ -6,7 +6,7 @@ const quickActions = [
     {
         title: "Crear cliente",
         description: "Registra un nuevo cliente y deja sus datos listos para operar.",
-        to: "/app/clientes/nuevo",
+        to: "/app/clientes?crear=1",
         icon: appIcons.clientes,
     },
     {

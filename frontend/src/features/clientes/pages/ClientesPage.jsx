@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AppIcon } from "../../../components/ui/AppIcon";
 import { appIcons } from "../../../config/appIcons";
 import { ErrorState } from "../../../shared/components/ErrorState";
@@ -14,6 +15,7 @@ import { clientesService } from "../services/clientesService";
 import { clientePayloadFromForm, validationErrors } from "../utils/clienteForm";
 
 export function ClientesPage() {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [clientes, setClientes] = useState([]);
     const [tiposCliente, setTiposCliente] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -60,6 +62,21 @@ export function ClientesPage() {
         loadClientes();
         loadTiposCliente();
     }, [loadClientes, loadTiposCliente]);
+
+    useEffect(() => {
+        if (searchParams.get("crear") !== "1") return;
+
+        setSelectedCliente(null);
+        setSelectedClienteForView(null);
+        setFormMode("create");
+        setFormError("");
+        setFormErrors({});
+        setSearchParams((currentParams) => {
+            const nextParams = new URLSearchParams(currentParams);
+            nextParams.delete("crear");
+            return nextParams;
+        }, { replace: true });
+    }, [searchParams, setSearchParams]);
 
     const filteredClientes = useMemo(() => {
         return clientes.filter((cliente) => {
