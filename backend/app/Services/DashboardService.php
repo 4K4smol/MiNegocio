@@ -49,7 +49,7 @@ class DashboardService
             ->with(['cliente', 'estado', 'prioridad', 'tecnicoResponsable', 'lineas.servicio'])
             ->whereNotIn('estado_codigo', ['completada', 'cancelada', 'facturada'])
             ->whereNotNull('fecha_programada_inicio')
-            ->where('fecha_programada_inicio', '>=', now())
+            ->orderByRaw('CASE WHEN fecha_programada_inicio < ? THEN 0 ELSE 1 END', [now()])
             ->orderBy('fecha_programada_inicio')
             ->limit(max(1, min($limite, 50)))
             ->get();

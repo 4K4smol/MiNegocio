@@ -176,6 +176,28 @@ class CalendarioDashboardFlowTest extends TestCase
             ->assertJsonCount(1, 'data');
     }
 
+    public function test_dashboard_muestra_ordenes_pendientes_atrasadas(): void
+    {
+        $this->travelTo('2026-07-01 12:00:00');
+
+        [$user, $cliente, $servicio] = $this->crearContextoEmpresa('B10000008');
+
+        $ordenAtrasada = app(OrdenTrabajoService::class)->crearOrden($this->datosOrden($cliente->id, $servicio->id, [
+            'fecha_programada_inicio' => '2026-06-30 09:00:00',
+            'fecha_programada_fin' => '2026-06-30 10:00:00',
+        ]), $user);
+
+        app(OrdenTrabajoService::class)->crearOrden($this->datosOrden($cliente->id, $servicio->id, [
+            'fecha_programada_inicio' => '2026-07-02 09:00:00',
+            'fecha_programada_fin' => '2026-07-02 10:00:00',
+        ]), $user);
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/v1/empresa/dashboard/proximas-ordenes?limite=5')
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $ordenAtrasada->id);
+    }
+
     private function crearContextoEmpresa(string $nif): array
     {
         $empresa = Empresa::query()->create([

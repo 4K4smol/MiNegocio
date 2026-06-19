@@ -78,6 +78,38 @@ class InventarioEmpresaFlowTest extends TestCase
             ->assertJsonPath('data.cantidad', '8.00');
     }
 
+    public function test_empresa_edita_item_sin_ubicacion_para_asignar_ubicacion(): void
+    {
+        [$user, $empresa] = $this->crearUsuarioEmpresa('B33000029');
+        $item = $this->crearItem($empresa->id, stock: 0, ubicacionId: null);
+        $ubicacion = $this->crearUbicacion($empresa->id, 'Almacen asignado');
+
+        $this->actingAs($user, 'sanctum')->putJson("/api/v1/empresa/inventario-items/{$item->id}", [
+            'nombre' => $item->nombre,
+            'unidad_medida_id' => $item->unidad_medida_id,
+            'ubicacion_id' => $ubicacion->id,
+            'stock_actual' => 6,
+            'stock_minimo' => 1,
+        ])->assertOk()
+            ->assertJsonPath('data.id', $item->id)
+            ->assertJsonPath('data.ubicacion_id', $ubicacion->id)
+            ->assertJsonPath('data.cantidad', '6.00');
+
+        $this->assertDatabaseHas('inventario_items', [
+            'id' => $item->id,
+            'empresa_id' => $empresa->id,
+            'ubicacion_id' => $ubicacion->id,
+            'stock_actual' => 6,
+        ]);
+
+        $this->assertDatabaseHas('inventario_existencias', [
+            'empresa_id' => $empresa->id,
+            'inventario_item_id' => $item->id,
+            'ubicacion_id' => $ubicacion->id,
+            'cantidad' => 6,
+        ]);
+    }
+
     public function test_empresa_crea_ubicacion_sin_enviar_empresa_id(): void
     {
         [$user, $empresa] = $this->crearUsuarioEmpresa('B33000019');

@@ -3,9 +3,9 @@ import { OrderListCard } from "./OrderListCard";
 export function UpcomingOrdersCard({ orders = [] }) {
     return (
         <OrderListCard
-            emptyText="No hay órdenes programadas."
+            emptyText="No hay órdenes pendientes programadas."
             orders={orders}
-            title="Próximas órdenes"
+            title="Pendientes y próximas"
         />
     );
 }

@@ -9,6 +9,7 @@ use App\Http\Requests\Api\V1\UpdateInventarioItemRequest;
 use App\Http\Resources\Api\V1\InventarioItemResource;
 use App\Models\InventarioExistencia;
 use App\Models\InventarioItem;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -64,7 +65,7 @@ class InventarioItemController extends AbstractCrudController
 
     public function update(UpdateInventarioItemRequest $request, int $id): JsonResponse
     {
-        $record = $this->findRecord($request, $id);
+        $record = $this->findRecordForMutation($request, $id);
 
         if ($record === null) {
             return $this->notFound();
@@ -142,5 +143,20 @@ class InventarioItemController extends AbstractCrudController
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+    }
+
+    private function findRecordForMutation(Request $request, int $id): ?InventarioItem
+    {
+        $query = InventarioItem::query()
+            ->with(['unidadMedida', 'ubicacion', 'existencias.ubicacion'])
+            ->whereKey($id);
+
+        $user = $request->user();
+
+        if ($user instanceof User && $user->role?->nombre !== 'admin') {
+            $query->where('empresa_id', $user->empresa_id);
+        }
+
+        return $query->first();
     }
 }
