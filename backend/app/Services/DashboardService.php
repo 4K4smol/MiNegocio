@@ -66,10 +66,7 @@ class DashboardService
         }
 
         if ($hasta !== null) {
-            $query->where(function (Builder $query) use ($hasta): void {
-                $query->where('inicio', '<=', $hasta)
-                    ->orWhere('fin', '<=', $hasta);
-            });
+            $query->whereDate('inicio', '<=', $hasta);
         }
 
         return $query->get();

@@ -198,6 +198,27 @@ class CalendarioDashboardFlowTest extends TestCase
             ->assertJsonPath('data.0.id', $ordenAtrasada->id);
     }
 
+    public function test_dashboard_calendario_incluye_todo_el_ultimo_dia_del_mes(): void
+    {
+        [$user, $cliente, $servicio] = $this->crearContextoEmpresa('B10000009');
+
+        $ordenUltimoDia = app(OrdenTrabajoService::class)->crearOrden($this->datosOrden($cliente->id, $servicio->id, [
+            'fecha_programada_inicio' => '2026-06-30 09:00:00',
+            'fecha_programada_fin' => '2026-06-30 10:00:00',
+        ]), $user);
+
+        app(OrdenTrabajoService::class)->crearOrden($this->datosOrden($cliente->id, $servicio->id, [
+            'fecha_programada_inicio' => '2026-07-01 09:00:00',
+            'fecha_programada_fin' => '2026-07-01 10:00:00',
+        ]), $user);
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/v1/empresa/dashboard/calendario?desde=2026-06-01&hasta=2026-06-30')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.orden_trabajo.id', $ordenUltimoDia->id);
+    }
+
     private function crearContextoEmpresa(string $nif): array
     {
         $empresa = Empresa::query()->create([
